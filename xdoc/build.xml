@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<project name="hedwig" default="docs" basedir=".">
+
+  <description>
+  </description>
+
+  <property name="docs.dist.dir" value="${basedir}/../dist"/>
+  <property name="app.version" value="1.0.0.1"/>
+
+  <target name="init">
+    <tstamp/>
+  </target>
+
+  <target name="docs.html" depends="init" description="Generate html documents">
+
+    <!-- Generates HTML documents -->
+
+    <mkdir dir="${basedir}/html/images"/>
+    <copy todir="${basedir}/html/images">
+      <fileset dir="${basedir}/src/images">
+        <include name="**/*.gif"/>
+        <include name="**/*.svg"/>
+        <include name="**/*.jpg"/>
+        <include name="**/*.png"/>
+      </fileset>
+    </copy>
+    <java classname="com.icl.saxon.StyleSheet" fork="true" dir="${basedir}/html/" failonerror="true">
+      <classpath>
+        <fileset dir="${basedir}/lib">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+      <jvmarg value="-Xmx256M"/>
+      <arg value="${basedir}/src/index.xml"/>
+      <arg value="${basedir}/styles/html_chunk.xsl"/>
+    </java>
+
+  </target>
+
+  <target name="docs.htmlsingle" depends="init" description="Compile reference documentation to single html">
+    <mkdir dir="${basedir}/html_single/images"/>
+    <copy todir="${basedir}/html_single/images">
+      <fileset dir="${basedir}/src/images">
+        <include name="*.gif"/>
+        <include name="*.svg"/>
+        <include name="*.jpg"/>
+        <include name="*.png"/>
+      </fileset>
+    </copy>
+
+    <java classname="com.icl.saxon.StyleSheet" fork="true" dir="${basedir}/html_single" failonerror="true">
+      <classpath>
+        <fileset dir="${basedir}/lib">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+      <jvmarg value="-Xmx256M"/>
+      <arg value="-o"/>
+      <arg value="${basedir}/html_single/index.html"/>
+      <arg value="${basedir}/src/index.xml"/>
+      <arg value="${basedir}/styles/html.xsl"/>
+    </java>
+  </target>
+
+  <target name="docs.pdf" depends="init" description="Generates pdf document">
+
+    <mkdir dir="${basedir}/pdf/images"/>
+
+    <copy todir="${basedir}/pdf/images">
+      <fileset dir="${basedir}/src/images">
+        <include name="**/*.gif"/>
+        <include name="**/*.svg"/>
+        <include name="**/*.jpg"/>
+        <include name="**/*.png"/>
+      </fileset>
+    </copy>
+    <copy todir="${basedir}/pdf/">
+        <fileset dir="${basedir}/src/fonts">
+            <include name="*.ttf" />
+            <include name="*.xml" />
+        </fileset>
+    </copy>
+
+    <echo>Generating fo temp file...</echo>
+
+    <java classname="com.icl.saxon.StyleSheet" fork="true" dir="${basedir}/pdf/" failonerror="true">
+      <classpath>
+        <fileset dir="${basedir}/lib">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+      <jvmarg value="-Xmx256M"/>
+      <arg value="-o"/>
+      <arg value="${basedir}/pdf/docbook_fop.tmp"/>
+      <arg value="${basedir}/src/index.xml"/>
+      <arg value="${basedir}/styles/fopdf.xsl"/>
+      <!-- controls the double sided pagination style -->
+      <arg value="double.sided=0"/>
+    </java>
+
+    <echo>Generating .pdf file...</echo>
+
+    <java classname="org.apache.fop.apps.Fop" fork="true" maxmemory="256m" dir="${basedir}" failonerror="true">
+      <classpath>
+        <fileset dir="${basedir}/lib">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+      <arg value="-c"/>
+      <arg value="${basedir}/src/userconfig.xml"/>
+      <arg value="-fo"/>
+      <arg value="${basedir}/pdf/docbook_fop.tmp"/>
+      <arg value="-pdf"/>
+      <arg value="${basedir}/pdf/hedwig-guide.pdf"/>
+    </java>
+
+    <delete>
+      <fileset dir="${basedir}/pdf/" includes="*.xml"/>
+      <fileset dir="${basedir}/pdf/" includes="*.ttf"/>
+    </delete>
+    <delete>
+      <fileset dir="${basedir}/pdf/images">
+        <include name="**/*.gif"/>
+        <include name="**/*.svg"/>
+        <include name="**/*.jpg"/>
+        <include name="**/*.png"/>
+      </fileset>
+    </delete>
+    <delete dir="${basedir}/pdf/images"/>
+    <delete file="${basedir}/pdf/docbook_fop.tmp"/>
+
+  </target>
+
+  <target name="docs" depends="docs.html, docs.htmlsingle, docs.pdf" description="Generates documentation files.">
+  </target>
+
+  <target name="clean" description="Deletes all output files.">
+    <delete dir="${basedir}/html"/>
+    <delete dir="${basedir}/html_single"/>
+    <delete dir="${basedir}/pdf"/>
+  </target>
+
+</project>

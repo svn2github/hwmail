@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="installation">
+<title>Installation</title>
+
+<section id="install.prerequisite">
+	<title>Pre-Installation Requirements</title>
+	<para>
+		<itemizedlist>
+			<listitem>
+				<para>
+Java Developer Kit (JDK) 1.5.x or greater for compiling/building
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+The JAVA_HOME environment variable must be set to the directory where the JDK is installed, e.g., c:\Program Files\jdk.1.5.0_22. 
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+Maven 1.0.2 or greater (required when installing source)
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+Ant 1.7.1 or greater (required when building reference document or javadoc)
+				</para>
+			</listitem>
+		</itemizedlist>
+	</para>
+</section>
+
+<section id="install.source">
+	<title>Source Installation</title>
+	<para>
+This procedure explains how to install from the source distribution.
+		<orderedlist>
+	    	<listitem>
+		        <para>
+Extract source from the ZIP file into a directory of your choice.
+				</para>
+		        <para>
+For a source distribution, the file name will be similar to: <emphasis>hedwig-x.x-src.zip</emphasis>.
+				</para>
+			</listitem>
+	    	<listitem>
+	    		<para>Build Hedwig using Maven and Java 1.5.</para>
+	    		<para>
+The method of building Hedwig is the following:
+<screen>
+mvn clean package
+</screen>
+	    		</para>
+	    		<para>
+If the above build fails on some tests, type the following:
+<screen>
+mvn clean package -Dmaven.test.skip=true
+</screen>
+	    		</para>
+	    	</listitem>
+	    	<listitem>
+	    		<para>
+If you prefer to use an IDE, then you can auto-generate the IDE's project file using maven plugins:
+<screen>
+mvn eclipse:eclipse
+</screen>
+	    		</para>
+	    	</listitem>
+	    	<listitem>
+	    		<para>
+Proceed to the <xref linkend="install.binary"/> with binary distribution file in <emphasis>assembly/target</emphasis> directory.
+	    		</para>
+	    	</listitem>
+		</orderedlist>
+	</para>
+</section>
+
+<section id="install.binary">
+	<title>Binary Installation</title>
+	<para>
+		<orderedlist>
+			<listitem>
+				<para>
+Extract the binary distribution file into a directory of your own.
+				</para>
+				<para>
+For a windows binary distribution, the filename will be similar to: <emphasis>hedwig-x.x.zip</emphasis>.
+				</para>
+				<para>
+For a unix binary distribution, the filename will be similar to: <emphasis>hedwig-x.x.tar.gz</emphasis>.
+				</para>
+			</listitem>
+			<listitem>
+				<para>Proceed to the <xref linkend="configuration"/> chapter of this document.</para>
+			</listitem>
+			<listitem>
+				<para>Proceed to the <xref linkend="running"/> chapter of this document.</para>
+			</listitem>
+		</orderedlist>
+	</para>
+</section>
+
+<section id="install.document">
+	<title>Building Documents</title>
+	<section>
+		<title>Building Manual</title>
+		<para>
+You can build this manual from source distribution. 
+<screen>
+cd xdoc
+ant
+</screen>
+Ant will build this book with the above command.
+The supplied <emphasis>build.xml</emphasis> will build <emphasis>html</emphasis>, <emphasis>html_single</emphasis> and <emphasis>PDF</emphasis> version of this book.
+		</para>
+	</section>
+	<section>
+		<title>Building Javadoc</title>
+		<para>
+You can optionally build your own copy of the Javadoc.
+The following command will build the Javadoc API reference documentation.
+<screen>
+mvn javadoc:aggregate
+</screen>
+The Javadoc API reference documents will be built at <emphasis>target/site/apidocs</emphasis> sub-directory.
+Double-click the <emphasis>index.html</emphasis> file to view the Javadocs.
+		</para>
+	</section>
+</section>
+
+</chapter>

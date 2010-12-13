@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="webconsole">
+<title>Web Console</title>
+
+<section> 
+	<title>Overview</title> 
+	<para>
+The Hedwig Web Console is a web based administration tool for working with Hedwig Mail server.
+	</para>
+	<para><graphic fileref="images/webconsole.png"/></para>
+</section>
+
+<section> 
+	<title>Running the Web Console</title> 
+	<para>
+Download the hedwig-web-{version}.war file and install the war distribution.
+Then you can point your web browser at the URL.
+		<itemizedlist>
+		    <listitem>
+		        <para>http://localhost:8080/hedwig-web-{version}/</para>
+		    </listitem>
+		</itemizedlist>
+And hey presto, you should now have the Web Console running.
+	</para>
+</section>
+
+<section> 
+	<title>Configuring the Web Console</title> 
+	<para>
+Copy <emphasis>default.properties</emphasis> from Hedwig server's <emphasis>conf</emphasis> directory to <emphasis>WEB-INF</emphasis>.
+Web Console is used by limited number of users, so change the <emphasis>jdbc.maxActive</emphasis> and <emphasis>jdbc.maxIdle</emphasis> value to smaller value.  
+	</para>
+	<para>
+To enable access to the Web Console, you must create a new username/password combination and associate the role name <emphasis>manager</emphasis> with it.
+Web Console defaults to a properties file stored at <emphasis>WEB-INF/users.properties</emphasis>, 
+which can be edited with any text editor.
+This file might look like this:
+<screen>
+admin=s3cret:manager
+</screen> 
+which defines the username and password used by this individual to log on, and the role names he or she is associated with.
+	</para>
+</section>
+
+<section> 
+	<title>Using the Web Console</title> 
+	<section> 
+		<title>Accounts</title> 
+		<para>
+You can create, update or delete accounts in this menu.
+		</para>
+		<para>
+And you can import multiple accounts using <emphasis>Import</emphasis> menu.
+Accounts are imported using a colon delimited text file.
+The following fields are required for accounts import.
+			<table>
+				<title>Import file format</title>
+				<tgroup cols="2">
+					<thead>
+						<row>
+							<entry>Field</entry>
+							<entry>Form</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>Address</entry>
+							<entry>The email address of the account.</entry>
+						</row>
+						<row>
+							<entry>Password</entry>
+							<entry>The password of the account.</entry>
+						</row>
+						<row>
+							<entry>Maximum size</entry>
+							<entry>The maximum disk space that the account may use.</entry>
+						</row>
+						<row>
+							<entry>Forwarding</entry>
+							<entry>The email address you want to forward messages to.</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+If fields are empty or omitted, default value is used for that field.  
+Following is a sample import file.
+<screen>
+joe@domain.com:s3cret:1024:joe@gmail.com
+bill@domain.com
+jane@domain.com:tiger:
+kara@domain.com:::nicole@nate.com
+</screen>
+		</para>
+	</section>	
+	<section>
+		<title>Fetch Account</title>
+		<para>
+Hedwig can download messages from POP3 accounts on other servers.
+Email downloads are delivered to the selected account.
+You can fetch external account from <emphasis>Fetch</emphasis> menu in the <emphasis>Edit Account</emphasis> page. 
+		</para>
+		<para>
+			<variablelist>
+	    		<varlistentry>
+	    			<term>Name</term>
+	    			<listitem>
+	    				<para>The name of the external account. The name is in free text and can be anything you like.</para>
+	    			</listitem>
+	    		</varlistentry>
+	    		<varlistentry>
+	    			<term>Protocol</term>
+	    			<listitem>
+	    				<para>Currently only POP3. Support for other protocols, such as IMAP, may be added in future.</para>
+	    			</listitem>
+	    		</varlistentry>
+	    		<varlistentry>
+	    			<term>Server address &amp; TCP Port</term>
+	    			<listitem>
+	    				<para>The hostname and TCP/IP port of the server should connect to when downloading messages.</para>
+	    			</listitem>
+	    		</varlistentry>
+	    		<varlistentry>
+	    			<term>User name &amp; Password</term>
+	    			<listitem>
+	    				<para>
+The user name and password the server should use when login to the external server.
+This should be the same information that you normally enter in your email client when login to that account.
+	    				</para>
+	    			</listitem>
+	    		</varlistentry>
+	    		<varlistentry>
+	    			<term>SSL</term>
+	    			<listitem>
+						<para>
+If the external server requires an encrypted connection(SSL), check the <emphasis>Use SSL</emphasis> option.
+						</para>
+	    			</listitem>
+	    		</varlistentry>
+	    		<varlistentry>
+	    			<term>Settings</term>
+	    			<listitem>
+	    				<para>
+If you select <emphasis>Delete messages immediately</emphasis>, server will delete the messages from the external server right after downloading them.
+The opposite, <emphasis>Do not delete messages</emphasis>, causes server not to delete messages on the external server.
+	    				</para>
+	    			</listitem>
+	    		</varlistentry>
+	    	</variablelist>
+		</para>
+	</section>
+	<section> 
+		<title>Aliases</title> 
+		<para>
+You can create, update or delete aliases in this menu.
+		</para>
+		<para>
+Aliases are used to forward email from one specific address to another.
+Imagine them as addresses without a mailbox; instead of having their own mailbox, they store received messages in another account's mailbox.
+This can be useful if you want to monitor several email addresses, but only have one real email account on the server.
+For example, you may want to receive email messages sent to webmaster@domain.com, feedback@domain.com and yourname@domain.com, but you just want to create the webmaster@domain.com account instead of 3 different accounts.
+Then feedback@domain.com and yourname@domain.com can be made aliases of webmaster@domain.com.			
+		</para>
+	</section>	
+</section>	
+
+</chapter>
