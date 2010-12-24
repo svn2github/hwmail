@@ -67,6 +67,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			long mailboxID = mailbox.getMailboxID();
 			selected = new SelectedMailbox(sessionID, mailboxID, isReadOnly());
 			UidToMsnMapper map = new UidToMsnMapper(selected, false);
+			mailbox.setReadOnly(isReadOnly());
 			SelectResponse response = new SelectResponseBuilder().build(map, mailbox);
 			responder.respond(response);
 			

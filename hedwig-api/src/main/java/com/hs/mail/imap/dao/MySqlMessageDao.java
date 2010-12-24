@@ -189,6 +189,9 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 	
 	private int setSystemFlags(long messageID, Flags.Flag[] flags,
 			boolean replace, boolean set) {
+		if (ArrayUtils.isEmpty(flags)) {
+			return 0;
+		}
 		StringBuilder sql = new StringBuilder("UPDATE message SET ");
 		List params = new ArrayList();
 		sql.append(FlagUtils.buildParams(flags, replace, set, params));

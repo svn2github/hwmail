@@ -42,13 +42,13 @@ import com.hs.mail.imap.message.PhysMessage;
 public class MySqlMailboxDao extends AbstractDao implements MailboxDao {
 
 	public Mailbox getMailbox(long ownerID, String mailboxName) {
-		String sql = "SELECT * FROM mailbox WHERE ownerid = ? AND name = ?";
+		String sql = "SELECT * FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ? AND name = ?";
 		return (Mailbox) queryForObject(sql, new Object[] { new Long(ownerID),
 				mailboxName }, mailboxRowMapper);
 	}
 
 	public boolean mailboxExists(long ownerID, String mailboxName) {
-		String sql = "SELECT COUNT(1) FROM mailbox WHERE ownerid = ? AND name = ?";
+		String sql = "SELECT COUNT(1) FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ? AND name = ?";
 		return queryForInt(sql, new Object[] { new Long(ownerID), mailboxName }) > 0;
 	}
 
@@ -126,11 +126,11 @@ public class MySqlMailboxDao extends AbstractDao implements MailboxDao {
 	
 	private List<Mailbox> getChildren(long ownerID, String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
-			String sql = "SELECT * FROM mailbox WHERE ownerid = ? ORDER BY name";
+			String sql = "SELECT * FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ? ORDER BY name";
 			return getJdbcTemplate().query(sql,
 					new Object[] { new Long(ownerID) }, mailboxRowMapper);
 		} else {
-			String sql = "SELECT * FROM mailbox WHERE ownerid = ? AND name LIKE ? ORDER BY name";
+			String sql = "SELECT * FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ? AND name LIKE ? ORDER BY name";
 			return getJdbcTemplate().query(
 					sql,
 					new Object[] {
@@ -163,11 +163,11 @@ public class MySqlMailboxDao extends AbstractDao implements MailboxDao {
 
 	public int getChildCount(long ownerID, String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
-			String sql = "SELECT COUNT(1) FROM mailbox WHERE ownerid = ?";
+			String sql = "SELECT COUNT(1) FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ?";
 			Object[] params = { new Long(ownerID) };
 			return queryForInt(sql, params);
 		} else {
-			String sql = "SELECT COUNT(1) FROM mailbox WHERE ownerid = ? AND name LIKE ?";
+			String sql = "SELECT COUNT(1) FROM mailbox USE INDEX (fk_mailbox_user) WHERE ownerid = ? AND name LIKE ?";
 			Object[] params = {
 					new Long(ownerID),
 					new StringBuilder(escape(mailboxName)).append(

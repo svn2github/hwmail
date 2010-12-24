@@ -42,7 +42,11 @@ public class SelectResponder extends DefaultImapResponder {
 		}
 		untaggedOK("[UIDNEXT " + response.getNextUid() + "] Next UID");
 		untaggedOK("[UIDVALIDITY " + response.getUidValidity() + "] UID Valid");
-		untaggedOK("[PERMANENTFLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)] Limited");
+		if (response.isReadOnly()) {
+			untaggedOK("[PERMANENTFLAGS ()] Read-only mailbox");
+		} else {
+			untaggedOK("[PERMANENTFLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft \\*)] Limited");
+		}
 	}
 
 }

@@ -91,5 +91,9 @@ public class SelectResponse extends AbstractImapResponse {
 	public long getUidValidity() {
 		return mailbox.getUidValidity();
 	}
+	
+	public boolean isReadOnly() {
+		return mailbox.isReadOnly();
+	}
 
 }
