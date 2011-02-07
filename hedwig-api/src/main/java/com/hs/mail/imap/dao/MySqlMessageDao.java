@@ -195,6 +195,9 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 		StringBuilder sql = new StringBuilder("UPDATE message SET ");
 		List params = new ArrayList();
 		sql.append(FlagUtils.buildParams(flags, replace, set, params));
+		if (params.isEmpty()) {
+			return 0;
+		}
 		sql.append(" WHERE messageid = ?");
 		params.add(new Long(messageID));
 		return getJdbcTemplate().update(sql.toString(), params.toArray());
@@ -210,8 +213,10 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 			String sql = (replace || set) ? "INSERT INTO keyword (messageid, keyword) VALUES(?, ?)"
 					: "DELETE FROM keyword WHERE messageid = ? AND keyword = ?";
 			for (int i = 0; i < flags.length; i++) {
-				getJdbcTemplate().update(sql,
-						new Object[] { new Long(messageID), flags[i] });
+				if (!(set && hasUserFlag(messageID, flags[i]))) {
+					getJdbcTemplate().update(sql,
+							new Object[] { new Long(messageID), flags[i] });
+				}
 			}
 		}
 	}
@@ -245,6 +250,11 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 		String sql = "SELECT keyword FROM keyword WHERE messageid = ?";
 		return getJdbcTemplate().queryForList(sql,
 				new Object[] { new Long(messageID) }, String.class);
+	}
+	
+	private boolean hasUserFlag(long messageID, String flag) {
+		String sql = "SELECT COUNT(1) FROM keyword WHERE messageid = ? AND keyword = ?";
+		return queryForInt(sql, new Object[] { new Long(messageID), flag }) > 0;
 	}
 	
 //-------------------------------------------------------------------------

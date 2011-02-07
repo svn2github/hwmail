@@ -34,7 +34,7 @@ public interface MailboxDao {
 	 * @param ownerID
 	 *            the id of the user who owns the mailbox
 	 * @param mailboxName
-	 *            fullname of the mailbox
+	 *            fully qualified name of the mailbox
 	 * @return Mailbox object
 	 */
 	public Mailbox getMailbox(long ownerID, String mailboxName);
@@ -47,7 +47,7 @@ public interface MailboxDao {
 	 * @param ownerID
 	 *            ID of user who owns the mailbox
 	 * @param mailboxName
-	 *            fullname of the parent mailbox
+	 *            fully qualified name of the parent mailbox
 	 * @param subscribed
 	 *            If true, only subscribed mailboxes are returned
 	 * @return list of child Mailbox objects
@@ -61,7 +61,7 @@ public interface MailboxDao {
 	 * @param ownerID
 	 *            ID of the user who owns the mailbox
 	 * @param mailboxName
-	 *            fullname of the parent mailbox
+	 *            fully qualified name of the parent mailbox
 	 * @return total number of child mailboxes
 	 */
 	public int getChildCount(long ownerID, String mailboxName);
@@ -70,7 +70,7 @@ public interface MailboxDao {
 	 * Get the identifiers of mailboxes whose name match the given name.
 	 * 
 	 * @param mailboxName
-	 *            fullname of the mailboxes to find
+	 *            fully qualified name of the mailboxes to find
 	 * @return list of mailbox identifiers
 	 */
 	public List<Long> getMailboxIDList(String mailboxName);
@@ -114,7 +114,7 @@ public interface MailboxDao {
 	 * @param ownerID
 	 *            ID of the user who owns the mailbox
 	 * @param mailboxName
-	 *            fullname of the parent mailbox
+	 *            fully qualified name of the parent mailbox
 	 * @return true if the mailbox exists, otherwise false
 	 */
 	public boolean mailboxExists(long ownerID, String mailboxName);
@@ -125,7 +125,7 @@ public interface MailboxDao {
 	 * @param ownerID
 	 *            ID of the user who owns the mailbox
 	 * @param mailboxName
-	 *            fullname of the mailbox to create
+	 *            fully qualified name of the mailbox to create
 	 * @return Mailbox object created
 	 */
 	public Mailbox createMailbox(long ownerID, String mailboxName);
@@ -134,7 +134,7 @@ public interface MailboxDao {
 	 * Rename the mailbox.
 	 * 
 	 * @param source
-	 *            fullname of the mailbox to rename
+	 *            the mailbox to rename
 	 * @param dest
 	 *            new name for the mailbox
 	 */
@@ -190,8 +190,8 @@ public interface MailboxDao {
 	 * 
 	 * @param userID
 	 *            ID of the user
-	 * @param mailboxID
-	 *            ID of the mailbox
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox
 	 * @return true if the mailbox is subscribed, otherwise false
 	 */
 	public boolean isSubscribed(long userID, String mailboxName);
@@ -203,6 +203,8 @@ public interface MailboxDao {
 	 *            ID of the user
 	 * @param mailboxID
 	 *            ID of the mailbox to subscribe
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox
 	 */
 	public void addSubscription(long userID, long mailboxID, String mailboxName);
 
@@ -212,7 +214,7 @@ public interface MailboxDao {
 	 * @param userID
 	 *            ID of the user
 	 * @param mailboxName
-	 *            name of the mailbox to unsubscribe
+	 *            fully qualified name of the mailbox to unsubscribe
 	 */
 	public void deleteSubscription(long userID, String mailboxName);
 	

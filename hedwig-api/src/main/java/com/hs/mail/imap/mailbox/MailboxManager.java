@@ -49,7 +49,7 @@ public interface MailboxManager {
 	 * @param ownerID
 	 *            owner of the mailbox
 	 * @param mailboxName
-	 *            path to the mailbox
+	 *            fully qualified name of the mailbox
 	 * @return the mailbox as <code>Mailbox</code>
 	 */
 	public Mailbox getMailbox(long ownerID, String mailboxName);
@@ -60,7 +60,7 @@ public interface MailboxManager {
 	 * @param ownerID
 	 *            owner of this mailbox
 	 * @param mailboxName
-	 *            the name of mailbox for checking existence
+	 *            fully qualified name of the mailbox for checking existence
 	 * @return true when the mailbox exists, false otherwise
 	 */
 	public boolean mailboxExists(long ownerID, String mailboxName);
@@ -74,7 +74,7 @@ public interface MailboxManager {
 	 * Does the mailbox have inferior child mailboxes?
 	 * 
 	 * @param mailbox
-	 *            ID of the mailbox
+	 *            the mailbox to test 
 	 * @return true when the mailbox has children, false otherwise
 	 */
 	public boolean hasChildren(Mailbox mailbox);
@@ -108,7 +108,7 @@ public interface MailboxManager {
 	 * @param ownerID
 	 *            owner of the mailbox
 	 * @param mailboxName
-	 *            the name of mailbox to create
+	 *            fully qualified name of the mailbox to create
 	 * @return <code>Mailbox</code> created
 	 */
 	public Mailbox createMailbox(final long ownerID, final String mailboxName);
@@ -141,8 +141,8 @@ public interface MailboxManager {
 	 * 
 	 * @param userID
 	 *            ID of user
-	 * @param mailboxID
-	 *            ID of mailbox
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox
 	 * @return true if mailbox is subscribed, otherwise false
 	 */
 	public boolean isSubscribed(long userID, String mailboxName);
@@ -154,6 +154,8 @@ public interface MailboxManager {
 	 *            ID of the user
 	 * @param mailboxID
 	 *            ID of the mailbox to subscribe
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox
 	 */
 	public void addSubscription(final long userID, final long mailboxID,
 			final String mailboxName);

@@ -269,7 +269,7 @@ public class MySqlMailboxDao extends AbstractDao implements MailboxDao {
 	}
 
 	public void deleteMessages(long ownerID) {
-		String sql = "DELETE m.*, k.* FROM message AS m LEFT JOIN keyword AS k ON (m.messageid = k.messageid) WHERE mailboxid IN (SELECT mailboxid FROM mailbox WHERE ownerid = ?)";
+		String sql = "DELETE m.*, k.* FROM message AS m LEFT JOIN keyword AS k ON (m.messageid = k.messageid) WHERE EXISTS (SELECT 1 FROM mailbox WHERE ownerid = ?)";
 		getJdbcTemplate().update(sql, new Object[] { new Long(ownerID) });
 	}
 
