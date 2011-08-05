@@ -132,7 +132,7 @@
 
 	<!--=================== DAO DEFINITIONS ============================-->
 
-	<bean id="userManager" class="com.hs.mail.imap.user.UserManager">
+	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
 		<property name="transactionManager" ref="txManager"/>
 	</bean>
 
