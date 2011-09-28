@@ -120,7 +120,7 @@ public class EnvelopeBuilder {
 	}
 	
 	private Address buildAddress(Mailbox mailbox) {
-		String name = mailbox.getName();
+		String name = StringUtils.strip(mailbox.getName(), "\"");
 		String domain = mailbox.getDomain();
 		DomainList route = mailbox.getRoute();
 		String atDomainList;
