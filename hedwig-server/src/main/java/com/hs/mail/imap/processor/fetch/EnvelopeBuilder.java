@@ -120,6 +120,8 @@ public class EnvelopeBuilder {
 	}
 	
 	private Address buildAddress(Mailbox mailbox) {
+		// Javamail raises exception when personal name is surrounded with
+		// double quotation mark.
 		String name = StringUtils.strip(mailbox.getName(), "\"");
 		String domain = mailbox.getDomain();
 		DomainList route = mailbox.getRoute();
