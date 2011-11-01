@@ -14,7 +14,8 @@
 	<repositories>
 		<repository>
 			<id>repository.jboss.org</id>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<!--url>https://repository.jboss.org/nexus/content/groups/public/</url-->
+			<url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -110,7 +111,8 @@
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.2.3.Final</version>
+			<!--version>3.2.3.Final</version-->
+			<version>3.2.5.Final</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

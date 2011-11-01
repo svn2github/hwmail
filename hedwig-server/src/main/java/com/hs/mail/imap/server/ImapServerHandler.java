@@ -21,7 +21,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
@@ -42,11 +41,13 @@ import com.hs.mail.imap.server.codec.ImapMessage;
  * @author Won Chul Doh
  * @since Jan 12, 2010
  */
-@ChannelPipelineCoverage("one")
+
 public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 
 	private static Logger logger = Logger.getLogger(ImapServerHandler.class);
 
+	private static final boolean throttleIO = true;
+	
 	public ImapServerHandler() {
 		super();
 		ImapProcessorFactory.registerProcessors();
@@ -75,12 +76,23 @@ public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-		ImapSession session = (ImapSession) ctx.getAttachment();
 		ImapMessage message = (ImapMessage) e.getMessage();
+		if (throttleIO) {
+			if (!e.getChannel().isWritable()) {
+				e.getChannel().setReadable(false);
+			}
+		}
+		ImapSession session = (ImapSession) ctx.getAttachment();
 		ImapRequest request = ImapRequestFactory.createImapRequest(message);
 		ImapProcessor processor = ImapProcessorFactory
 				.createImapProcessor(request);
 		processor.process(session, request, e.getChannel());
+	}
+	
+	@Override
+	public void channelInterestChanged(ChannelHandlerContext ctx,
+			ChannelStateEvent e) throws Exception {
+		e.getChannel().setReadable(true);
 	}
 
 	@Override

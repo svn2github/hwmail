@@ -17,7 +17,7 @@ for %%i in ("%JARS_DIR%\*.jar") do call ".\cpappend.bat" %%i
 echo JAVA_HOME: %JAVA_HOME%
 echo CLASSPATH: %_LIBJARS%
 echo Application starts...
-"%_JAVACMD%" -classpath %_LIBJARS% -Xms256m -Xmx256m "-Dlog4j.configuration=file:%APP_HOME%\conf\log4j.properties" com.hs.mail.container.simple.SimpleSpringContainer "%APP_HOME%\conf\applicationContext.xml"
+"%_JAVACMD%" -classpath %_LIBJARS% -Xms256m -Xmx256m "-Dlog4j.configuration=file:%APP_HOME%\conf\log4j.properties" com.hs.mail.container.simple.SimpleSpringContainer -c "%APP_HOME%\conf\applicationContext.xml"
 goto end
 
 :noJavaHome

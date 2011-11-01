@@ -81,7 +81,7 @@ public class CommandParser extends AbstractImapCommandParser {
 
     private boolean command_select() {
 		return kw("CHECK") || kw("CLOSE") || kw("EXPUNGE") || copy() || fetch()
-				|| search() || sort() || store() || thread() || uid();
+				|| search() || sort() || store() || thread() || uid() || xcancel();
 	}
 
     private boolean copy() {
@@ -456,6 +456,19 @@ public class CommandParser extends AbstractImapCommandParser {
 
 	private boolean userid() {
 		return astring();
+	}
+	
+	private boolean xcancel() {
+		if (!kw("XCANCEL") || !sp() || !sequence_set())
+			return false;
+		if (!sp() || !kw("FROM"))
+			return true;
+		if (sp())
+			do
+				if (!userid())
+					return false;
+			while (kw(","));
+		return true;
 	}
     
     /******************************************
