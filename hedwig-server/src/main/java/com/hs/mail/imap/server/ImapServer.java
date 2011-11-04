@@ -145,7 +145,7 @@ public class ImapServer implements InitializingBean {
 					engine.setUseClientMode(false);
 					pipeline.addFirst("ssl", new SslHandler(engine));
 				}
-				if ("true".equals(Config.getProperty("imap_trace_protocol", "false"))) {
+				if (Config.getBooleanProperty("imap_trace_protocol", false)) {
 					pipeline.addLast("debug", createDebuggingHandler());
 				}
 				int timeout = (int) Config.getNumberProperty("imap_timeout", 1800);

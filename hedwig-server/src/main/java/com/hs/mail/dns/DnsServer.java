@@ -396,23 +396,9 @@ public class DnsServer implements InitializingBean {
 									.append(".");
 							logger.error(logBuffer.toString());
 						}
-	                    final InetAddress[] ipAddresses = addrs;
+	                    
+						addresses = getSmtpHostAddresses(nextHostname, addrs);
 
-	                    addresses = new Iterator<HostAddress>() {
-	                    	int i = 0;
-
-							public boolean hasNext() {
-								return ipAddresses != null && i < ipAddresses.length;
-							}
-
-							public HostAddress next() {
-								return new HostAddress(nextHostname, "smtp://" + ipAddresses[i++].getHostAddress());
-							}
-
-							public void remove() {
-								throw new UnsupportedOperationException ("remove not supported by this iterator");
-							}
-	                    };
 					} while (!addresses.hasNext() && mxHosts.hasNext());
 				}
 				return addresses != null && addresses.hasNext();
@@ -424,6 +410,27 @@ public class DnsServer implements InitializingBean {
 
 			public void remove() {
 				throw new UnsupportedOperationException ("remove not supported by this iterator");
+			}
+		};
+	}
+	
+	public static Iterator<HostAddress> getSmtpHostAddresses(
+			final String hostName, final InetAddress[] ipAddresses) {
+		return new Iterator<HostAddress>() {
+			int i = 0;
+
+			public boolean hasNext() {
+				return ipAddresses != null && i < ipAddresses.length;
+			}
+
+			public HostAddress next() {
+				return new HostAddress(hostName, "smtp://"
+						+ ipAddresses[i++].getHostAddress());
+			}
+
+			public void remove() {
+				throw new UnsupportedOperationException(
+						"remove not supported by this iterator");
 			}
 		};
 	}

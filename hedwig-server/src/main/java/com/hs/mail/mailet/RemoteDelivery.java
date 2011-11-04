@@ -17,6 +17,7 @@ package com.hs.mail.mailet;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -72,6 +73,9 @@ public class RemoteDelivery extends AbstractMailet {
     private long smtpTimeout = 5000;  //default number of ms to timeout on smtp delivery
     private boolean sendPartial = true; // If false then ANY address errors will cause the transmission to fail
     private long connectionTimeout = 60000;  // The amount of time JavaMail will wait before giving up on a socket connect()
+    private String gateway = null;	// The server to send all email to
+    private String authUser = null; // auth for gateway server
+    private String authPass = null; // password for gateway server
 
 	public void setDebug(boolean debug) {
 		this.debug = debug;
@@ -101,6 +105,10 @@ public class RemoteDelivery extends AbstractMailet {
         
 		this.session = Session.getInstance(props, null);
 		this.session.setDebug(this.debug);
+		
+		this.gateway = Config.getProperty("smtp_gateway", null);
+		this.authUser = Config.getProperty("smtp_gateway_username", null);
+		this.authPass = Config.getProperty("smtp_gateway_password", null);
 	}
 
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
@@ -119,10 +127,11 @@ public class RemoteDelivery extends AbstractMailet {
 		for (Recipient recipient : recipients) {
 			String targetServer = recipient.getHost().toLowerCase(Locale.US);
 			if (!Config.isLocal(targetServer)) {
-				Collection<Recipient> temp = targets.get(targetServer);
+				String key = (null == gateway) ? targetServer : gateway;
+				Collection<Recipient> temp = targets.get(key);
 				if (temp == null) {
 					temp = new ArrayList<Recipient>();
-					targets.put(targetServer, temp);
+					targets.put(key, temp);
 				}
 				temp.add(recipient);
 			}
@@ -188,7 +197,12 @@ public class RemoteDelivery extends AbstractMailet {
 		
 		try {
 			// Lookup the possible targets
-			Iterator<HostAddress> targetServers = getSmtpHostAddress(host);
+			Iterator<HostAddress> targetServers = null;
+			if (null == gateway) {
+				targetServers = getSmtpHostAddresses(host);
+			} else {
+				targetServers = getGatewaySmtpHostAddresses(gateway);
+			}
 			if (!targetServers.hasNext()) {
 				logger.info("No mail server found for: " + host);
 				StringBuilder exceptionBuffer = new StringBuilder(128).append(
@@ -214,7 +228,7 @@ public class RemoteDelivery extends AbstractMailet {
 					outgoingMailServer = targetServers.next();
 					logBuffer = new StringBuilder(256)
 							.append("Attempting to deliver message to host ")
-							.append(outgoingMailServer.getHostname())
+							.append(outgoingMailServer.getHostName())
 							.append(" at ")
 							.append(outgoingMailServer.getHost())
 							.append(" for addresses ")
@@ -224,7 +238,13 @@ public class RemoteDelivery extends AbstractMailet {
 					try {
 						transport = session.getTransport(outgoingMailServer);
 						try {
-							transport.connect();
+							if (authUser != null) {
+								transport.connect(
+										outgoingMailServer.getHostName(),
+										authUser, authPass);
+							} else {
+								transport.connect();
+							}
 						} catch (MessagingException e) {
 							// Any error on connect should cause the mailet to
 							// attempt to connect to the next SMTP server
@@ -244,7 +264,7 @@ public class RemoteDelivery extends AbstractMailet {
 					}
 					logBuffer = new StringBuilder(256)
 							.append("Successfully sent message to host ")
-							.append(outgoingMailServer.getHostname())
+							.append(outgoingMailServer.getHostName())
 							.append(" at ")
 							.append(outgoingMailServer.getHost())
 							.append(" for addresses ")
@@ -258,7 +278,7 @@ public class RemoteDelivery extends AbstractMailet {
 						if (validSent.length > 0) {
 							logBuffer = new StringBuilder(256)
 									.append("Successfully sent message to host ")
-									.append(outgoingMailServer.getHostname())
+									.append(outgoingMailServer.getHostName())
 									.append(" at ")
 									.append(outgoingMailServer.getHost())
 									.append(" for addresses ")
@@ -433,12 +453,7 @@ public class RemoteDelivery extends AbstractMailet {
 		return errorBuffer.toString();
 	}
 
-	public static Iterator<HostAddress> getSmtpHostAddress(String domainName) {
-		DnsServer dns = (DnsServer) ComponentManager.getBean("dns.server");
-		return dns.getSmtpHostAddress(domainName);
-	}
-	
-	public static void removeAll(Collection<Recipient> recipients,
+	private static void removeAll(Collection<Recipient> recipients,
 			Address[] addresses) {
 		for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {
 			Recipient rcpt = it.next();
@@ -452,4 +467,44 @@ public class RemoteDelivery extends AbstractMailet {
 		}
 	}
 
+	/**
+	 * Figure out which servers to try to send to.  
+	 */
+	private static Iterator<HostAddress> getSmtpHostAddresses(String domainName) {
+		DnsServer dns = (DnsServer) ComponentManager.getBean("dns.server");
+		return dns.getSmtpHostAddress(domainName);
+	}
+	
+	private static Iterator<HostAddress> getGatewaySmtpHostAddresses(
+			final String gateway) {
+		return new Iterator<HostAddress>() {
+			private Iterator<HostAddress> addresses = null;
+
+			public boolean hasNext() {
+				if (addresses == null || !addresses.hasNext()) {
+					try {
+						final InetAddress[] ips = DnsServer
+								.getAllByName(gateway);
+						addresses = DnsServer
+								.getSmtpHostAddresses(gateway, ips);
+					} catch (UnknownHostException uhe) {
+						logger.error("Unknown gateway host: "
+								+ uhe.getMessage().trim());
+						logger.error("This could be a DNS server error or configuration error.");
+					}
+				}
+				return addresses != null && addresses.hasNext();
+			}
+
+			public HostAddress next() {
+				return addresses != null ? addresses.next() : null;
+			}
+
+			public void remove() {
+				throw new UnsupportedOperationException(
+						"remove not supported by this iterator");
+			}
+		};
+	}
+	
 }

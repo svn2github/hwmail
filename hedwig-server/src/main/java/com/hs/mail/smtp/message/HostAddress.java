@@ -32,7 +32,7 @@ public class HostAddress extends URLName {
 		this.hostname = hostname;
 	}
 
-	public String getHostname() {
+	public String getHostName() {
 		return hostname;
 	}
 	
