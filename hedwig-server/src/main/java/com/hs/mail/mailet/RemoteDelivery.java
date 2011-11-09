@@ -481,7 +481,7 @@ public class RemoteDelivery extends AbstractMailet {
 			private Iterator<HostAddress> addresses = null;
 
 			public boolean hasNext() {
-				if (addresses == null || !addresses.hasNext()) {
+				if (addresses == null) {
 					try {
 						final InetAddress[] ips = DnsServer
 								.getAllByName(gateway);
