@@ -482,11 +482,35 @@ public class RemoteDelivery extends AbstractMailet {
 
 			public boolean hasNext() {
 				if (addresses == null) {
+					String server = gateway;
+					String port = "25";
+					
+					int idx = server.indexOf(':');
+					if (idx > 0) {
+						port = server.substring(idx + 1);
+						server = server.substring(0, idx);
+					}
+					
+					final String nextGateway = server;
+					final String nextGatewayPort = port;
 					try {
-						final InetAddress[] ips = DnsServer
-								.getAllByName(gateway);
-						addresses = DnsServer
-								.getSmtpHostAddresses(gateway, ips);
+						final InetAddress[] ips = DnsServer.getAllByName(nextGateway);
+						addresses = new Iterator<HostAddress>() {
+							private InetAddress[] ipAddresses = ips;
+							int i = 0;
+							
+							public boolean hasNext() {
+								return i < ipAddresses.length;
+							}
+
+							public HostAddress next() {
+								return new HostAddress(nextGateway, "smtp://" + (ipAddresses[i++]).getHostAddress() + ":" + nextGatewayPort);
+							}
+
+							public void remove() {
+								throw new UnsupportedOperationException ("remove not supported by this iterator");
+							}
+						};
 					} catch (UnknownHostException uhe) {
 						logger.error("Unknown gateway host: "
 								+ uhe.getMessage().trim());
