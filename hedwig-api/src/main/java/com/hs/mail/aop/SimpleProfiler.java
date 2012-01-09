@@ -7,10 +7,14 @@ import org.springframework.util.StringUtils;
 
 public class SimpleProfiler {
 
-	protected Logger logger = Logger.getLogger(getClass());
+	protected Logger logger = null;
 
 	protected String logName = null;
-	
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
 	public void setLogName(String logName) {
 		this.logName = logName;
 	}

@@ -51,7 +51,11 @@ public class SizeLimitedInputStream extends InputStream {
         this.in = in;
         this.maxmessagesize = maxmessagesize;
     }
-
+    
+    public InputStream getInputStream() {
+    	return in;
+    }
+    
     /**
      * Overrides the read method of InputStream to call the read() method of the
      * wrapped input stream.
