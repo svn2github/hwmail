@@ -204,6 +204,8 @@ public interface MailboxManager {
 	 */
 	public void deleteMessage(final long uid);
 
+	public List<Long> getRevocableMessageIDList(String messageID);
+	
 	/**
 	 * Copies a message to the given mailbox.
 	 * 

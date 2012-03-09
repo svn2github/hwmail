@@ -362,6 +362,11 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
+	public List<Long> getRevocableMessageIDList(String messageID) {
+		MessageDao dao = DaoFactory.getMessageDao();
+		return dao.getRevocableMessageIDList(messageID);
+	}
+	
 	public void copyMessage(final long uid, final long mailboxID) {
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
