@@ -48,6 +48,8 @@ public interface MessageDao {
 	public void deleteMessage(long messageID);
 	
 	public void deletePhysicalMessage(long physMessageID);
+	
+	public List<Long> getRevocableMessageIDList(String messageID);
 
 	public void setFlags(long messageID, Flags flags, boolean replace, boolean set);
 	

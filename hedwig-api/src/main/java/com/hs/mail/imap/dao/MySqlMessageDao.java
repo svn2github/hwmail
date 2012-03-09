@@ -169,6 +169,18 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 		getJdbcTemplate().update(sql[1], param);
 	}
 	
+	public List<Long> getRevocableMessageIDList(String messageID) {
+		String sql = "SELECT messageid FROM message "
+			+ "WHERE recent = 'Y' "
+			+   "AND mailboxid = (SELECT mailboxid FROM mailbox WHERE name = 'INBOX') " 
+			+	"AND physmessageid IN (" 
+			+				"SELECT physmessageid FROM headervalue " 
+			+				 "WHERE headernameid = (SELECT id FROM headername WHERE headername = 'Message-ID') " 
+			+				   "AND headervalue = ?)";
+		return (List<Long>) getJdbcTemplate().queryForList(sql,
+				new Object[] { messageID });
+	}
+	
 	public List<Long> resetRecent(long mailboxID) {
 		String sql = "SELECT messageid FROM message WHERE mailboxid = ? AND recent = 'Y'";
 		Object[] param = new Object[] { new Long(mailboxID) };
