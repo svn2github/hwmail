@@ -56,7 +56,7 @@ public class CommandParser extends AbstractImapCommandParser {
 	public LinkedList<Token> command() {
 		if (tag()
 				&& sp()
-				&& (command_any() || command_auth() || command_nonauth() || command_select())
+				&& (command_any() || command_auth() || command_nonauth() || command_select() || command_custom())
 				&& crlf())
 			return tokens;
 		else
@@ -81,8 +81,12 @@ public class CommandParser extends AbstractImapCommandParser {
 
     private boolean command_select() {
 		return kw("CHECK") || kw("CLOSE") || kw("EXPUNGE") || copy() || fetch()
-				|| search() || sort() || store() || thread() || uid() || xcancel();
+				|| search() || sort() || store() || thread() || uid();
 	}
+    
+    private boolean command_custom() {
+    	return xrevoke();
+    }
 
     private boolean copy() {
 		return kw("COPY") && sp() && sequence_set() && sp() && mailbox();
@@ -458,8 +462,8 @@ public class CommandParser extends AbstractImapCommandParser {
 		return astring();
 	}
 	
-	private boolean xcancel() {
-		if (!kw("XCANCEL") || !sp() || !sequence_set())
+	private boolean xrevoke() {
+		if (!kw("XREVOKE") || !sp() || !sequence_set())
 			return false;
 		if (!sp() || !kw("FROM"))
 			return true;
