@@ -178,7 +178,7 @@ public class Deliver {
 			try {
 				is = new FileInputStream(file);
 				MessageHeader header = new MessageHeader(is);
-				if (from == null) {
+				if (from == null && header.getFrom() != null) {
 					from = header.getFrom().getAddress();
 				}
 				if (rcpts == null) {

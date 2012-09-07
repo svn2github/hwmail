@@ -80,7 +80,8 @@ public class MySqlMessageDao extends AbstractDao implements MessageDao {
 				Date sent = header.getDate();
 				pstmt.setTimestamp(4, (sent != null) ? new Timestamp(sent
 						.getTime()) : null); // sentdate
-				pstmt.setString(5, header.getFrom().getDisplayString()); // fromaddr
+				pstmt.setString(5, (header.getFrom() != null) ? header
+						.getFrom().getDisplayString() : null); // fromaddr
 				return pstmt;
 			}
 		}, keyHolder);

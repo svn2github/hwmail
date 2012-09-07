@@ -24,6 +24,7 @@ import java.util.TimeZone;
 import javax.mail.Flags;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -134,7 +135,7 @@ public abstract class AbstractImapResponder implements Responder {
 	}
 	
 	protected void quote(String message) {
-		message("\"" + message + "\"");
+		message("\"" + StringUtils.replace(message, "\"", "\\\"") + "\"");
 	}
 	
 	protected void quoteUpper(String message) {

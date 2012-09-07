@@ -190,7 +190,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 							}
 							if (CollectionUtils.isNotEmpty(danglings)) {
 								for (PhysMessage pm : danglings) {
-									hdCache.remove(pm.getPhysMessageID());
+									if (hdCache != null) {
+										hdCache.remove(pm.getPhysMessageID());
+									}
 									deletePhysicalMessage(pm);
 								}
 							}
@@ -205,9 +207,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	private void deletePhysicalMessage(PhysMessage pm) {
 		MessageDao dao = DaoFactory.getMessageDao();
 		dao.deletePhysicalMessage(pm.getPhysMessageID());
-		hdCache.remove(pm.getPhysMessageID());
+		if (hdCache != null) {
+			hdCache.remove(pm.getPhysMessageID());
+		}
 		try {
-			File file = Config.getDataFile(pm.getInternalDate(), pm.getPhysMessageID());
+			File file = Config.getDataFile(pm.getInternalDate(),
+					pm.getPhysMessageID());
 			FileUtils.forceDelete(file);
 		} catch (IOException ex) {
 			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
@@ -253,13 +258,13 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 
 	public FetchData getMessageFetchData(long uid) {
-		FetchData fd = fdCache.get(uid);
+		FetchData fd = (fdCache != null) ? fdCache.get(uid) : null;
 		if (fd == null) {
 			MessageDao dao = DaoFactory.getMessageDao();
 			fd = dao.getMessageFetchData(uid);
-			if (fd != null) {
+			if (fdCache != null && fd != null) {
 				fdCache.put(uid, fd);
-			} else {
+			} else if (fd == null) {
 				logger.error("Failed to retrieve fetch data for message ["
 						+ uid + "]");
 			}
@@ -342,7 +347,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 
 	public void deleteMessage(final long uid) {
-		fdCache.remove(uid);
+		if (fdCache != null) {
+			fdCache.remove(uid);
+		}
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
 					public void doInTransactionWithoutResult(
@@ -396,7 +403,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 						}
 					}
 				});
-		if (CollectionUtils.isNotEmpty(recents)) {
+		if (fdCache != null && CollectionUtils.isNotEmpty(recents)) {
 			for (long uid : recents) {
 				fdCache.remove(uid);
 			}
@@ -405,7 +412,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 
 	public void setFlags(final long uid, final Flags flags,
 			final boolean replace, final boolean set) {
-		fdCache.remove(uid);
+		if (fdCache != null) {
+			fdCache.remove(uid);
+		}
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
 					public void doInTransactionWithoutResult(
@@ -431,7 +440,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	public Map<String, String> getHeader(long physMessageID) {
 		MessageDao dao = DaoFactory.getMessageDao();
 		Map<String, String> results = dao.getHeader(physMessageID);
-		if (hdCache.get(physMessageID) == null) {
+		if (hdCache != null && hdCache.get(physMessageID) == null) {
 			hdCache.put(physMessageID, defaultHeader(results));
 		}
 		return results;
@@ -448,7 +457,8 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields) {
-		Map<String, String> header = hdCache.get(physMessageID);
+		Map<String, String> header = (hdCache != null) ? hdCache
+				.get(physMessageID) : null;
 		if (header != null) {
 			return getHeaderFromCache(header, physMessageID, fields);
 		} else {
@@ -480,7 +490,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 					}
 				}
 			}
-			hdCache.put(physMessageID, header);
+			if (hdCache != null) {
+				hdCache.put(physMessageID, header);
+			}
 		}
 		return header;
 	}

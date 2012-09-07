@@ -23,7 +23,7 @@ import java.util.Date;
  * @since Sep 2, 2010
  *
  */
-public class FetchAccount {
+public class FetchAccount implements Comparable<FetchAccount> {
 
 	private long id;
 	
@@ -183,6 +183,10 @@ public class FetchAccount {
 		} else {
 			return false;
 		}
+	}
+
+	public int compareTo(FetchAccount o) {
+		return (int) (id - o.id);
 	}
 	
 }

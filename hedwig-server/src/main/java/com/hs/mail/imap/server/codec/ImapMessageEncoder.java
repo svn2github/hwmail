@@ -34,7 +34,7 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 @ChannelPipelineCoverage("all")
 public class ImapMessageEncoder extends OneToOneEncoder {
 
-    private final String charsetName;
+    private final Charset charset;
 
     public ImapMessageEncoder() {
 		this(Charset.defaultCharset());
@@ -48,14 +48,14 @@ public class ImapMessageEncoder extends OneToOneEncoder {
         if (charset == null) {
             throw new NullPointerException("charset");
         }
-        charsetName = charset.name();
+        this.charset = charset;
 	}
 
 	@Override
 	protected Object encode(ChannelHandlerContext ctx, Channel channel,
 			Object msg) throws Exception {
 		if (msg instanceof String) {
-			return ChannelBuffers.copiedBuffer((String) msg, charsetName);
+			return ChannelBuffers.copiedBuffer((CharSequence) msg, charset);
 		}
 		if (msg instanceof ByteBuffer) {
 			return ChannelBuffers.copiedBuffer((ByteBuffer) msg);

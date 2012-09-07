@@ -60,7 +60,8 @@ public class MailMessage extends FetchData {
 	}
 	
 	public String getFrom() {
-		return header.getFrom().getAddress();
+		return (header.getFrom() != null) ? header.getFrom().getAddress()
+				: null;
 	}
 	
 	public String getReplyTo() {

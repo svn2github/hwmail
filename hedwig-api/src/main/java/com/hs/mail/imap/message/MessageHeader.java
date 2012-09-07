@@ -99,7 +99,7 @@ public class MessageHeader {
 		MailboxList mailboxList = getMailboxList(FieldName.FROM);
 		if (CollectionUtils.isEmpty(mailboxList)) {
 			Field field = header.getField(FieldName.FROM);
-			return new Mailbox(field.getBody(), null);
+			return (field != null) ? new Mailbox(field.getBody(), null) : null;
 		} else {
 			return mailboxList.get(0);
 		}

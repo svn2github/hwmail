@@ -27,6 +27,8 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.apache.log4j.Logger;
+
 import com.hs.mail.util.ObjectLocker;
 import com.hs.mail.util.ObjectLockerFactory;
 import com.hs.mail.web.util.MailUtils;
@@ -41,6 +43,8 @@ import com.sun.mail.pop3.POP3Folder;
  * 
  */
 public class FetchMailer {
+	
+	private static Logger log = Logger.getLogger(FetchMailer.class);
 	
 	private final static String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
 
@@ -71,6 +75,9 @@ public class FetchMailer {
 		store = session.getStore("pop3");
 		store.connect(account.getServerName(), account.getUserName(), account
 				.getPassword());
+		if (log.isDebugEnabled()) {
+			log.debug("Connected to " + account.getServerName());
+		}
 		mbox = store.getDefaultFolder();
 		mbox = mbox.getFolder("INBOX");
 		mbox.open(Folder.READ_WRITE);
@@ -99,6 +106,7 @@ public class FetchMailer {
 			locker.lock(account);
 		} catch (Exception e) {
 			// lock failed
+			log.error(e.getMessage(), e);
 			return 0;
 		}
 		boolean expunge = account.isAutoEmpty();
@@ -135,6 +143,9 @@ public class FetchMailer {
 		Message[] msgs = null;
 		if (begin < end) {
 			// Get messages from begin to end
+			if (log.isDebugEnabled()) {
+				log.debug("Fetch messages from " + begin + " to " + end);
+			}
 			msgs = retrieveMessages(begin, end);
 			if (msgs != null && msgs.length > 0) {
 				int[] msgnums = new int[msgs.length];
@@ -202,10 +213,12 @@ public class FetchMailer {
 						account.setLastReceivedDate(date);
 					} catch (MessagingException e) {
 						// Ignore this error
+						log.warn(e.getMessage());
 					}
 				}
 				return msgs;
 			} catch (MessagingException e) {
+				log.error(e.getMessage(), e);
 			}
 		}
 		return null;
@@ -235,6 +248,7 @@ public class FetchMailer {
 					break;
 				}
 			} catch (MessagingException e) {
+				log.warn(e.getMessage());
 				break;
 			}
 		}
@@ -277,12 +291,16 @@ public class FetchMailer {
 		try {
 			return getMbox().getMessageCount();
 		} catch (MessagingException e) {
+			log.error(e.getMessage(), e);
 			return -1;
 		}
 	}
 
 	private boolean existNewMessages() {
 		int messageCount = getTotalMessageCount();
+		if (log.isDebugEnabled()) {
+			log.debug("Total " + messageCount + " messages exist.");
+		}
 		if (messageCount > 0) {
 			if (!account.isAutoEmpty()) {
 				String XUID = account.getLastXUID();
@@ -296,6 +314,7 @@ public class FetchMailer {
 						}
 					}
 				} catch (MessagingException e) {
+					log.error(e.getMessage(), e);
 				}
 			}
 			return true;

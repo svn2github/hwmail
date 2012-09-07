@@ -29,6 +29,7 @@ CREATE  TABLE IF NOT EXISTS `user` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `userid` VARCHAR(100) NOT NULL ,
   `passwd` VARCHAR(34) NOT NULL ,
+  `name` VARCHAR(60) NULL ,
   `maxmail_size` BIGINT UNSIGNED NOT NULL DEFAULT '0',
   `forward` VARCHAR(100) NULL ,
   PRIMARY KEY (`id`) )
@@ -77,7 +78,7 @@ CREATE  TABLE IF NOT EXISTS `physmessage` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `size` BIGINT UNSIGNED NOT NULL ,
   `internaldate` DATETIME NOT NULL ,
-  `subject` VARCHAR(255) NULL ,
+  `subject` VARCHAR(500) NULL ,
   `sentdate` DATETIME NULL ,
   `fromaddr` VARCHAR(100) NULL DEFAULT '' ,
   PRIMARY KEY (`id`) )

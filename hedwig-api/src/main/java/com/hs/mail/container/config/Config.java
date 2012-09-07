@@ -57,10 +57,10 @@ public class Config implements InitializingBean {
 	private static DecimalFormat formatter = new DecimalFormat("0000000000");
 
 	private static Properties properties;
+	private static String authScheme;
 	private static File dataDirectory;
 	private static File tempDirectory;
 	private static File spoolDirectory;
-	private static String authScheme;
 	private static Set<String> defaultCacheFields;
 	private static long defaultQuota;
 	private static String[] domains;
@@ -84,6 +84,10 @@ public class Config implements InitializingBean {
 	
 	public void setProperties(Properties properties) {
 		Config.properties = properties;
+	}
+
+	public static String getAuthScheme() {
+		return authScheme;
 	}
 
 	public static File getDataDirectory() {
@@ -133,10 +137,6 @@ public class Config implements InitializingBean {
 		return new File(spoolDirectory, "snapshot");
 	}
 	
-	public static String getAuthScheme() {
-		return authScheme;
-	}
-
 	public static Set<String> getDefaultCacheFields() {
 		return defaultCacheFields;
 	}
