@@ -323,7 +323,7 @@ public class AbstractImapCommandParser {
 	}
     
     private boolean zone() {
-		return (_kw("+") || !_kw("-")) && _number(4);
+		return (_kw("+") || _kw("-")) && _number(4);
 	}
 
     /******************************************
