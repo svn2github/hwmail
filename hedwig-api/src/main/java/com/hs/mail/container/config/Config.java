@@ -51,6 +51,7 @@ public class Config implements InitializingBean {
 	static Logger console = Logger.getLogger("console");
 
 	public static final String ZIPFILE_EXTENSION = "zip";
+	public static final String MDCPOSTFIX = "__";
 	
 	private static final String DEF_CACHE_FIELDS = "Bcc,Cc,Date,From,In-Reply-To,Message-ID,Reply-To,Sender,Subject,To";
 
@@ -119,6 +120,11 @@ public class Config implements InitializingBean {
 				+ FilenameUtils.EXTENSION_SEPARATOR_STR + ZIPFILE_EXTENSION);
 		return (zipped.exists()) ? zipped : new File(directory, Long
 				.toString(physmessageid));
+	}
+	
+	public static File getMimeDescriptorFile(Date date, long physmessageid) {
+		File directory = new File(dataDirectory, getSubDirectory(date, physmessageid));
+		return new File(directory, Long.toString(physmessageid) + MDCPOSTFIX);
 	}
 
 	public static File getTempDirectory() {
