@@ -15,15 +15,19 @@
  */
 package com.hs.mail.imap.processor.fetch;
 
+import java.io.Serializable;
+
 /**
  * 
  * @author Won Chul Doh
  * @since Mar 8, 2010
  *
  */
-public class Address {
+public class Address implements Serializable {
 
-    /** Empty array */
+	private static final long serialVersionUID = 7228265949355058768L;
+
+	/** Empty array */
     public static final Address[] EMPTY = {};
 
     private final String atDomainList;

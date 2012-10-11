@@ -44,6 +44,8 @@ public abstract class AbstractImapProcessor implements ImapProcessor {
 	
 	static Logger logger = Logger.getLogger(AbstractImapProcessor.class);
 
+	private UnsolicitedResponseBuilder builder = new UnsolicitedResponseBuilder();
+	
 	protected AbstractImapProcessor() {
 		super();
 	}
@@ -89,8 +91,7 @@ public abstract class AbstractImapProcessor implements ImapProcessor {
 		if (selected != null) {
 			EventTracker tracker = selected.getEventTracker();
 			if (tracker != null) {
-				UnsolicitedResponse response = new UnsolicitedResponseBuilder()
-						.build(selected, tracker);
+				UnsolicitedResponse response = builder.build(selected, tracker);
 				if (response != null) {
 					new UnsolicitedResponder(responder).respond(response);
 				}

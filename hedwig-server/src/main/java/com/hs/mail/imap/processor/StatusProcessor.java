@@ -37,6 +37,8 @@ import com.hs.mail.imap.message.response.StatusResponseBuilder;
  */
 public class StatusProcessor extends AbstractImapProcessor {
 
+	private StatusResponseBuilder builder = new StatusResponseBuilder();
+	
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) {
@@ -52,8 +54,7 @@ public class StatusProcessor extends AbstractImapProcessor {
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			StatusResponse response = new StatusResponseBuilder().build(attr,
-					mailbox);
+			StatusResponse response = builder.build(attr, mailbox);
 			responder.respond(response);
 			responder.okCompleted(request);
 		}

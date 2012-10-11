@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.processor.fetch;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -24,7 +25,9 @@ import java.util.List;
  * @since Mar 8, 2010
  * 
  */
-public class MimeDescriptor {
+public class MimeDescriptor implements Serializable {
+
+	private static final long serialVersionUID = -631959141687609724L;
 
 	private long bodyOctets;	// Size in bytes
 	private long lines;	// Size in lines

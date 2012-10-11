@@ -37,6 +37,8 @@ import com.hs.mail.imap.message.response.SelectResponseBuilder;
  *
  */
 public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
+	
+	private SelectResponseBuilder builder = new SelectResponseBuilder();
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
@@ -68,7 +70,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			selected = new SelectedMailbox(sessionID, mailboxID, isReadOnly());
 			UidToMsnMapper map = new UidToMsnMapper(selected, false);
 			mailbox.setReadOnly(isReadOnly());
-			SelectResponse response = new SelectResponseBuilder().build(map, mailbox);
+			SelectResponse response = builder.build(map, mailbox);
 			responder.respond(response);
 			
 			selected.setRecent(response.getRecentMessageCount() > 0);

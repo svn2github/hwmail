@@ -15,6 +15,8 @@
  */
 package com.hs.mail.imap.processor.fetch;
 
+import java.io.Serializable;
+
 /**
  * The envelope structure if the message. This is computed by the server by
  * parsing the [RFC-2822] header into the component parts, defaulting various
@@ -24,7 +26,9 @@ package com.hs.mail.imap.processor.fetch;
  * @since Mar 8, 2010
  * 
  */
-public class Envelope {
+public class Envelope implements Serializable {
+
+	private static final long serialVersionUID = -2711420810570566424L;
 
 	private Address[] bcc;
 
