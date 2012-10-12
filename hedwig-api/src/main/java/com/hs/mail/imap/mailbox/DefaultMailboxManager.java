@@ -211,9 +211,14 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			hdCache.remove(pm.getPhysMessageID());
 		}
 		try {
-			File file = Config.getDataFile(pm.getInternalDate(),
+			File dataFile = Config.getDataFile(pm.getInternalDate(),
 					pm.getPhysMessageID());
-			FileUtils.forceDelete(file);
+			FileUtils.forceDelete(dataFile);
+			File descriptorFile = Config.getMimeDescriptorFile(
+					pm.getInternalDate(), pm.getPhysMessageID());
+			if (descriptorFile.exists()) {
+				FileUtils.forceDelete(descriptorFile);
+			}
 		} catch (IOException ex) {
 			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
 		}
@@ -305,7 +310,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	public void appendMessage(long mailboxID, Date internalDate, Flags flags,
+	public MailMessage appendMessage(long mailboxID, Date internalDate, Flags flags,
 			File file) throws IOException {
 		// If a date-time is specified, the internal date SHOULD be set in
 		// the resulting message; otherwise, the internal date of the
@@ -327,6 +332,8 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 
 		// Save the message file
 		message.save(true);
+		
+		return message;
 	}
 
 	private long appendMessage(final long mailboxID, final MailMessage message) {

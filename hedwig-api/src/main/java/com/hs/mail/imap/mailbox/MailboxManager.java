@@ -193,8 +193,8 @@ public interface MailboxManager {
 	 *            the file containing the mail contents
 	 * @throws IOException
 	 */
-	public void appendMessage(long mailboxID, Date internalDate, Flags flags,
-			File file) throws IOException;
+	public MailMessage appendMessage(long mailboxID, Date internalDate,
+			Flags flags, File file) throws IOException;
 	
 	/**
 	 * Deletes the given message.

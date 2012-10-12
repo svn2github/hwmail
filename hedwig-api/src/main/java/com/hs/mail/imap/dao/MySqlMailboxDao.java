@@ -177,9 +177,17 @@ public class MySqlMailboxDao extends AbstractDao implements MailboxDao {
 	}
 	
 	public List<Long> getMailboxIDList(String mailboxName) {
-		String sql = "SELECT mailboxid FROM mailbox WHERE name = ?";
-		return (List<Long>) getJdbcTemplate().queryForList(sql,
-				new Object[] { mailboxName }, Long.class);
+		if (mailboxName.endsWith("*")) {
+			String sql = "SELECT mailboxid FROM mailbox WHERE name LIKE ?";
+			return (List<Long>) getJdbcTemplate().queryForList(
+					sql,
+					new Object[] { new StringBuilder(escape(mailboxName))
+							.append('%').toString() }, Long.class);
+		} else {
+			String sql = "SELECT mailboxid FROM mailbox WHERE name = ?";
+			return (List<Long>) getJdbcTemplate().queryForList(sql,
+					new Object[] { mailboxName }, Long.class);
+		}
 	}
 
 	public boolean isSubscribed(long userID, String mailboxName) {
