@@ -30,6 +30,7 @@ import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.message.search.ComparisonKey;
 import com.hs.mail.imap.message.search.CompositeKey;
 import com.hs.mail.imap.message.search.InternalDateKey;
+import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 
 /**
  * 
@@ -79,7 +80,8 @@ public class MessageExpunger {
 						+ DateFormatUtils.ISO_DATE_FORMAT.format(criteria
 								.get(name)) + ".");
 			}
-			List<Long> mailboxIdes = manager.getMailboxIDList(name);
+			String mbox = BASE64MailboxEncoder.encode(name);
+			List<Long> mailboxIdes = manager.getMailboxIDList(mbox);
 			if (CollectionUtils.isNotEmpty(mailboxIdes)) {
 				for (Long mailboxID : mailboxIdes) {
 					if (System.currentTimeMillis() >= timeLimit) {

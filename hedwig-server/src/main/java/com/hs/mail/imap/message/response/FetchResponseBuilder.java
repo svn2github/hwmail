@@ -83,7 +83,7 @@ public class FetchResponseBuilder {
 		}
 		if (fp.contains(FetchData.FetchProfileItem.BODY)
 				|| fp.contains(FetchData.FetchProfileItem.BODYSTRUCTURE)) {
-			MimeDescriptor descriptor = buildBodyStructure(fd);
+			MimeDescriptor descriptor = getBodyStructure(fd);
 			if (fp.contains(FetchData.FetchProfileItem.BODY)) {
 				response.setBody(descriptor);
 			}
@@ -148,8 +148,7 @@ public class FetchResponseBuilder {
 	}
 	
 	private static InputStream getInputStream(FetchData fd) throws IOException {
-		File file = Config.getDataFile(fd.getInternalDate(),
-				fd.getPhysMessageID());
+		File file = Config.getDataFile(fd.getInternalDate(), fd.getPhysMessageID());
 		if (FileUtils.isCompressed(file, false)) {
 			return new GZIPInputStream(new FileInputStream(file));
 		} else if (file.exists()) {
@@ -159,12 +158,25 @@ public class FetchResponseBuilder {
 		}
 	}
 
+	private MimeDescriptor getBodyStructure(FetchData fd) {
+		File file = Config.getMimeDescriptorFile(fd.getInternalDate(),
+				fd.getPhysMessageID());
+		MimeDescriptor descriptor = bodyStructureBuilder
+				.readBodyStructure(file);
+		if (descriptor == null) {
+			descriptor = buildBodyStructure(fd);
+			if (descriptor != null) {
+				bodyStructureBuilder.writeBodyStructure(file, descriptor);
+			}
+		}
+		return descriptor;
+	}
+	
 	private MimeDescriptor buildBodyStructure(FetchData fd) {
 		InputStream is = null;
 		try {
 			is = getInputStream(fd);
-			MimeDescriptor descriptor = bodyStructureBuilder.build(is);
-			return descriptor;
+			return bodyStructureBuilder.build(is);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return null;

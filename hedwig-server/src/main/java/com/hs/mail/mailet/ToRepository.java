@@ -30,11 +30,14 @@ import org.apache.log4j.Logger;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.message.MailMessage;
+import com.hs.mail.imap.processor.fetch.BodyStructureBuilder;
+import com.hs.mail.imap.processor.fetch.EnvelopeBuilder;
 import com.hs.mail.sieve.Sieve;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
 /**
+ * Mailet that actually stores the message
  * 
  * @author Won Chul Doh
  * @since 29 Jun, 2010
@@ -44,6 +47,13 @@ public class ToRepository extends AbstractMailet {
 
 	static Logger logger = Logger.getLogger(ToRepository.class);
 	
+	private BodyStructureBuilder builder = null;
+	
+	public ToRepository() {
+		super();
+		this.builder = new BodyStructureBuilder(new EnvelopeBuilder());
+	}
+
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
 		return CollectionUtils.isNotEmpty(recipients);
 	}
@@ -103,7 +113,10 @@ public class ToRepository extends AbstractMailet {
 				} else {
 					msg.save(true);
 				}
+				builder.build(msg.getInternalDate(), msg.getPhysMessageID());
 			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			} catch (MimeException e) {
 				logger.error(e.getMessage(), e);
 			}
 		}

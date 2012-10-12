@@ -16,6 +16,7 @@
 package com.hs.mail.mailet;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.mail.MessagingException;
@@ -38,21 +39,17 @@ public class LocalDelivery extends AbstractMailet {
 
 	static Logger logger = Logger.getLogger(LocalDelivery.class);
 
-	/**
-	 * Mailet that apply aliasing and forwarding
-	 */
-	private AliasingForwarding aliasingMailet;
-	/**
-	 * Mailet that actually stores the message
-	 */
-	private ToRepository deliveryMailet;
-
+	private List<Mailet> mailets;
+	
+	public void setMailets(List<Mailet> mailets) {
+		this.mailets = mailets;
+	}
+	
 	public void init(MailetContext context) {
 		super.init(context);
-		aliasingMailet = new AliasingForwarding();
-		aliasingMailet.init(context);
-		deliveryMailet = new ToRepository();
-		deliveryMailet.init(context);
+		for (Mailet aMailet : mailets) {
+			aMailet.init(context);
+		}
 	}
 
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
@@ -68,11 +65,17 @@ public class LocalDelivery extends AbstractMailet {
 				temp.add(recipient);
 			}
 		}
-		
-		if (aliasingMailet.accept(temp, message)) {
-			aliasingMailet.service(temp, message);
-			if (deliveryMailet.accept(temp, message)) {
-				deliveryMailet.service(temp, message);
+		for (Mailet aMailet : mailets) {
+			try {
+				if (aMailet.accept(temp, message)) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Processing " + message.getName()
+								+ " through " + aMailet.getClass().getName());
+					}
+					aMailet.service(temp, message);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
 			}
 		}
 	}

@@ -34,6 +34,7 @@ import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
 /**
+ * Mailet that apply aliasing and forwarding
  * 
  * @author Won Chul Doh
  * @since Jun 24, 2010

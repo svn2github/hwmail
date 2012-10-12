@@ -15,9 +15,18 @@
  */
 package com.hs.mail.imap.processor.fetch;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +34,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.descriptor.MaximalBodyDescriptor;
 import org.apache.james.mime4j.message.Header;
@@ -32,6 +42,7 @@ import org.apache.james.mime4j.parser.Field;
 import org.apache.james.mime4j.parser.MimeTokenStream;
 import org.apache.james.mime4j.parser.RecursionMode;
 
+import com.hs.mail.container.config.Config;
 import com.hs.mail.io.CountingInputStream;
 
 /**
@@ -55,7 +66,57 @@ public class BodyStructureBuilder {
 		parser.setRecursionMode(RecursionMode.M_NO_RECURSE);
 		return createDescriptor(parser);
 	}
+	
+	public MimeDescriptor build(Date date, long physmessageid)
+			throws IOException, MimeException {
+		File file = Config.getDataFile(date, physmessageid);
+		InputStream is = null;
+		try {
+			is = new BufferedInputStream(new FileInputStream(file));
+			MimeDescriptor descriptor = build(is);
+			writeBodyStructure(
+					Config.getMimeDescriptorFile(date, physmessageid),
+					descriptor);
+			return descriptor;
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
 
+	public MimeDescriptor readBodyStructure(File file) {
+		if (file.exists()) {
+			ObjectInputStream is = null;
+			try {
+				InputStream in = new BufferedInputStream(new FileInputStream(
+						file));
+				is = new ObjectInputStream(in);
+				return (MimeDescriptor) is.readObject();
+			} catch (Exception ex) {
+				// TODO - remove this file
+			} finally {
+				IOUtils.closeQuietly(is);
+			}
+		}
+		return null;
+	}
+	
+	public void writeBodyStructure(File file, MimeDescriptor descriptor) {
+		if (descriptor != null) {
+			ObjectOutputStream os = null;
+			try {
+				OutputStream out = new BufferedOutputStream(
+						new FileOutputStream(file));
+				os = new ObjectOutputStream(out);
+				os.writeObject(descriptor);
+				os.flush();
+			} catch (Exception e) {
+				//
+			} finally {
+				IOUtils.closeQuietly(os);
+			}
+		}
+	}
+	
     private MimeDescriptor createDescriptor(MimeTokenStream parser)
 			throws IOException, MimeException {
 		int next = parser.next();

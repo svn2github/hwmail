@@ -29,10 +29,13 @@ import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.request.AppendRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.response.HumanReadableText;
+import com.hs.mail.imap.processor.fetch.BodyStructureBuilder;
+import com.hs.mail.imap.processor.fetch.EnvelopeBuilder;
 
 /**
  * 
@@ -41,6 +44,13 @@ import com.hs.mail.imap.message.response.HumanReadableText;
  *
  */
 public class AppendProcessor extends AbstractImapProcessor {
+
+	private BodyStructureBuilder builder = null;
+	
+	public AppendProcessor() {
+		super();
+		this.builder = new BodyStructureBuilder(new EnvelopeBuilder());
+	}
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
@@ -58,8 +68,10 @@ public class AppendProcessor extends AbstractImapProcessor {
 			ChannelBuffer buffer = request.getMessage();
 			try {
 				writeMessage(buffer, temp);
-				manager.appendMessage(mailbox.getMailboxID(),
+				MailMessage msg = manager.appendMessage(mailbox.getMailboxID(),
 						request.getDatetime(), request.getFlags(), temp);
+				// FIXME - cache body structure or not!!!
+				// builder.build(msg.getInternalDate(), msg.getPhysMessageID());
 			} catch (Exception ex) {
 				forceDelete(temp);
 				throw ex;
