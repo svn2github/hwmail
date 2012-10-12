@@ -73,7 +73,14 @@
 	<!-- =================================================================== -->
 	<!-- MAILET DEFINITIONS -->
 	<!-- =================================================================== -->
-	<bean id="deliver.local" class="com.hs.mail.mailet.LocalDelivery" />
+	<bean id="deliver.local" class="com.hs.mail.mailet.LocalDelivery">
+		<property name="mailets">
+			<list>
+				<bean class="com.hs.mail.mailet.AliasingForwarding" />
+				<bean class="com.hs.mail.mailet.ToRepository" />
+			</list>
+		</property>
+	</bean>
 
 	<bean id="deliver.remote" class="com.hs.mail.mailet.RemoteDelivery" />
 	
