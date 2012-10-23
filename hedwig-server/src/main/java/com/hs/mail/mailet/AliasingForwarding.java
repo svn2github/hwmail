@@ -100,16 +100,19 @@ public class AliasingForwarding extends AbstractMailet {
 								false));
 					}
 				} else {
-					StringBuffer errorBuffer = 
-						new StringBuffer(64)
+					String errorMessage = new StringBuffer(64)
+							.append(rcpt.getMailbox())
+							.append("\r\n")
+							.append("The mailbox specified in the address does not exist.")
+							.toString();
+					logger.error(new StringBuffer(128)
 							.append("Permanent exception delivering mail (")
 							.append(message.getName())
-			                .append("): ")
-			                .append("Account for ")
-			                .append(rcpt.getMailbox())
-			                .append(" not found");
-					logger.error(errorBuffer.toString());
+							.append("): ")
+							.append(errorMessage)
+							.append("\r\n").toString());
 					errors.add(rcpt);
+					message.appendErrorMessage(errorMessage);
 				}
 			}
 		}
