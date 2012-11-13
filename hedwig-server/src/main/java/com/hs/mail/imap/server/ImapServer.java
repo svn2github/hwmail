@@ -27,6 +27,7 @@ import javax.net.ssl.SSLEngine;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
@@ -48,6 +49,8 @@ import com.hs.mail.imap.server.codec.ImapRequestDecoder;
  * @since Jan 12, 2010
  */
 public class ImapServer implements InitializingBean {
+	
+	private static Logger log = Logger.getLogger(ImapServer.class);
 
 	/**
 	 * The host name of network interface to which the service will bind. If not
@@ -64,6 +67,9 @@ public class ImapServer implements InitializingBean {
 	 * Whether TLS is enabled for this server's socket?
 	 */
 	private boolean useTLS = false;
+	
+	private ReadTimeoutHandler timeoutHandler;
+	private ImapServerHandler handler;
 
 	public String getBind() {
 		return bind;
@@ -114,6 +120,18 @@ public class ImapServer implements InitializingBean {
 				new NioServerSocketChannelFactory(Executors
 						.newCachedThreadPool(), Executors.newCachedThreadPool()));
 
+		// Do not create many instances of Timer.
+		// HashedWheelTimer creates a new thread whenever it is instantiated and
+		// started. Therefore, you should make sure to create only one instance
+		// and share it across your application.
+		Timer timer = new HashedWheelTimer();
+		// Set 30-minute read timeout.
+		int timeout = (int) Config.getNumberProperty("imap_timeout", 1800);
+		// timer must be shared.
+		timeoutHandler = new ReadTimeoutHandler(timer, timeout);
+		// prepare business logic handler
+		handler = new ImapServerHandler();
+		
 		bootstrap.setPipelineFactory(createPipelineFactory());
 
 		// Bind and start to accept incoming connections.
@@ -132,8 +150,9 @@ public class ImapServer implements InitializingBean {
 				.append(getPort());
 		Logger.getLogger("console").info(logBuffer.toString());
 	}
-
+	
 	private ChannelPipelineFactory createPipelineFactory() {
+
 		return new ChannelPipelineFactory() {
 
 			public ChannelPipeline getPipeline() throws Exception {
@@ -148,16 +167,12 @@ public class ImapServer implements InitializingBean {
 				if (Config.getBooleanProperty("imap_trace_protocol", false)) {
 					pipeline.addLast("debug", createDebuggingHandler());
 				}
-				int timeout = (int) Config.getNumberProperty("imap_timeout", 1800);
-				Timer timer = new HashedWheelTimer();
-				// Set 30-minute read timeout.
-				pipeline.addLast("timeout", new ReadTimeoutHandler(timer, timeout));
+				pipeline.addLast("timeout", timeoutHandler);
 				int maxLineLength = (int) Config.getNumberProperty("imap_line_limit", 8192);
 				pipeline.addLast("decoder", new ImapRequestDecoder(maxLineLength));
 				pipeline.addLast("encoder", new ImapMessageEncoder());
 
 				// and then business logic.
-				ImapServerHandler handler = new ImapServerHandler();
 				pipeline.addLast("handler", handler);
 
 				return pipeline;
