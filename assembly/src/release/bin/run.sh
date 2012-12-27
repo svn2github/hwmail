@@ -25,11 +25,13 @@ for i in ../lib/* ; do
 	fi
 done
 
+JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx256m"
+
 RUN_CMD="$JAVA_HOME/bin/java \
 	-classpath $_LIBJARS \
-	-Xms256m -Xmx256m \
+	$JAVA_OPTS \
 	-Dlog4j.configuration=file:../conf/log4j.properties \
-	com.hs.mail.container.simple.SimpleSpringContainer ../conf/applicationContext.xml
+	com.hs.mail.container.simple.SimpleSpringContainer ../conf/applicationContext.xml"
 
 ACTION=$1
 APP_PID=app.pid
