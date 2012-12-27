@@ -112,12 +112,10 @@ public class SimpleSpringContainer {
 
 		try {
 			String configLocation = cli.getOptionValue("c", DEFAULT_CONFIG_LOCATION);
-			String[] configLocations = new String[1];
-			configLocations[0] = new File(configLocation).getCanonicalPath();
-			System.setProperty("app.home", new File(configLocations[0])
+			System.setProperty("app.home", new File(configLocation)
 					.getParentFile().getParent());
 			SimpleSpringContainer container = new SimpleSpringContainer(
-					configLocations);
+					new String[] { configLocation });
 			container.start();
 
 			if (cli.hasOption("dm")) {
