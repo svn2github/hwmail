@@ -15,7 +15,11 @@
  */
 package com.hs.mail.imap.message.builder.ext;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+
+import javax.mail.internet.MimeUtility;
 
 import com.hs.mail.imap.message.builder.SearchRequestBuilder;
 import com.hs.mail.imap.message.request.ImapRequest;
@@ -37,20 +41,30 @@ public class SortRequestBuilder extends SearchRequestBuilder {
 	public ImapRequest createRequest(String tag, String command,
 			ImapMessage message, boolean useUID) {
 		LinkedList<Token> tokens = message.getTokens();
-		String charset = parseCharset(tokens);
-		SortKey sortKey = parseSortKey(tokens);
+		List<SortKey> sortKeys = parseSortKeys(tokens);
+		String charset = MimeUtility.javaCharset(tokens.remove().value);
 		SearchKey searchKey = createSearchKey(tag, tokens, charset);
-		return new SortRequest(tag, command, charset, sortKey, searchKey,
+		return new SortRequest(tag, command, charset, sortKeys, searchKey,
 				useUID);
 	}
 
-	private SortKey parseSortKey(LinkedList<Token> tokens) {
-		Token token = tokens.remove();
-		if ("REVERSE".equals(token.value)) {
-			return new SortKey(tokens.remove().value, true);
-		} else {
-			return new SortKey(token.value, false);
+	private List<SortKey> parseSortKeys(LinkedList<Token> tokens) {
+		List<SortKey> sortKeys = new ArrayList<SortKey>();
+		Token token = tokens.peek();
+		if (token.type == Token.Type.LPAREN) {
+			tokens.remove(); // consume '('
+			do {
+				if ((token = tokens.remove()).type == Token.Type.RPAREN) {
+					break;
+				}
+				if ("REVERSE".equals(token.value)) {
+					sortKeys.add(new SortKey(tokens.remove().value, true));
+				} else {
+					sortKeys.add(new SortKey(token.value, false));
+				}
+			} while (true);
 		}
+		return sortKeys;
 	}
 	
 }

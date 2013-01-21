@@ -15,6 +15,8 @@
  */
 package com.hs.mail.imap.message.request.ext;
 
+import java.util.List;
+
 import com.hs.mail.imap.message.request.SearchRequest;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
@@ -23,20 +25,20 @@ import com.hs.mail.imap.message.search.SortKey;
  * 
  * @author Won Chul Doh
  * @since 31 Oct, 2010
- *
+ * 
  */
 public class SortRequest extends SearchRequest {
 
-	private final SortKey sortKey;
-	
+	private final List<SortKey> sortKeys;
+
 	public SortRequest(String tag, String command, String charset,
-			SortKey sortKey, SearchKey searchKey, boolean useUID) {
+			List<SortKey> sortKeys, SearchKey searchKey, boolean useUID) {
 		super(tag, command, charset, searchKey, useUID);
-		this.sortKey = sortKey;
+		this.sortKeys = sortKeys;
 	}
 
-	public SortKey getSortKey() {
-		return sortKey;
+	public List<SortKey> getSortKeys() {
+		return sortKeys;
 	}
 
 }

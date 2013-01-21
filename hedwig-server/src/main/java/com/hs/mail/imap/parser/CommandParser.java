@@ -351,7 +351,8 @@ public class CommandParser extends AbstractImapCommandParser {
 	}
 
 	private boolean sort() {
-		if (!kw("SORT") || !sp() || !sort_criteria() || !kw("CHARSET") || !sp())
+		if (!kw("SORT") || !sp() || !sort_criteria() || !sp() || !astring()
+				|| !sp())
 			return false;
 		do
 			if (!search_key())
