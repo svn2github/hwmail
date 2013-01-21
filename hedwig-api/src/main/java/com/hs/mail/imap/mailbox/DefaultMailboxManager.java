@@ -18,6 +18,7 @@ package com.hs.mail.imap.mailbox;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -476,7 +477,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	private String[] getCacheFields(String[] fields) {
 		Set<String> defaultCacheFields = Config.getDefaultCacheFields();
 		for (int i = 0; i < fields.length; i++) {
-			if (!defaultCacheFields.contains(fields[i])) {
+			if (!containsIgnoreCase(defaultCacheFields, fields[i])) {
 				defaultCacheFields.add(fields[i]);
 			}
 		}
@@ -492,7 +493,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		if (header != null) {
 			if (header.size() < fields.length) {
 				for (int i = 0; i < fields.length; i++) {
-					if (!header.containsKey(fields[i])) {
+					if (!containsIgnoreCase(header.keySet(), fields[i])) {
 						header.put(fields[i], null);
 					}
 				}
@@ -528,7 +529,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	private String[] getUncachedFields(Map<String, String> header, String[] fields) {
 		List<String> uncachedFields = new ArrayList<String>();
 		for (int i = 0; i < fields.length; i++) {
-			if (!header.containsKey(fields[i])) {
+			if (!containsIgnoreCase(header.keySet(), fields[i])) {
 				uncachedFields.add(fields[i]);
 			}
 		}
@@ -541,6 +542,16 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	public void destroy() throws Exception {
 		EhCacheWrapper.flush(fdCache);
 		EhCacheWrapper.flush(hdCache);
+	}
+	
+	private static boolean containsIgnoreCase(Collection<String> fields,
+			String name) {
+		for (String field : fields) {
+			if (field.equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }
