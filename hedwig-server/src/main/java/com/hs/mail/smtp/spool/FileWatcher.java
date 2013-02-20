@@ -110,11 +110,11 @@ public class FileWatcher implements Watcher {
         public void run() {
 			while (!stopRequested) {
 				processMessage();
-			}
-			synchronized (this) {
-				try {
-					wait(watchInterval);
-				} catch (InterruptedException e) {
+				synchronized (this) {
+					try {
+						wait(watchInterval);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}
