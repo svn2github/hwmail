@@ -28,6 +28,7 @@ import com.hs.mail.imap.event.EventListener;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.search.SearchKey;
+import com.hs.mail.imap.message.search.SortKey;
 
 /**
  * 
@@ -99,7 +100,8 @@ public interface MailboxManager {
 	 *            the search query
 	 * @return list of UIDs of messages searched
 	 */
-	public List<Long> search(UidToMsnMapper map, long mailboxID, SearchKey key);
+	public List<Long> search(UidToMsnMapper map, long mailboxID, SearchKey key,
+			List<SortKey> sortKeys);
 
 	/**
 	 * Creates a new mailbox. Any intermediary mailboxes missing from the

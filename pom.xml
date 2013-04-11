@@ -267,8 +267,8 @@
 		<log4j-version>1.2.14</log4j-version>
 	    <junit-version>3.8.1</junit-version>
 	    <dbunit-version>2.2</dbunit-version>
-	    <activation-version>1.1</activation-version>
-	    <javamail-version>1.4</javamail-version>
+	    <activation-version>1.1.1</activation-version>
+	    <javamail-version>1.4.5</javamail-version>
 		<commons-beanutils-version>1.8.2</commons-beanutils-version>
 		<commons-cli-version>1.2</commons-cli-version>
 	    <commons-collections-version>3.2</commons-collections-version>

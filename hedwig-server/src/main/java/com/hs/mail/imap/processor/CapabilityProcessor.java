@@ -33,7 +33,7 @@ public class CapabilityProcessor extends AbstractImapProcessor {
 	
 	private static String[] capabilities = { ImapConstants.VERSION,
 			ImapConstants.CHILDREN, ImapConstants.NAMESPACE,
-			ImapConstants.QUOTA };
+			ImapConstants.QUOTA, ImapConstants.SORT };
 	
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,

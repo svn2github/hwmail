@@ -48,8 +48,8 @@ public class SearchProcessor extends AbstractImapProcessor {
 			uids = manager.getMessageIDList(selected.getMailboxID());
 		}
 		UidToMsnMapper map = new UidToMsnMapper(selected, uids, request.isUseUID());
-		List<Long> results = manager.search(map, selected.getMailboxID(),
-				request.getSearchKey());
+		List<Long> results = search(manager, map, selected.getMailboxID(),
+				request);
 		if (CollectionUtils.isNotEmpty(results)) {
 			List<Long> searched = new ArrayList<Long>();
 			for (long messageID : results) {
@@ -62,6 +62,11 @@ public class SearchProcessor extends AbstractImapProcessor {
 					+ StringUtils.join(searched, ' ') + "\r\n");
 		}
 		responder.okCompleted(request);
+	}
+	
+	protected List<Long> search(MailboxManager manager, UidToMsnMapper map,
+			long mailboxID, SearchRequest request) {
+		return manager.search(map, mailboxID, request.getSearchKey(), null);
 	}
 
 }

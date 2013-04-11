@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
 import com.hs.mail.imap.message.search.SearchKey;
+import com.hs.mail.imap.message.search.SortKey;
 
 /**
  * 
@@ -29,5 +30,7 @@ import com.hs.mail.imap.message.search.SearchKey;
 public interface SearchDao {
 
 	public List<Long> query(UidToMsnMapper map, long mailboxid, SearchKey key);
+
+	public List<Long> sort(long mailboxID, SortKey key);
 
 }

@@ -95,7 +95,7 @@ public class MessageExpunger {
 	
 	private void expungeMessages(long mailboxID, Date date) {
 		List<Long> uids = manager.search(null, mailboxID, new CompositeKey(
-				new InternalDateKey(ComparisonKey.LT, date)));
+				new InternalDateKey(ComparisonKey.LT, date)), null);
 		if (CollectionUtils.isNotEmpty(uids)) {
 			for (Long uid : uids) {
 				manager.deleteMessage(uid);

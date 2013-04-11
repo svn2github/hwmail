@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
@@ -13,6 +14,7 @@ import com.hs.mail.imap.message.request.SearchRequest;
 import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SequenceKey;
+import com.hs.mail.imap.message.search.SortKey;
 
 public class SearchProcessorTest extends AbstractImapProcessorTest {
 
@@ -40,16 +42,17 @@ public class SearchProcessorTest extends AbstractImapProcessorTest {
 		when(selectedMailbox.getCachedUids()).thenReturn(Collections.EMPTY_LIST);
     }
     
-    private void check(SearchKey key) {
-		when(mailboxManager.search(any(UidToMsnMapper.class), eq(1L), eq(key)))
-				.thenReturn(new ArrayList<Long>());
+	private void check(SearchKey key) {
+		when(
+				mailboxManager.search(any(UidToMsnMapper.class), eq(1L),
+						eq(key), (List<SortKey>) isNull())).thenReturn(
+				new ArrayList<Long>());
 
-		SearchRequest message = new SearchRequest(TAG, COMMAND, null, key,
-				true);
+		SearchRequest message = new SearchRequest(TAG, COMMAND, null, key, true);
 		processor.doProcess(session, message, responder);
-		
+
 		verify(responder, times(1)).okCompleted(message);
-    }
+	}
     
     static class MockSearchProcessor extends SearchProcessor {
     	protected MailboxManager getMailboxManager() {

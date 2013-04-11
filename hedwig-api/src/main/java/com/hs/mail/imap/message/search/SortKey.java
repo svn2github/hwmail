@@ -39,4 +39,8 @@ public class SortKey {
 		return criteria;
 	}
 	
+	public boolean match(String s) {
+		return s.equalsIgnoreCase(criteria);
+	}
+	
 }

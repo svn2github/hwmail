@@ -1,19 +1,21 @@
 package com.hs.mail.imap.processor.ext;
 
-import com.hs.mail.imap.ImapSession;
-import com.hs.mail.imap.message.request.ImapRequest;
-import com.hs.mail.imap.message.request.ext.SortRequest;
-import com.hs.mail.imap.message.responder.Responder;
-import com.hs.mail.imap.processor.AbstractImapProcessor;
+import java.util.List;
 
-public class SortProcessor extends AbstractImapProcessor {
+import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.UidToMsnMapper;
+import com.hs.mail.imap.message.request.SearchRequest;
+import com.hs.mail.imap.message.request.ext.SortRequest;
+import com.hs.mail.imap.processor.SearchProcessor;
+
+public class SortProcessor extends SearchProcessor {
 
 	@Override
-	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) throws Exception {
-		SortRequest request = (SortRequest) message;
-		// TODO Auto-generated method stub
-		throw new Exception("BAD Unknown command");
+	protected List<Long> search(MailboxManager manager, UidToMsnMapper map,
+			long mailboxID, SearchRequest request) {
+		SortRequest req = (SortRequest) request;
+		return manager.search(map, mailboxID, request.getSearchKey(),
+				req.getSortKeys());
 	}
-
+	
 }

@@ -39,6 +39,7 @@ import com.hs.mail.imap.message.search.RecipientStringKey;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SearchKeyList;
 import com.hs.mail.imap.message.search.SequenceKey;
+import com.hs.mail.imap.message.search.SortKey;
 
 /**
  * 
@@ -72,6 +73,32 @@ public class MySqlSearchDao extends AbstractDao implements SearchDao {
 		} else {
 			return query(map, mailboxID, new CompositeKey(key));
 		}
+	}
+	
+	public List<Long> sort(long mailboxID, SortKey key) {
+		StringBuffer sql = new StringBuffer()
+				.append("SELECT m.messageid FROM message m LEFT JOIN physmessage p ON m.physmessageid=p.id WHERE m.mailboxid = ?");
+		if (key.match("ARRIVAL")) {
+			appendSort(sql, "internaldate", key.isReverse());
+		} else if (key.match("DATE")) {
+			appendSort(sql, "sentdate", key.isReverse());
+		} else if (key.match("FROM")) {
+			appendSort(sql, "fromaddr", key.isReverse());
+		} else if (key.match("SIZE")) {
+			appendSort(sql, "size", key.isReverse());
+		} else if (key.match("SUBJECT")) {
+			appendSort(sql, "subject", key.isReverse());
+		} else {
+			// "TO", "CC"
+		}
+		return (List<Long>) getJdbcTemplate().queryForList(sql.toString(),
+				new Object[] { new Long(mailboxID) }, Long.class);
+	}
+	
+	private void appendSort(StringBuffer sql, String field, boolean reverse) {
+		sql.append(" ORDER BY p.").append(field);
+		if (reverse)
+			sql.append(" DESC");
 	}
 
 	private List<Long> query(UidToMsnMapper map, long mailboxID, AndKey key) {

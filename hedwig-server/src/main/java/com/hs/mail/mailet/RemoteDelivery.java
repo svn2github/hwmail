@@ -100,7 +100,6 @@ public class RemoteDelivery extends AbstractMailet {
         props.setProperty("mail.smtp.sendpartial", String.valueOf(sendPartial));
         props.setProperty("mail.smtp.localhost", Config.getHelloName());
         
-        Logger.getLogger("console").info("Config: " + Config.getHelloName());
         this.maxRetries = (int) Config.getNumberProperty("max_retry_count", 3); 
         
 		this.session = Session.getInstance(props, null);

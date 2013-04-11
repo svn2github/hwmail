@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +52,9 @@ import com.hs.mail.imap.event.EventListener;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.PhysMessage;
+import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.search.SearchKey;
+import com.hs.mail.imap.message.search.SortKey;
 import com.hs.mail.util.EhCacheWrapper;
 
 /**
@@ -133,9 +136,26 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getDeletedMessageIDList(mailboxID);
 	}
 
-	public List<Long> search(UidToMsnMapper map, long mailboxID, SearchKey key) {
+	public List<Long> search(UidToMsnMapper map, long mailboxID, SearchKey key,
+			List<SortKey> sortKeys) {
 		SearchDao dao = DaoFactory.getSearchDao();
-		return dao.query(map, mailboxID, key);
+		if (sortKeys == null) {
+			return dao.query(map, mailboxID, key);
+		} else if (key instanceof AllKey) {
+			return dao.sort(mailboxID, sortKeys.get(0));
+		} else {
+			List<Long> searched = dao.query(map, mailboxID, key);
+			List<Long> result = new ArrayList<Long>(searched.size());
+			List<Long> sorted = dao.sort(mailboxID, sortKeys.get(0));
+			Iterator<Long> iterator = sorted.iterator();
+			while (iterator.hasNext()) {
+				Long v = iterator.next();
+				if (searched.contains(v)) {
+					result.add(v);
+				}
+			}
+			return result;
+		}
 	}
 
 	public Mailbox createMailbox(final long ownerID, final String mailboxName) {
