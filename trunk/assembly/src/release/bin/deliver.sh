@@ -32,7 +32,7 @@ done
 RUN_CMD="$JAVA_HOME/bin/java \
 	-classpath $_LIBJARS \
 	-Dlog4j.configuration=../conf/log4j.properties \
-	com.hs.mail.Deliver -c ../conf/default.properties -p $PATH -f $SENDER -r $RECIPIENTS
+	com.hs.mail.Deliver -c ../conf/default.properties -p $PATH -f $SENDER -r $RECIPIENTS"
 
 $RUN_CMD
 
