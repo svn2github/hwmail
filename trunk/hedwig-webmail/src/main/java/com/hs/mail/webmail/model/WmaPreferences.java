@@ -1,8 +1,9 @@
 package com.hs.mail.webmail.model;
 
+import java.io.Serializable;
 import java.util.Locale;
 
-public interface WmaPreferences extends Cloneable {
+public interface WmaPreferences extends Serializable {
 
 	/**
 	 * Returns a <tt>String</tt> representing identity of the owner of this
@@ -33,6 +34,8 @@ public interface WmaPreferences extends Cloneable {
 	 *            the owner's name.
 	 */
 	void setUsername(String username);
+	
+	int getPageSize();
 	
 	/**
 	 * Returns the <tt>Locale</tt> associated with this <tt>WmaPreferences</tt>

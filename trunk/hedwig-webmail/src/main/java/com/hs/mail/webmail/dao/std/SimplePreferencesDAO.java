@@ -3,9 +3,13 @@ package com.hs.mail.webmail.dao.std;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.ObjectInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.dao.PreferencesDAO;
@@ -15,25 +19,39 @@ import com.hs.mail.webmail.util.MD5;
 
 public class SimplePreferencesDAO implements PreferencesDAO {
 
+	@Override
 	public WmaPreferences getPreferences(String identity) throws WmaException {
-		String filename = getFilename(identity);
-		ObjectInputStream in = null;
+		File file = getFile(identity);
+		InputStream input = null;
 		try {
-			FileInputStream fis = new FileInputStream(filename);
-			in = new ObjectInputStream(fis);
-			return (WmaPreferences) in.readObject();
+			input = new FileInputStream(file);
+			return SerializationUtils.deserialize(input);
 		} catch (FileNotFoundException e) {
 			return null;
 		} catch (Exception e) {
-			throw new WmaException("wma.plugin.std").setException(e);
+			throw new WmaException("wma.prefs.load").setException(e);
 		} finally {
-			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(input);
 		}
 	}
 
-	private static String getFilename(String identity) {
-		return Configuration.getProperty("wma.data.path") + File.separator
-				+ MD5.hash(identity);
+	@Override
+	public void savePreferences(WmaPreferences prefs) throws WmaException {
+		File file = getFile(prefs.getUserIdentity());
+		OutputStream output = null;
+		try {
+			FileUtils.forceMkdir(file.getParentFile());
+			output = new FileOutputStream(file);
+			SerializationUtils.serialize(prefs, output);
+		} catch (Exception e) {
+			throw new WmaException("wma.prefs.save").setException(e);
+		} finally {
+			IOUtils.closeQuietly(output);
+		}
 	}
 	
+	private static File getFile(String identity) {
+		return new File(Configuration.getUserHome(identity), MD5.hash(identity));
+	}
+
 }

@@ -1,9 +1,14 @@
 package com.hs.mail.webmail.util;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -11,12 +16,35 @@ import javax.mail.Part;
 import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
+
+import com.hs.mail.webmail.exception.WmaException;
 
 public class WmaUtils {
 	
 	private static final String ISO_8859_1 = "ISO-8859-1";
 
+	public static final FastDateFormat DEFAULT_DATETIME_FORMAT = FastDateFormat
+			.getInstance("yyyy-MM-dd HH:mm:ss");
+
+	public static final FastDateFormat SIMPLE_DATE_FORMAT = FastDateFormat
+			.getInstance("yyyyMMddHHmm");
+	
 	private WmaUtils() {
+	}
+	
+	public static String formatDate(Date date) {
+		return DEFAULT_DATETIME_FORMAT.format(date);
+	}
+	
+	public static Date parseDate(String str, String pattern)
+			throws WmaException {
+		DateFormat fmt = new SimpleDateFormat(pattern);
+		try {
+			return fmt.parse(str);
+		} catch (ParseException pe) { // warn to user
+			throw new WmaException("jwma.date.format");
+		}
 	}
 	
 	public static boolean isHangul(String text) {
@@ -98,6 +126,19 @@ public class WmaUtils {
 	
 	public static Flags getFlags(String flag) {
 		return (Flags) flagMap.get(flag);
+	}
+	
+	public static FetchProfile getFetchProfile() {
+		FetchProfile fp = new FetchProfile();
+		fp.add(FetchProfile.Item.ENVELOPE); // contains the headers
+		fp.add(FetchProfile.Item.FLAGS); // contains the flags
+		fp.add(FetchProfile.Item.CONTENT_INFO); // contains the content types
+		// fetch header values
+		fp.add("Subject");
+		fp.add("Received");
+		fp.add("X-Priority");
+		fp.add("X-Secure");
+		return fp;
 	}
 	
 	static private Map<String, Flags> flagMap = new Hashtable<String, Flags>();

@@ -21,6 +21,7 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 
 	// instance attributes
 	private int number;
+	private long uid;
 	private boolean read;
 	private boolean answered;
 	private boolean recent;
@@ -40,9 +41,10 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 	
 	/**
 	 * Constructs a new <tt>WmaMessageInfoImpl</tt>.
+	 * @param uid 
 	 */
-	protected WmaMessageInfoImpl(int number) {
-		setNumber(number);
+	protected WmaMessageInfoImpl(long uid) {
+		setUID(uid);
 	}
 
 	public int getNumber() {
@@ -59,6 +61,14 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 	 */
 	public void setNumber(int number) {
 		this.number = number;
+	}
+
+	public long getUID() {
+		return uid;
+	}
+
+	public void setUID(long uid) {
+		this.uid = uid;
 	}
 
 	public boolean isRead() {
@@ -277,6 +287,7 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 	protected void prepare(Message msg) throws Exception {
 		// set flags
 		Flags flags = msg.getFlags();
+		setNumber(msg.getMessageNumber());
 		setRecent(flags.contains(Flag.RECENT));
 		setRead(flags.contains(Flag.SEEN));
 		setAnswered(flags.contains(Flag.ANSWERED));
@@ -323,16 +334,16 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 	 * @param msg
 	 *            the message to be wrapped as <tt>javax.mail.Message</tt>.
 	 */
-	public static WmaMessageInfo createMessageInfo(Message msg)
+	public static WmaMessageInfo createMessageInfo(long uid, Message msg)
 			throws WmaException {
+		WmaMessageInfoImpl messageinfo = null;
 		try {
-			WmaMessageInfoImpl messageinfo = new WmaMessageInfoImpl(
-					msg.getMessageNumber());
+			messageinfo = new WmaMessageInfoImpl(uid);
 			messageinfo.prepare(msg);
 			return messageinfo;
 		} catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
-			throw new WmaException("wma.messageinfo.failedcreation");
+			return messageinfo;
 		}
 	}
 

@@ -1,20 +1,31 @@
+/*
+ * Copyright 2010 the original author or authors.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.webmail.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.TypeMismatchException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-
+/**
+ * 
+ * @author Won Chul Doh
+ * @since Feb 17, 2007
+ *
+ */
 public class RequestUtils {
-	
-	private RequestUtils() {
-	}
-	
+
 	public static String getParameter(HttpServletRequest request, String name) {
 		String value = request.getParameter(name);
 		if (value != null) {
@@ -22,8 +33,9 @@ public class RequestUtils {
 				String encoding = request.getCharacterEncoding();
 				// If the request.getCharacterEncoding() is null, the default
 				// parsing value of the String is ISO-8859-1.
-				return new String(value.getBytes((null == encoding) 
-							? "ISO-8859-1" : encoding), "UTF-8");
+				return new String(
+						value.getBytes((null == encoding) ? "ISO-8859-1"
+								: encoding), "UTF-8");
 			} catch (Exception ex) {
 			}
 		}
@@ -37,15 +49,74 @@ public class RequestUtils {
 	}
 
 	public static String getRequiredParameter(HttpServletRequest request,
-			String name) throws MissingServletRequestParameterException {
+			String name) throws ServletException {
 		String value = getParameter(request, name);
 		if (value == null) {
-			throw new MissingServletRequestParameterException(name,
-					String.class.getName());
+			throw new ServletException("Required " + String.class.getName()
+					+ " parameter '" + name + "' is not present");
 		}
 		return value;
 	}
+
+	public static boolean getParameterBool(HttpServletRequest request,
+			String name) {
+		String value = getParameter(request, name);
+		return Boolean.valueOf(value).booleanValue();
+	}
+
+	public static boolean getParameterBool(HttpServletRequest request,
+			String name, boolean defaultValue) {
+		String value = getParameter(request, name, Boolean
+				.toString(defaultValue));
+		return Boolean.valueOf(value).booleanValue();
+	}
+
+	public static int getParameterInt(HttpServletRequest request, String name)
+			throws ServletException {
+		String value = getParameter(request, name);
+		if (value != null) {
+			return toInt(value.trim());
+		} else {
+			throw new ServletException("Required " + Integer.class.getName()
+					+ " parameter '" + name + "' is not present");
+		}
+	}
+
+	public static int getParameterInt(HttpServletRequest request, String name,
+			int defaultValue) {
+		try {
+			return getParameterInt(request, name);
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
 	
+	public static int[] getParameterInts(HttpServletRequest request,
+			String name) throws ServletException {
+		String[] values = request.getParameterValues(name);
+		return (values != null) ? toInts(values) : null;
+	}
+
+	public static long getParameterLong(HttpServletRequest request, String name)
+			throws ServletException {
+		String value = getParameter(request, name);
+		if (value != null) {
+			return toLong(value.trim());
+		} else {
+			throw new ServletException("Required " + Long.class.getName()
+					+ " parameter '" + name + "' is not present");
+		}
+	}
+
+	public static long getParameterLong(HttpServletRequest request, String name,
+			long defaultValue) {
+		try {
+			return getParameterLong(request, name);
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
+
 	public static String[] getParameterValues(HttpServletRequest request,
 			String name) {
 		String[] values = request.getParameterValues(name);
@@ -63,102 +134,43 @@ public class RequestUtils {
 		}
 		return values;
 	}
-
-	public static boolean getParameterBool(HttpServletRequest request,
-			String name) {
-		String value = getParameter(request, name);
-		return Boolean.valueOf(value).booleanValue();
-	}
 	
-	public static boolean getParameterBool(HttpServletRequest request,
-			String name, boolean defaultValue) {
-		String value = getParameter(request, name, Boolean.toString(defaultValue));
-		return Boolean.valueOf(value).booleanValue();
-	}
-	
-	public static int getParameterInt(HttpServletRequest request, String name)
-			throws MissingServletRequestParameterException {
-		String value = getParameter(request, name);
-		if (value != null) {
-			return toInt(value.trim());
-		} else {
-			throw new MissingServletRequestParameterException(name,
-					Integer.class.getName());
-		}
-	}
-	
-	public static int getParameterInt(HttpServletRequest request, String name,
-			int defaultValue) {
-		try {
-			return getParameterInt(request, name);
-		} catch (Exception ex) {
-			return defaultValue;
-		}
-	}
-
-	public static int[] getParameterInts(HttpServletRequest request, String name) {
+	public static long[] getParameterLongs(HttpServletRequest request,
+			String name) throws ServletException {
 		String[] values = request.getParameterValues(name);
-		return (values != null) ? toInts(values) : null;
+		return (values != null) ? toLongs(values) : null;
 	}
 
-	public static int[] getParameterInts(HttpServletRequest request,
-			String name, char separator) {
-		String value = request.getParameter(name);
-		return (value != null) ? toInts(StringUtils.split(value, separator))
-				: null;
-	}
-
-	public static Date parseDate(String value, String format) {
-		if (value != null) {
-			try {
-				return new SimpleDateFormat(format).parse(StringUtils.replace(
-						value, "-", ".", 2));
-			} catch (ParseException e) {
-				throw new TypeMismatchException(value, Date.class);
-			}
-		}
-		return null;
-	}
-
-	public static Date getParameterDate(HttpServletRequest request, String name) {
-		String value = request.getParameter(name);
-		if (value != null) {
-			if (value.length() == 19)
-				return parseDate(value, "yyyy.MM.dd HH:mm:ss");
-			else if (value.length() == 16)
-				return parseDate(value, "yyyy.MM.dd HH:mm");
-			else
-				return parseDate(value, "yyyy.MM.dd");
-		}
-		return null;
-	}
-	
-	public static Date getParameterDate(HttpServletRequest request,
-			String name, boolean ceil) {
-        String value = request.getParameter(name);
-        if (value != null) {
-            if (value.length() == 10) {
-                return (ceil) ? parseDate(value + " 23:59:59",
-                        "yyyy.MM.dd HH:mm:ss") : parseDate(value, "yyyy.MM.dd");
-            } else {
-                return parseDate(value, "yyyy.MM.dd HH:mm:ss");
-            }
-        }
-        return null;
-    }
-
-	public static int toInt(String number) {
+	public static int toInt(String number) throws ServletException {
 		try {
 			return Integer.parseInt(number);
 		} catch (Exception ex) {
-			throw new TypeMismatchException(number, Integer.class);
+			throw new ServletException("Failed to input string '" + number
+					+ "' to requied type [" + Integer.class.getName() + "]");
 		}
 	}
 
-	public static int[] toInts(String[] values) {
+	public static long toLong(String number) throws ServletException {
+		try {
+			return Long.parseLong(number);
+		} catch (Exception ex) {
+			throw new ServletException("Failed to input string '" + number
+					+ "' to requied type [" + Long.class.getName() + "]");
+		}
+	}
+
+	public static int[] toInts(String[] values) throws ServletException {
 		int[] numbers = new int[values.length];
 		for (int i = 0; i < values.length; i++) {
 			numbers[i] = toInt(values[i].trim());
+		}
+		return numbers;
+	}
+
+	public static long[] toLongs(String[] values) throws ServletException {
+		long[] numbers = new long[values.length];
+		for (int i = 0; i < values.length; i++) {
+			numbers[i] = toLong(values[i].trim());
 		}
 		return numbers;
 	}

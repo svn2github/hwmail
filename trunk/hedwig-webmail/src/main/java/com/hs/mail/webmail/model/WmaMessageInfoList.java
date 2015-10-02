@@ -7,6 +7,7 @@ import javax.mail.FetchProfile;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.UIDFolder;
 import javax.mail.search.SearchTerm;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.impl.WmaMessageInfoImpl;
 import com.hs.mail.webmail.util.Pager;
+import com.hs.mail.webmail.util.WmaUtils;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.SortTerm;
 
@@ -50,6 +52,7 @@ public class WmaMessageInfoList {
 	/**
 	 * Builds the list of <tt>WmaMessageInfoImpl</tt> instances from the given
 	 * array of messages.
+	 * @param uids 
 	 * 
 	 * @param msgs
 	 *            array of <tt>javax.mail.Message</tt> instances.
@@ -58,26 +61,33 @@ public class WmaMessageInfoList {
 	 *             if it fails to create a <tt>JwmaMessageInfoImpl</tt>
 	 *             instance.
 	 */
-	private void buildMessageInfoList(Message[] msgs, boolean asc)
+	private void buildMessageInfoList(long[] uids, Message[] msgs, boolean asc)
 			throws WmaException {
 		this.messageInfos = new ArrayList<WmaMessageInfo>(msgs.length);
 		WmaMessageInfo msginfo = null;
 		if (asc) {
 			for (int i = 0; i < msgs.length; i++) {
-				msginfo = WmaMessageInfoImpl.createMessageInfo(msgs[i]);
-				this.messageInfos.add(msginfo);
+				msginfo = WmaMessageInfoImpl.createMessageInfo(uids[i], msgs[i]);
+				addMessageInfo(msginfo);
 			}
 		} else {
 			for (int i = msgs.length - 1; i >= 0; i--) {
-				msginfo = WmaMessageInfoImpl.createMessageInfo(msgs[i]);
-				this.messageInfos.add(msginfo);
+				msginfo = WmaMessageInfoImpl.createMessageInfo(uids[i], msgs[i]);
+				addMessageInfo(msginfo);
 			}
 		}
 	}
 
+	private void addMessageInfo(WmaMessageInfo msginfo) {
+		if (msginfo != null) {
+			this.messageInfos.add(msginfo);
+		}
+	}
+	
 	/**
 	 * Factory method that creates a new <tt>WmaMessageInfoListImpl</tt>
 	 * instance from the given array of messages.
+	 * @param uids 
 	 * 
 	 * @param msgs
 	 *            array of <tt>javax.mail.Message</tt> instances.
@@ -87,10 +97,10 @@ public class WmaMessageInfoList {
 	 * @throws WmaException
 	 *             if it fails to build the list.
 	 */
-	private static WmaMessageInfoList createWmaMessageInfoList(Message[] msgs,
+	private static WmaMessageInfoList createWmaMessageInfoList(long[] uids, Message[] msgs,
 			boolean asc) throws WmaException {
 		WmaMessageInfoList msglist = new WmaMessageInfoList();
-		msglist.buildMessageInfoList(msgs, asc);
+		msglist.buildMessageInfoList(uids, msgs, asc);
 		return msglist;
 	}
 
@@ -110,25 +120,44 @@ public class WmaMessageInfoList {
 	 *             list.
 	 * @throws MessagingException 
 	 */
-	private static Message[] createWmaMessageInfoList(Folder f,
-			SortTerm[] sortterm) throws MessagingException {
-		if (f.getMessageCount() == 0) {
-			return new Message[0];
+	private static Message[] getMessages(Folder f, Pager pager) 
+			throws MessagingException {
+		int total = f.getMessageCount();
+		if (total == 0) {
+			return null;
 		}
-		if (sortterm != null) {
-			return ((IMAPFolder) f).getSortedMessages(sortterm);
-		} else {
-			return f.getMessages();
-		}
+		// Both start and end inclusive
+		pager.setItemCount(total);
+		return f.getMessages(pager.getBegin() + 1, pager.getEnd() + 1);
 	}
-
-	private static Message[] createWmaMessageInfoList(Folder f,
-			SearchTerm term, SortTerm[] sortterm) throws MessagingException {
+	
+	private static Message[] getMessages(Folder f, SearchTerm term, 
+			SortTerm[] sortterm, Pager pager) throws MessagingException {
+		Message[] msgs = null;
 		if (sortterm != null) {
-			return ((IMAPFolder) f).getSortedMessages(sortterm, term);
+			msgs = ((IMAPFolder) f).getSortedMessages(sortterm, term);
 		} else {
-			return f.search(term);
+			msgs = f.search(term);
 		}
+		if (msgs == null) {
+			return null;
+		}
+
+		pager.setItemCount(msgs.length);
+		// end index is exclusive
+		return (Message[]) ArrayUtils.subarray(msgs, pager.getBegin(), pager.getEnd() + 1);
+	}
+	
+	private static long[] getUIDList(IMAPFolder f, Message[] mesgs) {
+		long[] uids = new long[mesgs.length];
+		for (int i = 0; i < mesgs.length; i++) {
+			try {
+				uids[i] = f.getUID(mesgs[i]);
+			} catch (MessagingException e) {
+				uids[i] = -1;
+			}
+		}
+		return uids;
 	}
 	
 	public static WmaMessageInfoList createWmaMessageInfoList(Folder f,
@@ -140,23 +169,22 @@ public class WmaMessageInfoList {
 				f.open(Folder.READ_ONLY);
 			}
 			Message[] mesgs = null;
-			if (term != null) {
-				mesgs = createWmaMessageInfoList(f, term, sortterm);
+			if (term != null || sortterm != null) {
+				mesgs = getMessages(f, term, sortterm, pager);
 			} else {
-				mesgs = createWmaMessageInfoList(f, sortterm);
+				mesgs = getMessages(f, pager);
 			}
-			pager.setItemCount(mesgs.length);
+			if (mesgs == null) {
+				return EMPTY_LIST;
+			}
 			
-			Message[] fetch = (Message[]) ArrayUtils.subarray(mesgs,
-					pager.getBegin(), pager.getEnd() + 1);
-		    // fetch messages with a slim profile
-			FetchProfile fp = new FetchProfile();
-			fp.add(FetchProfile.Item.ENVELOPE); // contains the headers
-			fp.add(FetchProfile.Item.FLAGS); // contains the flags
-			fp.add(FetchProfile.Item.CONTENT_INFO); // contains the content types
-			f.fetch(fetch, fp);
+			// fetch messages with a slim profile
+			FetchProfile fp = WmaUtils.getFetchProfile();
+			fp.add(UIDFolder.FetchProfileItem.UID);
+			f.fetch(mesgs, fp);
 
-			return createWmaMessageInfoList(fetch, pager.isAscending());
+			long[] uids = getUIDList((IMAPFolder) f, mesgs);
+			return createWmaMessageInfoList(uids, mesgs, pager.isAscending());
 		} catch (MessagingException mex) {
 			log.error(mex.getMessage(), mex);
 			throw new WmaException("wma.messagelist.failedcreation")

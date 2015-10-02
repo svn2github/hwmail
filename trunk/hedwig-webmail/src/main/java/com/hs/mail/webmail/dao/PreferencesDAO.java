@@ -21,4 +21,6 @@ public interface PreferencesDAO {
 	 */
 	WmaPreferences getPreferences(String identity) throws WmaException;
 
+	void savePreferences(WmaPreferences prefs) throws WmaException;
+	
 }

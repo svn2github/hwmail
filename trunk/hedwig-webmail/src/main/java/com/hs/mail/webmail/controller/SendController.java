@@ -1,8 +1,9 @@
 package com.hs.mail.webmail.controller;
 
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -10,78 +11,78 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.hs.mail.webmail.WmaSession;
-import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.exception.WmaException;
+import com.hs.mail.webmail.model.WmaFolder;
+import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.model.impl.WmaComposeMessage;
 import com.hs.mail.webmail.model.impl.WmaDisplayMessage;
 import com.hs.mail.webmail.model.impl.WmaMultipartFileAttach;
+import com.hs.mail.webmail.model.impl.WmaSendReservation;
 import com.hs.mail.webmail.util.RequestUtils;
+import com.hs.mail.webmail.util.WmaUtils;
+import com.sun.mail.imap.IMAPFolder;
 
 @Controller
 public class SendController {
-
-	@RequestMapping("/send")
-	public ModelAndView send(HttpSession httpsession, HttpServletRequest request)
-			throws ServletException, WmaException {
+	
+	private static Logger logger = LoggerFactory.getLogger(SendController.class);
+	
+	@RequestMapping(value = "/send", method = RequestMethod.POST)
+	public String send(HttpSession httpsession, HttpServletRequest request)
+			throws Exception {
 		WmaSession session = new WmaSession(httpsession);
-		// prepare parameters
-		boolean savedraft = RequestUtils.getParameterBool(request, "savedraft",
-				false);
-		boolean autoarchivesent = RequestUtils.getParameterBool(request,
-				"autoarchivesent", false);
-		boolean defer = RequestUtils.getParameterBool(request, "defer", false);
-		Date deliverytime = (defer) ? RequestUtils.getParameterDate(request,
-				"deliverytime") : null;
+		boolean savedraft = RequestUtils.getParameterBool(request, "savedraft", false);
+		boolean archivesent = RequestUtils.getParameterBool(request, "archivesent", false);
+		boolean reserve = RequestUtils.getParameterBool(request, "reserve", false);
 		WmaComposeMessage msg = createWmaComposeMessage(session, request);
 		if (savedraft) {
-			// allow saving of message draft
 			doSaveDraft(session, msg);
-		} else if (deliverytime == null) {
-			// now send message
-			doSendMessage(session, request, msg, autoarchivesent);
+		} else if (reserve) {
+			Date date = getParameterDate(request);
+			doSendLater(session, msg, date, archivesent);
 		} else {
-			// send message later
-			doSendMessageLater(session, msg, deliverytime);
+			doSendMessage(session, msg, archivesent);
 		}
-		ModelAndView mav = new ModelAndView((savedraft) ? "saved" : "sent");
-		mav.addObject("msg", msg);
-		return mav;
+		return (savedraft) ? "saved" : "sent";
 	}
-	
+
 	private WmaComposeMessage createWmaComposeMessage(WmaSession session,
-			HttpServletRequest request) throws WmaException {
+			HttpServletRequest request) throws Exception {
+		WmaPreferences prefs = session.getPreferences();
 		String encoding = RequestUtils.getParameter(request, "encoding", "UTF-8");
+		String contentType = RequestUtils.getParameter(request, "content-type", "text/html");
 		boolean reply = RequestUtils.getParameterBool(request, "reply", false);
 		boolean forward = RequestUtils.getParameterBool(request, "forward", false);
 		boolean draft = RequestUtils.getParameterBool(request, "draft", false);
 		boolean secure = RequestUtils.getParameterBool(request, "secure", false);
 		int priority = RequestUtils.getParameterBool(request, "urgent", false) ? 1 : 3;
 
-		String path = request.getParameter("path");
-		int number = RequestUtils.getParameterInt(request, "number", -1);
+		String path = RequestUtils.getParameter(request, "path");
+		long uid = RequestUtils.getParameterLong(request, "uid", -1L);
 
 		//retrieve all necessary parameters into local strings recipients
-		String to = request.getParameter("to");
-		String cc = request.getParameter("cc");
-		String bcc = request.getParameter("bcc");
-		String subject = request.getParameter("subject");
-		String ct = RequestUtils.getParameter(request, "ct", "text/plain");
-		String body = request.getParameter("body");
+		String to = RequestUtils.getParameter(request, "to");
+		String cc = RequestUtils.getParameter(request, "cc");
+		String bcc = RequestUtils.getParameter(request, "bcc");
+		String subject = RequestUtils.getParameter(request, "subject");
+		String body = RequestUtils.getParameter(request, "body");
 		
 		WmaComposeMessage msg = WmaComposeMessage.createMessage(session);
 		msg.setEncoding(encoding);
 		msg.setDraft(draft);
 		if (msg.isDraft()) {
-			msg.setNumber(number);
+			msg.setUID(uid);
 		}
 		msg.setSubject(subject);
 		msg.setPriority(priority);
@@ -89,69 +90,62 @@ public class SendController {
 		msg.setForward(forward);
 		msg.setSecure(secure);
 		// body
-		msg.setContentType(ct + "; charset=\"" + encoding + "\"");
+		msg.setContentType(contentType + "; charset=\"" + encoding + "\"");
 		msg.setBody(body);
 		// set sender identity
-		msg.setFrom(session.getUserIdentity());
+		msg.setFrom(session.getUserIdentity(),
+				StringUtils.isNotBlank(prefs.getUsername()) ? prefs.getUsername() : null);
 		// set all recipients
 		try {
-			if (StringUtils.isNotBlank(to)) {
-				msg.setTo(to);
-			}
-			if (StringUtils.isNotBlank(cc)) {
-				msg.setCC(cc);
-			}
-			if (StringUtils.isNotBlank(bcc)) {
-				msg.setBCC(bcc);
-			}
+			msg.setTo(to);
+			msg.setCC(cc);
+			msg.setBCC(bcc);
 		} catch (MessagingException e) {
 		}
-		// Handle original message's attachments
-		if (!StringUtils.isEmpty(path) && number != -1) {
+
+		// Handle original message
+		if (StringUtils.isNotEmpty(path) && uid != -1) {
 			int[] partnums = RequestUtils.getParameterInts(request, "parts");
-			if (partnums != null) {
-				addAttachments(session, path, number, partnums, msg);
-			}
+			handleOriginalMessage(session, path, uid, msg, partnums);
 		}
+		
 		// Handle attachments
 		MultipartHttpServletRequest multi = (MultipartHttpServletRequest) request;
-		Map<String, MultipartFile> fileMap = multi.getFileMap();
-		for (int i = 0; i < fileMap.size(); i++) {
-			MultipartFile mf = fileMap.get("att" + i);
+		List<MultipartFile> files = multi.getFiles("attachment[]");
+		for (MultipartFile mf : files) {
 			if (mf != null) {
 				msg.addAttachment(new WmaMultipartFileAttach(mf, encoding));
 			}
 		}
-
 		return msg;
 	}
 	
-	private void addAttachments(WmaSession session, String path, int number,
-			int[] partnums, WmaComposeMessage msg) {
+	private void handleOriginalMessage(WmaSession session, String path,
+			long uid, WmaComposeMessage msg, int[] partnums)
+			throws ServletException {
 		try {
 			WmaStore store = session.getWmaStore();
-			Folder folder = store.getFolder(path);
-			folder.open(Folder.READ_ONLY);
-			Message message = folder.getMessage(number);
-			WmaDisplayMessage actualmsg = WmaDisplayMessage
-					.createWmaDisplayMessage(message);
-			msg.addAttachments(actualmsg, partnums);
+			IMAPFolder folder = (IMAPFolder) store.getFolder(path);
+			folder.open(Folder.READ_WRITE);
+			Message message = folder.getMessageByUID(uid);
+			// Handle original message's flags
+			if (msg.isReply()) {
+				message.setFlag(Flags.Flag.ANSWERED, true);
+			}
+			if (partnums != null) {
+				// Handle original message's attachments
+				WmaDisplayMessage actualmsg = WmaDisplayMessage.createWmaDisplayMessage(uid, message);
+				msg.addAttachments(actualmsg, partnums);
+			}
 			folder.close(false);
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 		}
 	}
 	
-	private void doSaveDraft(WmaSession session, WmaComposeMessage message)
-			throws WmaException {
-		WmaStore store = session.getWmaStore();
-		message.saveDraft(store, store.getDraftInfo().getFolder());
-	}
-
-	private void doSendMessage(WmaSession session, HttpServletRequest request,
-			WmaComposeMessage message, boolean autoarchivesent)
-			throws WmaException {
+	private void doSendMessage(WmaSession session, WmaComposeMessage message,
+			boolean autoarchivesent) throws WmaException {
 		if (autoarchivesent) {
-			message.setNotifyURL(createNotifyURL(request));
 			message.send(session);
 			// Archive message if necessary
 			WmaStore store = session.getWmaStore();
@@ -161,23 +155,50 @@ public class SendController {
 			message.send(session);
 		}
 	}
-
-	private void doSendMessageLater(WmaSession session,
-			WmaComposeMessage message, Date deliverytime) throws WmaException {
-		// TODO
-	}
 	
-	private String createNotifyURL(HttpServletRequest request) {
-		String s = Configuration.getProperty("notify.url");
-		if (StringUtils.isNotEmpty(s)) {
-			return s;
-		} else {
-			return new StringBuffer().append(request.getScheme()).append("://")
-					.append(request.getServerName()).append(":")
-					.append(request.getServerPort())
-					.append(request.getContextPath()).append("/notify")
-					.toString();
+	private void doSaveDraft(WmaSession session, WmaComposeMessage message)
+			throws WmaException {
+		try {
+			// set body text
+			message.setBodyText();
+			// set draft flag
+			message.setFlag(Flags.Flag.DRAFT, true);
+			// Archive message to draft
+			WmaStore store = session.getWmaStore();
+			store.archiveMail(store.getDraftInfo().getFolder(),
+					message.getMessage(), message.getUID());
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.composemessage.draft.failed")
+					.setException(mex);
+		}
+	}
+
+	private void doSendLater(WmaSession session, WmaComposeMessage message,
+			Date date, boolean autoarchivesent) throws WmaException {
+		try {
+			// set body text
+			message.setBodyText();
+			// ensure that to send date is set
+			message.setSentDate(date);
+			WmaStore store = session.getWmaStore();
+			WmaFolder tosend = store.getToSendArchive();
+			store.archiveMail(tosend.getFolder(), message.getMessage());
+			WmaSendReservation.serialize(session, tosend.getPath(),
+					autoarchivesent ? store.getSentMailArchive().getPath()
+							: null, message, date);
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.composemessage.send.failed")
+					.setException(mex);
 		}
 	}
 	
+	private static Date getParameterDate(HttpServletRequest request)
+			throws WmaException {
+		String d = RequestUtils.getParameter(request, "date");
+		String h = RequestUtils.getParameter(request, "hour");
+		String m = RequestUtils.getParameter(request, "minute");
+		return WmaUtils.parseDate(new StringBuilder(d).append(' ').append(h)
+				.append(':').append(m).toString(), "MM/dd/yyyy HH:mm");
+	}
+
 }

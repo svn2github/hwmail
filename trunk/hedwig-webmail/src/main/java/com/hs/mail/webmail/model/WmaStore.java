@@ -1,5 +1,7 @@
 package com.hs.mail.webmail.model;
 
+import java.util.List;
+
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -46,8 +48,10 @@ public interface WmaStore {
 
 	WmaFolder getPersonalArchive();
 
+	WmaFolder getWmaFolder(String fullname) throws WmaException;
+	
 	/**
-	 * Put's a message into the read-mail archive, if archivation is enabled.
+	 * Put's a message into the read-mail archive, if archiving is enabled.
 	 * 
 	 * @param message
 	 *            the <tt>Message</tt> to be archived.
@@ -57,6 +61,9 @@ public interface WmaStore {
 	 * 
 	 * @see javax.mail.Message
 	 */
+	void archiveMail(Folder archive, Message message, long uid)
+			throws WmaException;
+
 	void archiveMail(Folder archive, Message message) throws WmaException;
 
 	/*** end wma special folders ******************************/
@@ -89,13 +96,26 @@ public interface WmaStore {
 
 	/**
 	 * Rename a folder to given name.
+	 * @return 
 	 * 
 	 * @throws WmaException
 	 *             if the folder already exists, or if it fails to rename the
 	 *             folder.
 	 */
-	void renameFolder(String fullname, String destfolder) throws WmaException;
+	Folder renameFolder(String fullname, String destfolder) throws WmaException;
 
+	/**
+	 * Empty a given folder.
+	 * 
+	 * @param fullname
+	 *            the folder's path as <tt>String</tt>.
+	 * 
+	 * @throws WmaException
+	 *             if a folder does not exist, or if an error occurs when
+	 *             emptying.
+	 */
+	void emptyFolder(String fullname) throws WmaException;
+	
 	/**
 	 * Deletes a given folders from the store.
 	 * <p>
@@ -131,25 +151,6 @@ public interface WmaStore {
 	void deleteFolders(String[] folders) throws WmaException;
 
 	/**
-	 * Moves the given folder on the store.
-	 * <p>
-	 * Note that this method is a convenience method it creates a single entry
-	 * array and calls <tt>moveFolders()</tt>.
-	 * 
-	 * @param foldername
-	 *            the full path of the folder as <tt>String</tt>.
-	 * @param destfolder
-	 *            the full path of a valid folder on the actual store.
-	 * 
-	 * @throws WmaException
-	 *             if a folder does not exist, or if an error occurs when
-	 *             deleting.
-	 * 
-	 * @see #moveFolders(String[],String)
-	 */
-	void moveFolder(String foldername, String destfolder) throws WmaException;
-
-	/**
 	 * Moves the given folders to the given destination folder.
 	 * 
 	 * @param foldernames
@@ -164,12 +165,14 @@ public interface WmaStore {
 	 *             destination cannot contain any subfolders, or if an error
 	 *             occurs when moving.
 	 */
-	void moveFolders(String[] foldernames, String destfolder)
+	List<String> moveFolders(String[] foldernames, String destfolder)
 			throws WmaException;
 
 	/**
 	 * Tests if a given path is a special jwma folder.
 	 */
 	boolean isSpecialFolder(String fullname);
+
+	public WmaQuota[] getQuota(String root);
 
 }

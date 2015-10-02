@@ -19,6 +19,8 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.omg.CORBA.IntHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +52,8 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 	 * @param number
 	 *            the number of the message as <tt>int</tt>
 	 */
-	protected WmaDisplayMessage(Message message, int number) {
-		super(number);
+	protected WmaDisplayMessage(Message message, long uid) {
+		super(uid);
 		this.message = message;
 	}
 
@@ -169,8 +171,7 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 					return wpart;
 				}
 			} else if (cid != null) {
-				String header = WmaUtils.getHeader((Part) part, "Content-ID",
-						null);
+				String header = WmaUtils.getHeader((Part) part, "Content-ID", null);
 				if (header != null
 						&& cid.equals(StringUtils.strip(header, "<>"))) {
 					// we found the part!
@@ -191,16 +192,20 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 			return getWmaMessagePart((Multipart) msg.getContent(), part,
 					(cid == null) ? new IntHolder(0) : null, cid);
 		} else {
-			throw new WmaException("");
+			throw new WmaException("wma.displaymessage.notmultipart");
 		}
+	}
+	
+	private void setSafeBody(String body) {
+		setBody("text/html".equals(getContentType()) ? Jsoup.clean(body, Whitelist.relaxed()) : body);
 	}
 
 	private void buildBodyText(Part part) throws Exception {
 		Object o = part.getContent();
 		if (o instanceof String) {
-			setBody((String) o);
+			setSafeBody((String) o);
 		} else if (o instanceof InputStream) {
-			setBody(IOUtils.toString((InputStream) o));
+			setSafeBody(IOUtils.toString((InputStream) o));
 		} else {
 			setBodyText("Unknown type " + o.toString());
 		}
@@ -268,15 +273,11 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 					.getRecipients(Message.RecipientType.BCC))));
 			// set message ID
 			setMessageID(((MimeMessage) msg).getMessageID());
-			if (WmaComposeMessage.X_MAILER_STRING.equals(WmaUtils.getHeader(
-					message, "X-Mailer", null))) {
-				setNotifyURL(WmaUtils.getHeader(message, "X-Notify-URL", null));
-			}
 			if (!msg.isMimeType("multipart/*")) {
 				// set body as String processed with the users msgprocessor
 				try {
 					setContentType(msg.getContentType());
-					setBody(msg.getContent().toString());
+					setSafeBody(msg.getContent().toString());
 				} catch (IOException ex) {
 					// handle?
 					setBodyText("System puzzled by corrupt singlepart message.");
@@ -319,11 +320,11 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 		}
 	}
 
-	public static WmaDisplayMessage createWmaDisplayMessage(Message msg)
+	public static WmaDisplayMessage createWmaDisplayMessage(long uid, Message msg)
 			throws WmaException {
 		WmaDisplayMessage message = null;
 		try {
-			message = new WmaDisplayMessage(msg, msg.getMessageNumber());
+			message = new WmaDisplayMessage(msg, uid);
 			message.prepare(msg);
 			return message;
 		} catch (Exception ex) {

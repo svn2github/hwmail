@@ -1,5 +1,6 @@
 package com.hs.mail.webmail.config;
 
+import java.io.File;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -56,6 +57,10 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 		return messageSourceAccessor.getMessage(code, locale);
 	}
 	
+	public static String getMessage(String code, Object[] args, Locale locale) {
+		return messageSourceAccessor.getMessage(code, args, locale);
+	}
+	
 	public void setProperties(Properties props) {
 		properties = props;
 	}
@@ -67,8 +72,43 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 	public static PreferencesDAO getPreferencesDAO() {
 		return (PreferencesDAO) getBean(PreferencesDAO.class);
 	}
+	
+	public static File getUserHome(String identity) {
+		String user = getUser(identity);
+		String host = getHost(identity);
+		StringBuilder sb = new StringBuilder(
+				(host != null) ? host : getProperty("postoffice.domain"))
+				.append(File.separator)
+				.append("users")
+				.append(File.separator)
+				.append(user.charAt(0))
+				.append(user.charAt(user.length() - 1))
+				.append(File.separator)
+				.append(user);
+		return new File(getProperty("wma.data.path"), sb.toString());
+	}
+	
+	public static File getDeferDir(String dateStr) {
+		return new File(getProperty("wma.data.path"), "defer");
+	}
 
 	public void afterPropertiesSet() throws Exception {
+	}
+
+	private static String getHost(String address) {
+		int index = address.lastIndexOf('@');
+		if (index != -1) {
+			String host = address.substring(index + 1).toLowerCase();
+			if (host.charAt(0) == '[')
+				host = host.substring(1, host.length() - 1);
+			return host;
+		}
+		return null;
+	}
+
+	private static String getUser(String address) {
+		int index = address.lastIndexOf('@');
+		return (index != -1) ? address.substring(0, index) : address;
 	}
 
 }

@@ -36,8 +36,8 @@ public class WmaTransportImpl implements WmaTransport {
 	public void connect() throws MessagingException {
 		if (!transport.isConnected()) {
 			transport.connect();
-			log.debug("Connected to transport:"
-					+ transport.getURLName().toString());
+			log.debug("Connected to transport: {}", 
+					transport.getURLName().toString());
 		}
 	}
 

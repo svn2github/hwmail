@@ -17,7 +17,9 @@ public class Query implements Serializable {
 	public Query(SearchTerm searchterm, SortTerm[] sortterm, boolean ascending) {
 		this.searchterm = searchterm;
 		this.sortterm = sortterm;
-		this.ascending = ascending;
+		if (sortterm != null) {
+			this.ascending = ascending;
+		}
 	}
 
 	public SearchTerm getSearchTerm() {

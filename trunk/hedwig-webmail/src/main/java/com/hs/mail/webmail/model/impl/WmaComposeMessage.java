@@ -10,12 +10,13 @@ import javax.activation.DataSource;
 import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
-import javax.mail.Folder;
 import javax.mail.Header;
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Part;
 import javax.mail.SendFailedException;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -23,6 +24,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,8 @@ import com.hs.mail.webmail.model.WmaAttachment;
 import com.hs.mail.webmail.model.WmaMessage;
 import com.hs.mail.webmail.model.WmaMessagePart;
 import com.hs.mail.webmail.model.WmaPreferences;
-import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.util.MimeBodyPartDataSource;
+import com.hs.mail.webmail.util.WmaAddress;
 import com.hs.mail.webmail.util.WmaUtils;
 
 public class WmaComposeMessage implements WmaMessage {
@@ -56,7 +58,7 @@ public class WmaComposeMessage implements WmaMessage {
 	private String encoding;
 	private StringBuffer body;
 	private String contentType;
-	private int number = -1;
+	private long uid = -1;
 	private MimeMessage message;
 	private MimeMultipart attachments;
 	private boolean multipart = false;
@@ -142,12 +144,16 @@ public class WmaComposeMessage implements WmaMessage {
 		this.replyTo = replyTo;
 	}
 
-	public int getNumber() {
-		return number;
+	public long getUID() {
+		return uid;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
+	public void setUID(long uid) {
+		this.uid = uid;
+	}
+	
+	public void setFlag(Flags.Flag flag, boolean set) throws MessagingException {
+		message.setFlag(flag, set);
 	}
 
 	public int getPriority() {
@@ -191,15 +197,17 @@ public class WmaComposeMessage implements WmaMessage {
 		return null;
 	}
 
-    /**
+	/**
 	 * Set the sender(s) address of the message.
 	 * 
-	 * @param from
+	 * @param address
 	 *            the sender(s) address of the message as <tt>String</tt>.
+	 * @param personal
+	 *            the personal name
 	 */
-	public void setFrom(String from) {
+	public void setFrom(String address, String personal) {
 		try {
-			message.setFrom(InternetAddress.parse(from)[0]);
+			message.setFrom(new InternetAddress(address, personal));
 		} catch (Exception ex) {
 		}
 	}
@@ -223,8 +231,7 @@ public class WmaComposeMessage implements WmaMessage {
 	 *             if the receiver's address(es) is (are) malformed.
 	 */
 	public void setTo(String to) throws MessagingException {
-		if (StringUtils.isNotEmpty(to))
-			message.setRecipients(Message.RecipientType.TO, to);
+		setRecipients(Message.RecipientType.TO, to);
 	}
 
 	public String getCC() {
@@ -247,8 +254,7 @@ public class WmaComposeMessage implements WmaMessage {
 	 *             if the carbon copy receiver's address(es) is (are) malformed.
 	 */
 	public void setCC(String cc) throws MessagingException {
-		if (StringUtils.isNotEmpty(cc))
-			message.setRecipients(Message.RecipientType.CC, cc);
+		setRecipients(Message.RecipientType.CC, cc);
 	}
 
 	public String getBCC() {
@@ -272,15 +278,16 @@ public class WmaComposeMessage implements WmaMessage {
 	 *             malformed.
 	 */
 	public void setBCC(String bcc) throws MessagingException {
-		if (StringUtils.isNotEmpty(bcc))
-			message.setRecipients(Message.RecipientType.BCC, bcc);
+		setRecipients(Message.RecipientType.BCC, bcc);
 	}
 
-	public void setRecipients(Message.RecipientType type, Address[] addresses)
+	private void setRecipients(RecipientType type, String addresslist) 
 			throws MessagingException {
-		this.message.setRecipients(type, addresses);
+		if (StringUtils.isNotBlank(addresslist)) {
+			message.setRecipients(type, WmaAddress.parse(addresslist));
+		}
 	}
-
+	
 	public String getEncoding() {
 		return encoding;
 	}
@@ -297,6 +304,10 @@ public class WmaComposeMessage implements WmaMessage {
 	 */
 	public MimeMessage getMessage() {
 		return message;
+	}
+	
+	public String getMessageID() throws MessagingException {
+		return message.getMessageID();
 	}
 
 	public String getSubject() {
@@ -330,13 +341,6 @@ public class WmaComposeMessage implements WmaMessage {
 				message.setSubject("");
 			}
 		} catch (Exception ex) {
-		}
-	}
-
-	public void setNotifyURL(String url) {
-		try {
-			message.setHeader("X-Notify-URL", url);
-		} catch (MessagingException mex) {
 		}
 	}
 
@@ -420,7 +424,7 @@ public class WmaComposeMessage implements WmaMessage {
 			MimeBodyPart mbp = (MimeBodyPart) part.getPart();
 			MimeBodyPart nmbp = new MimeBodyPart();
 			// copy all headers
-			for (Enumeration en = mbp.getAllHeaders(); en.hasMoreElements();) {
+			for (Enumeration<?> en = mbp.getAllHeaders(); en.hasMoreElements();) {
 				Header h = (Header) en.nextElement();
 				nmbp.setHeader(h.getName(), h.getValue());
 			}
@@ -485,7 +489,7 @@ public class WmaComposeMessage implements WmaMessage {
 		return false;
 	}
 
-	private void setBodyText() throws MessagingException {
+	public void setBodyText() throws MessagingException {
 		// set content either single or multipart
 		if (isMultipart()) {
 			// body represents the first part
@@ -511,14 +515,10 @@ public class WmaComposeMessage implements WmaMessage {
 	 * singlepart <tt>Message</tt> from the data stored in this instance.
 	 * 
 	 * @throws WmaException
-	 *             If there is no sender, or if sending fails.
+	 *             If if sending fails.
 	 */
 	public void send(WmaSession session) throws WmaException {
 		try {
-			// Assert that a valid sender identity is set.
-			if (getFrom() == null) {
-				throw new WmaException("wma.composemessage.send.sendermissing");
-			}
 			// set body text
 			setBodyText();
 			// ensure that a sent date is set
@@ -534,67 +534,74 @@ public class WmaComposeMessage implements WmaMessage {
 		}
 	}
 	
-	public void saveDraft(WmaStore store, Folder draft) throws WmaException {
+	private static boolean addressEquals(String lhs, String rhs) {
 		try {
-			// Assert that a valid sender identity is set.
-			if (getFrom() == null) {
-				throw new WmaException("wma.composemessage.send.sendermissing");
-			}
-			// set body text
-			setBodyText();
-			// set draft flag
-			message.setFlag(Flags.Flag.DRAFT, true);
-			message.saveChanges();
-			draft.open(Folder.READ_WRITE);
-			if (isDraft()) {
-				// existing draft will be updated
-				Message draftmsg = draft.getMessage(getNumber());
-				// mark old deleted
-				draftmsg.setFlag(Flags.Flag.DELETED, true);
-			}
-			draft.appendMessages(new Message[] { message });
-			draft.close(true);
-			setNumber(draft.getMessageCount());
-		} catch (MessagingException mex) {
-			throw new WmaException("wma.composemessage.draft.failed")
-					.setException(mex);
-		} finally {
-			try {
-				if (draft != null && draft.isOpen()) {
-					draft.close(false);
+			InternetAddress[] a = InternetAddress.parse(lhs);
+			if (a.length == 1) {
+				if (a[0].getAddress().equals(rhs)) {
+					return true;
 				}
-			} catch (MessagingException mesx) {
-				// don't care, the specs say it IS closed anyway
+			}
+			return false;
+		} catch (AddressException ignore) {
+			return false;
+		}
+	}
+	
+	private static String subtract(String minuend, String subtrahend) {
+		StringBuilder result = new StringBuilder();
+		String[] addesslist = StringUtils.split(minuend, ',');
+		for (String address : addesslist) {
+			if (!addressEquals(address, subtrahend)) {
+				if (result.length() > 0) {
+					result.append(',');
+				}
+				result.append(StringUtils.trim(address));
 			}
 		}
+		return result.toString();
+	}
+	
+	private void prepareQuote(WmaDisplayMessage msg, WmaPreferences prefs) {
+		String quote = null;
+		if (MIMETYPE_HTML.equals(msg.getContentType())) {
+			quote = Configuration.getMessage("compose.quote.html",
+					new Object[] {
+							StringEscapeUtils.escapeHtml4(msg.getFrom()),
+							WmaUtils.formatDate(msg.getSentDate()),
+							StringEscapeUtils.escapeHtml4(msg.getTo()),
+							StringEscapeUtils.escapeHtml4(msg.getSubject()) },
+					prefs.getLocale());
+		} else {
+			quote = Configuration.getMessage(
+					"compose.quote.plain",
+					new Object[] { msg.getFrom(),
+							WmaUtils.formatDate(msg.getSentDate()),
+							msg.getTo(), msg.getSubject() }, prefs.getLocale());
+
+		}
+		appendBody(quote);
 	}
 
 	private void prepare(WmaDisplayMessage msg, boolean toall,
 			WmaPreferences prefs) throws MessagingException {
-		if (msg != null) {
-			if (reply) {
-				String from = getFrom().toString();
-				if (toall) {
-				} else {
-					setTo(from);
-				}
-				setSubject(Configuration.getMessage("message.subject.reply",
-						prefs.getLocale()));
+		if (reply) {
+			String from = msg.getFrom();
+			if (toall) {
+				String me = prefs.getUserIdentity();
+				setTo(subtract(from + "," + msg.getTo(), me));
+				setCC(subtract(msg.getCC(), me));
 			} else {
-				setSubject(Configuration.getMessage("message.subject.forward",
-						prefs.getLocale()));
+				setTo(from);
 			}
-			setContentType(msg.getContentType());
+		}
+		if (reply || forward) {
 			if (prefs.isAutoQuote()) {
+				prepareQuote(msg, prefs);
 			}
 		}
 	}
 
-	public static WmaComposeMessage createMessage(WmaSession session)
-			throws WmaException {
-		return createMessage(session, null, false, false, false);
-	}
-	
 	/**
 	 * Creates a <tt>WmaComposeMessage</tt> instance.
 	 * <p>
@@ -607,19 +614,44 @@ public class WmaComposeMessage implements WmaMessage {
 	 * @return the newly created instance.
 	 * @throws WmaException 
 	 */	
-	public static WmaComposeMessage createMessage(WmaSession session,
-			WmaDisplayMessage msg, boolean reply, boolean forward, boolean toall)
+	public static WmaComposeMessage createMessage(WmaSession session) throws WmaException {
+		WmaComposeMessage message = new WmaComposeMessage(new MimeMessage(session.getMailSession()));
+		return message;
+	}
+	
+	public static WmaComposeMessage createDraft(WmaSession session, WmaDisplayMessage msg)
 			throws WmaException {
 		try {
-			WmaComposeMessage message = new WmaComposeMessage(new MimeMessage(
-					session.getMailSession()));
-			message.setReply(reply);
-			message.setForward(forward);
+			WmaComposeMessage message = new WmaComposeMessage(new MimeMessage(session.getMailSession()));
+			message.setDraft(true);
+			message.prepare(msg, false, session.getPreferences());
+			return message;
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.composemessage.failedcreation").setException(mex);
+		}
+	}
+
+	public static WmaComposeMessage createReply(WmaSession session, WmaDisplayMessage msg, boolean toall)
+			throws WmaException {
+		try {
+			WmaComposeMessage message = new WmaComposeMessage(new MimeMessage(session.getMailSession()));
+			message.setReply(true);
 			message.prepare(msg, toall, session.getPreferences());
 			return message;
 		} catch (MessagingException mex) {
-			throw new WmaException("wma.composemessage.failedcreation")
-					.setException(mex);
+			throw new WmaException("wma.composemessage.failedcreation").setException(mex);
+		}
+	}
+
+	public static WmaComposeMessage createForward(WmaSession session, WmaDisplayMessage msg)
+			throws WmaException {
+		try {
+			WmaComposeMessage message = new WmaComposeMessage(new MimeMessage(session.getMailSession()));
+			message.setForward(true);
+			message.prepare(msg, false, session.getPreferences());
+			return message;
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.composemessage.failedcreation").setException(mex);
 		}
 	}
 

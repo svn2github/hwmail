@@ -78,7 +78,7 @@ public class WmaSession implements Serializable {
 		return "true".equals(Configuration.getProperty("wma.session.debug"));
 	}
 
-	private Session initMailSession(Authenticator authenticator) {
+	protected Session initMailSession(Authenticator authenticator) {
 		Session mailSession = Session.getInstance(System.getProperties(),
 				authenticator);
 		if (isDebugSession()) {
@@ -95,7 +95,7 @@ public class WmaSession implements Serializable {
 		}
 	}
 
-	private Store connect(Session mailSession, String username, String password)
+	protected Store connect(Session mailSession, String username, String password)
 			throws WmaException {
 		try {
 			PostOffice postOffice = getPostOffice();
@@ -105,7 +105,7 @@ public class WmaSession implements Serializable {
 			return store;
 		} catch (AuthenticationFailedException afe) {
 			mailSession = null;
-			throw new WmaException("session.login.authentication");
+			throw new WmaException("wma.session.authentication");
 		} catch (MessagingException e) {
 			mailSession = null;
 			throw new WmaException("wma.session.initmail");
@@ -123,6 +123,11 @@ public class WmaSession implements Serializable {
 		storeBean(WMA_STORE, wstore);
 		return wstore;
 	}
+	
+	public boolean checkPassword(String password) {
+		WmaAuthenticator authenticator = (WmaAuthenticator) retrieveBean(WMA_AUTH);
+		return password.equals(authenticator.getPassword());
+	}
 
 	/**
 	 * Returns a reference to the associated preferences.
@@ -136,14 +141,22 @@ public class WmaSession implements Serializable {
 			String identity = getUserIdentity();
 			try {
 				prefs = dao.getPreferences(identity);
-				if (prefs == null) {
-					prefs = new WmaPreferencesImpl(identity);
-				}
 			} catch (WmaException e) {
 				log.error(e.getMessage(), e);
 			}
+			if (prefs == null) {
+				prefs = new WmaPreferencesImpl(identity);
+			}
 		}
 		return prefs;
+	}
+	
+	public void savePreferences(WmaPreferences prefs) throws WmaException {
+		if (prefs != null) {
+			PreferencesDAO dao = Configuration.getPreferencesDAO();
+			dao.savePreferences(prefs);
+			prefs = null;
+		}
 	}
 	
 	public void storeBean(String name, Object bean) {

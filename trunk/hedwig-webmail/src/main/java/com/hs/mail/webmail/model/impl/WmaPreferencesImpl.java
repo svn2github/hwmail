@@ -1,26 +1,35 @@
 package com.hs.mail.webmail.model.impl;
 
-import java.io.Serializable;
 import java.util.Locale;
 
 import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.model.WmaPreferences;
 
-public class WmaPreferencesImpl implements WmaPreferences, Serializable {
+public class WmaPreferencesImpl implements WmaPreferences {
 
 	private static final long serialVersionUID = 3577049312892807585L;
 
 	// instance attributes
 	protected String userIdentity;
 	protected String username;
-
+	protected String inboxType = "inbox";
+	
 	// Auto features
 	protected boolean autoQuote = true;
+	protected boolean autoAttach = true;
 	protected boolean autoSign = false;
 	protected boolean autoArchiveSent = false;
+	
+	// Page size
+	protected int pageSize = 10;
+
+	protected String signature;
 
 	protected Locale locale = Locale.getDefault();
 
+	public WmaPreferencesImpl() {
+	}
+	
 	public WmaPreferencesImpl(String userIdentity) {
 		setUserIdentity(userIdentity);
 	}
@@ -41,6 +50,22 @@ public class WmaPreferencesImpl implements WmaPreferences, Serializable {
 		this.username = username;
 	}
 
+	public String getInboxType() {
+		return inboxType;
+	}
+
+	public void setInboxType(String inboxType) {
+		this.inboxType = inboxType;
+	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+
 	public boolean isAutoQuote() {
 		return autoQuote;
 	}
@@ -49,12 +74,28 @@ public class WmaPreferencesImpl implements WmaPreferences, Serializable {
 		this.autoQuote = doquote;
 	}
 
+	public boolean isAutoAttach() {
+		return autoAttach;
+	}
+
+	public void setAutoAttach(boolean doattach) {
+		this.autoAttach = doattach;
+	}
+
 	public boolean isAutoSign() {
 		return autoSign;
 	}
-
+	
 	public void setAutoSign(boolean autoSign) {
 		this.autoSign = autoSign;
+	}
+	
+	public String getSignature() {
+		return signature;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
 	}
 
 	public boolean isAutoArchiveSent() {
@@ -74,23 +115,23 @@ public class WmaPreferencesImpl implements WmaPreferences, Serializable {
 	}
 
 	public String getDraftFolder() {
-		return Configuration.getMessage("preferences.draftfolder", locale);
+		return Configuration.getMessage("prefs.draftfolder", locale);
 	}
 
 	public String getPersonalFolder() {
-		return Configuration.getMessage("preferences.personalfolder", locale);
+		return Configuration.getMessage("prefs.personalfolder", locale);
 	}
 
 	public String getSentMailArchive() {
-		return Configuration.getMessage("preferences.sentmailarchive", locale);
+		return Configuration.getMessage("prefs.sentmailarchive", locale);
 	}
 
 	public String getToSendFolder() {
-		return Configuration.getMessage("preferences.tosendfolder", locale);
+		return Configuration.getMessage("prefs.tosendfolder", locale);
 	}
 
 	public String getTrashFolder() {
-		return Configuration.getMessage("preferences.trashfolder", locale);
+		return Configuration.getMessage("prefs.trashfolder", locale);
 	}
-
+	
 }

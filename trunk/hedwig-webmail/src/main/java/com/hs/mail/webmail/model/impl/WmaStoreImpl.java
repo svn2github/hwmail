@@ -1,9 +1,15 @@
 package com.hs.mail.webmail.model.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Quota;
 import javax.mail.Store;
+import javax.mail.UIDFolder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +17,10 @@ import org.slf4j.LoggerFactory;
 import com.hs.mail.webmail.WmaSession;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaFolder;
+import com.hs.mail.webmail.model.WmaQuota;
+import com.hs.mail.webmail.model.WmaResource;
 import com.hs.mail.webmail.model.WmaStore;
+import com.sun.mail.imap.IMAPStore;
 
 public class WmaStoreImpl implements WmaStore {
 	
@@ -70,24 +79,10 @@ public class WmaStoreImpl implements WmaStore {
 		return store.getDefaultFolder();
 	}
 
-	/**
-	 * Returns the <tt>WmaFolder</tt> instance that
-	 * can be used to retrieve information about the store's
-	 * INBOX folder (i.e. where new messages should be arriving).
-	 * 
-	 * @return the store's INBOX folder as <tt>WmaFolder</tt>.
-	 */
 	public WmaFolder getInboxInfo() {
 		return inboxFolder;
 	}
 
-	/**
-	 * Returns the <tt>WmaFolder</tt> instance that
-	 * can  be used to retrieve information about the store's
-	 * trash folder (i.e. where deleted messages end up first).
-	 * 
-	 * @return the store's trash folder as <tt>WmaFolder</tt>.
-	 */
 	public WmaFolder getTrashInfo() {
 		return trashFolder;
 	}
@@ -97,20 +92,16 @@ public class WmaStoreImpl implements WmaStore {
 		return getFolder(name);
 	}
 
-	private void setTrashFolder() throws WmaException {
-		try {
-			Folder trash = getTrashFolder();
-			if (!trash.exists()) {
-				if (!trash.create(WmaFolderImpl.TYPE_MAILBOX)) {
-					throw new WmaException("wma.store.createfolder.failed");
-				}
+	private void setTrashFolder() throws WmaException, MessagingException {
+		Folder trash = getTrashFolder();
+		if (!trash.exists()) {
+			if (!trash.create(WmaFolderImpl.TYPE_MAILBOX)) {
+				throw new WmaException("wma.store.createfolder.failed");
 			}
-			// ensure subscription
-			trash.setSubscribed(true);
-			trashFolder = WmaFolderImpl.createLight(trash);
-		} catch (MessagingException mex) {
-			throw new WmaException(mex.getMessage()).setException(mex);
 		}
+		// ensure subscription
+		trash.setSubscribed(true);
+		trashFolder = WmaFolderImpl.createLight(trash);
 	}
 
 	public WmaFolder getDraftInfo() {
@@ -122,20 +113,16 @@ public class WmaStoreImpl implements WmaStore {
 		return getFolder(name);
 	}
 
-	private void setDraftFolder() throws WmaException {
-		try {
-			Folder draft = getDraftFolder();
-			if (!draft.exists()) {
-				if (!draft.create(WmaFolderImpl.TYPE_MAILBOX)) {
-					throw new WmaException("wma.store.createfolder.failed");
-				}
+	private void setDraftFolder() throws WmaException, MessagingException {
+		Folder draft = getDraftFolder();
+		if (!draft.exists()) {
+			if (!draft.create(WmaFolderImpl.TYPE_MAILBOX)) {
+				throw new WmaException("wma.store.createfolder.failed");
 			}
-			// ensure subscription
-			draft.setSubscribed(true);
-			draftFolder = WmaFolderImpl.createLight(draft);
-		} catch (MessagingException mex) {
-			throw new WmaException(mex.getMessage()).setException(mex);
 		}
+		// ensure subscription
+		draft.setSubscribed(true);
+		draftFolder = WmaFolderImpl.createLight(draft);
 	}
 
 	public WmaFolder getSentMailArchive() {
@@ -147,20 +134,16 @@ public class WmaStoreImpl implements WmaStore {
 		return getFolder(name);
 	}
 	
-	private void setSentMailFolder() throws WmaException {
-		try {
-			Folder sentMail = getSentMailFolder();
-			if (!sentMail.exists()) {
-				if (!sentMail.create(WmaFolderImpl.TYPE_MAILBOX)) {
-					throw new WmaException("wma.store.createfolder.failed");
-				}
+	private void setSentMailFolder() throws WmaException, MessagingException {
+		Folder sentMail = getSentMailFolder();
+		if (!sentMail.exists()) {
+			if (!sentMail.create(WmaFolderImpl.TYPE_MAILBOX)) {
+				throw new WmaException("wma.store.createfolder.failed");
 			}
-			// ensure subscription
-			sentMail.setSubscribed(true);
-			sentMailFolder = WmaFolderImpl.createLight(sentMail);
-		} catch (MessagingException mex) {
-			throw new WmaException(mex.getMessage()).setException(mex);
 		}
+		// ensure subscription
+		sentMail.setSubscribed(true);
+		sentMailFolder = WmaFolderImpl.createLight(sentMail);
 	}
 
 	public WmaFolder getToSendArchive() {
@@ -172,20 +155,16 @@ public class WmaStoreImpl implements WmaStore {
 		return getFolder(name);
 	}
 
-	private void setToSendFolder() throws WmaException {
-		try {
-			Folder toSend = getToSendFolder();
-			if (!toSend.exists()) {
-				if (!toSend.create(WmaFolderImpl.TYPE_MAILBOX)) {
-					throw new WmaException("wma.store.createfolder.failed");
-				}
+	private void setToSendFolder() throws WmaException, MessagingException {
+		Folder toSend = getToSendFolder();
+		if (!toSend.exists()) {
+			if (!toSend.create(WmaFolderImpl.TYPE_MAILBOX)) {
+				throw new WmaException("wma.store.createfolder.failed");
 			}
-			// ensure subscription
-			toSend.setSubscribed(true);
-			toSendFolder = WmaFolderImpl.createLight(toSend);
-		} catch (MessagingException mex) {
-			throw new WmaException(mex.getMessage()).setException(mex);
 		}
+		// ensure subscription
+		toSend.setSubscribed(true);
+		toSendFolder = WmaFolderImpl.createLight(toSend);
 	}
 
 	public WmaFolder getPersonalArchive() {
@@ -197,44 +176,41 @@ public class WmaStoreImpl implements WmaStore {
 		return getFolder(name);
 	}
 
-	private void setPersonalFolder() throws WmaException {
-		try {
-			Folder personal = getPersonalFolder();
-			if (!personal.exists()) {
-				if (!personal.create(WmaFolderImpl.TYPE_MIXED)) {
-					throw new WmaException("wma.store.createfolder.failed");
-				}
+	private void setPersonalFolder() throws WmaException, MessagingException {
+		Folder personal = getPersonalFolder();
+		if (!personal.exists()) {
+			if (!personal.create(WmaFolderImpl.TYPE_MIXED)) {
+				throw new WmaException("wma.store.createfolder.failed");
 			}
-			// ensure subscription
-			personal.setSubscribed(true);
-			personalFolder = WmaFolderImpl.createLight(personal);
-		} catch (MessagingException mex) {
-			throw new WmaException(mex.getMessage()).setException(mex);
 		}
+		// ensure subscription
+		personal.setSubscribed(true);
+		personalFolder = WmaFolderImpl.createLight(personal);
 	}
-
-	/**
-	 * Put's a message into the sent-mail archive, if archiving is enabled.
-	 * 
-	 * @param message
-	 *            the <tt>Message</tt> to be archived.
-	 * 
-	 * @throws WmaException
-	 *             if it fails to archive the message.
-	 * 
-	 * @see javax.mail.Message
-	 */
+	
 	public void archiveMail(Folder archive, Message message)
 			throws WmaException {
+		archiveMail(archive, message, UIDFolder.LASTUID);
+	}
+
+	public void archiveMail(Folder archive, Message message, long uid)
+			throws WmaException {
+		boolean replace = (uid != UIDFolder.LASTUID);
 		try {
 			// open it read write
 			archive.open(Folder.READ_WRITE);
+			if (replace) {
+				// existing message will be updated
+				Message orgmsg = ((UIDFolder) archive).getMessageByUID(uid);
+				// mark old deleted
+				orgmsg.setFlag(Flags.Flag.DELETED, true);
+			}
 			// save the message in archive, append only works as array
 			Message[] tosave = { message };
 			// append it
 			archive.appendMessages(tosave);
-			// close without expunging
-			archive.close(false);
+			// close with or without expunging
+			archive.close(replace);
 		} catch (MessagingException mex) {
 			throw new WmaException("wma.store.archivemail.failed")
 					.setException(mex);
@@ -274,7 +250,7 @@ public class WmaStoreImpl implements WmaStore {
 	 * @return the folder as <tt>WmaFolderImpl</tt>.
 	 * @throws WmaException
 	 */
-	private WmaFolder getWmaFolder(String fullname) throws WmaException {
+	public WmaFolder getWmaFolder(String fullname) throws WmaException {
 		return WmaFolderImpl.createLight(getFolder(fullname));
 	}
 
@@ -294,30 +270,145 @@ public class WmaStoreImpl implements WmaStore {
 	}
 
 	public Folder createFolder(String fullname, int type) throws WmaException {
-		return null;
+		try {
+			Folder newfolder = getFolder(fullname);
+			if (newfolder.exists()) {
+				throw new WmaException("wma.store.createfolder.exists");
+			}
+			newfolder.create(type);
+			// ensure new folder is subscribed
+			newfolder.setSubscribed(true);
+			return newfolder;
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.store.createfolder.failed")
+					.setException(mex);
+		}
 	}
 
-	public void renameFolder(String fullname, String destfolder)
+	public Folder renameFolder(String fullname, String destfolder)
 			throws WmaException {
+		try {
+			Folder newfolder = getFolder(destfolder);
+			if (newfolder.exists()) {
+				throw new WmaException(
+						"wma.store.movefolder.destination.missing");
+			}
+			Folder oldfolder = getFolder(fullname);
+			// UW does not change subscriptions on moving!
+			if (oldfolder.isSubscribed()) {
+				oldfolder.setSubscribed(false);
+			}
+			oldfolder.renameTo(newfolder);
+			newfolder.setSubscribed(true);
+			return newfolder;
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.store.createfolder.failed")
+					.setException(mex);
+		}
+	}
+	
+	public void emptyFolder(String fullname) throws WmaException {
+		Folder folder = null;
+		try {
+			folder = getFolder(fullname);
+			folder.open(Folder.READ_WRITE);
+			Message[] msgs = folder.getMessages();
+			folder.setFlags(msgs, new Flags(Flags.Flag.DELETED), true);
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.store.emptyfolder.failed")
+					.setException(mex);
+		} finally {
+			if (folder != null) {
+				try {
+					folder.close(true);
+				} catch (MessagingException e) {
+				}
+			}
+		}
 	}
 
 	public void deleteFolder(String fullname) throws WmaException {
+		try {
+			Folder delfolder = getFolder(fullname);
+			if (isSpecialFolder(fullname)) {
+				throw new WmaException("wma.store.deletefolder.systemfolder");
+			} else {
+				// UW does not update subscriptions
+				delfolder.setSubscribed(false);
+				delfolder.delete(true);
+			}
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.store.deletefolder.failed")
+					.setException(mex);
+		}
 	}
 
 	public void deleteFolders(String[] folders) throws WmaException {
+		for (int i = 0; i < folders.length; i++) {
+			deleteFolder(folders[i]);
+		}
 	}
 
-	public void moveFolder(String foldername, String destfolder)
+	public List<String> moveFolders(String[] foldernames, String destfolder)
 			throws WmaException {
-	}
-
-	public void moveFolders(String[] foldernames, String destfolder)
-			throws WmaException {
+		try {
+			Folder dest = getFolder(destfolder);
+			// ensure existing destination folder
+			if (!dest.exists()) {
+				throw new WmaException(
+						"wma.store.movefolder.destination.missing");
+			}
+			// ensure basically valid destination
+			if (!(WmaFolder.TYPE_FOLDER == dest.getType()
+					|| WmaFolder.TYPE_MIXED == dest.getType())) {
+				throw new WmaException("wma.store.movefolder.destination.foul");
+			}
+			// create list that does not contain any special folder
+			List<Folder> folders = getFolders(foldernames);
+			List<String> newFolders = new ArrayList<String>();
+			for (int i = 0; i < folders.size(); i++) {
+				Folder oldfolder = (Folder) folders.get(i);
+				Folder newfolder = getFolder(destfolder + getFolderSeparator()
+						+ oldfolder.getName());
+				if (newfolder.exists()) {
+					throw new WmaException(
+							"wma.store.movefolder.destination.exists");
+				}
+				// UW does not change subscriptions on moving!
+				if (oldfolder.isSubscribed()) {
+					oldfolder.setSubscribed(false);
+				}
+				oldfolder.renameTo(newfolder);
+				newfolder.setSubscribed(true);
+				
+				newFolders.add(newfolder.getFullName());
+			}
+			return newFolders;
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.store.movefolder.failed")
+					.setException(mex);
+		}
 	}
 
 	/**
-	 * Tests if a given path is a special wma folder.
+	 * An utility method that collects all non special
+	 * folders of a given array of folder paths, into
+	 * a list of jvax.mail.Folder instances.
 	 */
+	private List<Folder> getFolders(String[] foldernames)
+			throws MessagingException, WmaException {
+		List<Folder> folders = new ArrayList<Folder>(foldernames.length);
+		Folder f = null;
+		for (int i = 0; i < foldernames.length; i++) {
+			f = getFolder(foldernames[i]);
+			// add if existant and NOT the trash folder
+			if (f.exists() && !isSpecialFolder(foldernames[i])) {
+				folders.add(f);
+			}
+		}
+		return folders;
+	}
+
 	public boolean isSpecialFolder(String fullname) {
 		return ("".equals(fullname)
 				|| fullname.equals(inboxFolder.getPath())
@@ -378,6 +469,26 @@ public class WmaStoreImpl implements WmaStore {
 		// prepare this store
 		wstore.prepare();
 		return wstore;
+	}
+	
+	public WmaQuota[] getQuota(String root) {
+		try {
+			Quota[] quotas = ((IMAPStore) store).getQuota(root);
+			WmaQuota[] wmaQuotas = new WmaQuota[quotas.length];
+			for (int i = 0; i < quotas.length; i++) {
+				wmaQuotas[i] = new WmaQuota(); 
+				Quota.Resource[] resources = quotas[i].resources;
+				for (int j = 0; j < resources.length; j++) {
+					WmaResource wr = new WmaResource(resources[j].name, resources[j].usage,
+							resources[j].limit);
+					wmaQuotas[i].setResource(wr);
+				}
+			}
+			return wmaQuotas;
+		} catch (MessagingException e) {
+			// Server doesn't support the QUOTA extension
+			return new WmaQuota[0];
+		}
 	}
 	
 }

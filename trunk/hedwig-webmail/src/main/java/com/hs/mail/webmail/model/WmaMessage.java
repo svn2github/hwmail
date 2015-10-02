@@ -4,7 +4,11 @@ import java.util.Date;
 
 public interface WmaMessage {
 
-	static String defaultContentType = "text/plain";
+	static final String MIMETYPE_TEXT = "text/plain";
+	
+	static final String MIMETYPE_HTML = "text/html";
+	
+	static String defaultContentType = MIMETYPE_TEXT;
 
 	/**
 	 * Returns an <tt>int</tt> representing the number of this message.
@@ -14,7 +18,7 @@ public interface WmaMessage {
 	 * 
 	 * @return the number of this message, or -1 if newly created for composing.
 	 */
-	int getNumber();
+	long getUID();
 
 	/**
 	 * Tests if the message was received.

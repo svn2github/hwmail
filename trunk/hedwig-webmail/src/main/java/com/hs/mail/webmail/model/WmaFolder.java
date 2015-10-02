@@ -1,14 +1,12 @@
 package com.hs.mail.webmail.model;
 
-import java.util.List;
-
 import javax.mail.Flags;
 import javax.mail.Folder;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletResponse;
 
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.impl.WmaDisplayMessage;
+import com.sun.mail.imap.IMAPFolder;
 
 /**
  * An interface defining the contract for interaction with
@@ -22,7 +20,12 @@ import com.hs.mail.webmail.model.impl.WmaDisplayMessage;
  */
 public interface WmaFolder {
 
-	Folder getFolder();
+	/**
+	 * Returns this folder's wrapped mail folder instance.
+	 * 
+	 * @return wrapped instance as <tt>javax.mail.Folder</tt>.
+	 */
+	IMAPFolder getFolder();
 
 	/**
 	 * Returns a <tt>String</tt> representing the name
@@ -50,43 +53,77 @@ public interface WmaFolder {
 	
 	boolean isParent(WmaFolder child, char separator);
 
-	/**
-	 * Convenience method that returns a<tt>WmaFolder[]</tt>
-	 * containing all subfolders within this folder.
-	 * <p>
-	 * If this folder does not contain any subfolder, then this
-	 * method returns an empty array. Otherwise it contains
-	 * one <tt>WmaFolder</tt> for each subfolder.
-	 * 
-	 * @return a <tt>WmaFolder[]</tt> containing all subfolders of
-	 *         this folder. The array will be empty if there are none.
-	 */
-	List<WmaFolder> getSubfolders();
-	
-	void setSubfolders(List<WmaFolder> subfolders);
-	
-	WmaFolder addChild(WmaFolder folder);
-	
-	boolean hasSubfolders();
-	
 	int getMessageCount();
-	
+
 	WmaDisplayMessage getWmaMessage(int num) throws WmaException;
-
-	WmaDisplayMessage getWmaMessage(int num, String msgid) throws WmaException;
 	
-	MimeMessage getMimeMessage(String msgid) throws WmaException;
+	/**
+	 * Returns a <tt>WmaDisplayMessage</tt> instance that wraps the mail message
+	 * with the given number.
+	 * 
+	 * @param uid
+	 *            the UID of the message to be retrieved as <tt>long</tt>.
+	 * @return the <tt>WmaDisplayMessage</tt> instance wrapping the retrieved
+	 *         message.
+	 * @throws WmaException
+	 *             if the message does not exist, or cannot be retrieved from
+	 *             the store.
+	 */
+	WmaDisplayMessage getWmaMessageByUID(long uid) throws WmaException;
+	
+	long getUID(int num, int offset) throws WmaException;
 
-	void deleteMessages(WmaStore wstore, int[] numbers, boolean purge)
+	/**
+	 * Deletes the messages with the given numbers.
+	 * 
+	 * @param uids
+	 *            array of UIDs
+	 * @param purge
+	 *            true if delete permanently
+	 * 
+	 * @throws WmaException
+	 *             if it fails to delete any of the given messages.
+	 */
+	void deleteMessages(WmaStore wstore, long[] uids, boolean purge)
 			throws WmaException;
 
-	void copyMessages(WmaStore wstore, int[] numbers, String destfolder,
-			boolean move) throws WmaException;
+	/**
+	 * Copy the messages with the given numbers to the given destination folder.
+	 * 
+	 * @param uids
+	 *            array of UIDs
+	 * @param destfolder
+	 *            the destination folder path as <tt>String</tt>.
+	 * 
+	 * @throws WmaException
+	 *             if it fails to copy if the destination folder does not exist,
+	 *             or if any of the given messages cannot be copied.
+	 */
+	void copyMessages(WmaStore wstore, long[] uids, String destfolder)
+			throws WmaException;
 
-	void setFlagMessages(int[] numbers, Flags flags, boolean set)
+	/**
+	 * Move the messages with the given numbers to the given destination folder.
+	 * 
+	 * @param uids
+	 *            array of UIDs
+	 * @param destfolder
+	 *            the destination folder path as <tt>String</tt>.
+	 * 
+	 * @throws WmaException
+	 *             if it fails to move if the destination folder does not exist,
+	 *             or if any of the given messages cannot be moved.
+	 */
+	void moveMessages(WmaStore wstore, long[] uids, String destfolder)
+			throws WmaException;
+
+	void setFlagMessages(long[] uids, Flags flags, boolean set)
 			throws WmaException;
 	
-	void writeMimeMessage(HttpServletResponse response, int num, String filename)
+	void writeMessagePart(HttpServletResponse response, long uid, int part) 
+			throws WmaException;
+	
+	void writeMimeMessage(HttpServletResponse response, long uid, String filename)
 			throws WmaException;
 
     /**

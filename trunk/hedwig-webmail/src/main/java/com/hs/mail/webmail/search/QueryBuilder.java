@@ -30,7 +30,9 @@ public class QueryBuilder {
 		if (criteria == null || "all".equals(criteria)) {
 			return null;
 		}
-		if ("unread".equals(criteria)) {
+		if ("recent".equals(criteria)) {
+			return new FlagTerm(new Flags(Flags.Flag.RECENT), true);
+		} else if ("unread".equals(criteria)) {
 			return new FlagTerm(new Flags(Flags.Flag.SEEN), false);
 		} else if ("flagged".equals(criteria)) {
 			return new FlagTerm(new Flags(Flags.Flag.FLAGGED), true);
