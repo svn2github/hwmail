@@ -15,80 +15,18 @@
  */
 package com.hs.mail.web;
 
-import java.io.Serializable;
-import java.util.Enumeration;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import com.hs.mail.web.util.RequestUtils;
-
 /**
  * 
  * @author Won Chul Doh
  * @since Sep 1, 2010
  *
  */
-public class WebSession implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public interface WebSession {
 
 	public static final String LOGIN_CONTEXT = "lc";
 
 	public static final String ACCOUNT_COUNT = "/account.count";
 	
 	public static final String ALIAS_COUNT = "/alias.count";
-	
-	// http session state related
-	transient private HttpServletRequest request;
-	
-	transient private HttpServletResponse response;
-	
-	transient private HttpSession websession;
-	
-	public WebSession(HttpServletRequest request, HttpServletResponse response) {
-		this.request = request;
-		this.response = response;
-		this.websession = request.getSession(true);
-	}
-
-	public HttpServletRequest getRequest() {
-		return request;
-	}
-
-	public HttpServletResponse getResponse() {
-		return response;
-	}
-
-	public String getReturnUrl() {
-		return RequestUtils.getReturnUrl(request, response);
-	}
-	
-	public boolean isValid() {
-		return retrieveBean(LOGIN_CONTEXT) != null;
-	}
-	
-	public void storeBean(String name, Object bean) {
-		websession.setAttribute(name, bean);
-	}
-	
-	public Object retrieveBean(String name) {
-		return websession.getAttribute(name);
-	}
-	
-	public void removeBean(String name) {
-		websession.removeAttribute(name);
-	}
-	
-	public void removeBeans(String postfix) {
-		Enumeration enums = websession.getAttributeNames();
-		while (enums.hasMoreElements()) {
-			String name = (String) enums.nextElement();
-			if (name.endsWith(postfix)) {
-				websession.removeAttribute(name);
-			}
-		}
-	}
 
 }

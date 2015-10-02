@@ -1,0 +1,62 @@
+html, body, .container {
+    height: 100%;
+}
+header {
+	height: 50px;
+}
+.container {
+	display: table;
+	width: 100%;
+	padding-top: 50px;
+	margin-top: -50px;
+   -moz-box-sizing: border-box;
+    box-sizing: border-box;	
+}
+.row {
+    height: 100%;
+    display: table-row;
+}
+.col-md-3.no-float, .col-md-9.no-float {
+    float: none; /* thanks baxabbit */
+}
+.col-md-3 {
+    display: table-cell;
+	background-color: #f3f3f4;
+}
+.col-md-9 {
+    display: table-cell;
+    background-color: #fff;
+}
+.login-screen.middle-box {
+    width: 300px;
+}
+.middle-box {
+    max-width: 400px;
+    z-index: 100;
+    margin: 0 auto;
+    padding-top: 40px;
+}
+.full-width {
+	width: 100% !important;
+}
+.fancytree-container {
+	font-size: inherit !important;
+	border: none !important;
+	background-color: inherit !important;
+}
+.fancytree-container:focus {
+	outline: none;
+}
+.wrapper-content {
+	padding: 5px 20px;
+}
+.wrapper-content .page-header {
+	margin: 20px 0;
+	padding-bottom: 20px;
+}
+.page-search {
+	max-width: 300px;
+}
+.page-tools {
+	margin-top: 20px;
+}

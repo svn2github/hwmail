@@ -22,7 +22,6 @@ import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.tag.common.core.ParamSupport;
 
 /**
@@ -32,24 +31,6 @@ import org.apache.taglibs.standard.tag.common.core.ParamSupport;
  *
  */
 public class RequestUtils {
-
-	// logging
-	private static Logger log = Logger.getLogger(RequestUtils.class);
-
-	public static void debug(HttpServletRequest request) {
-		StringBuffer sb = new StringBuffer();
-		Enumeration names = request.getParameterNames();
-		while (names.hasMoreElements()) {
-			String name = (String) names.nextElement();
-			String[] values = request.getParameterValues(name);
-			sb.append(name).append('=');
-			for (int i = 0; i < values.length; i++) {
-				sb.append((i > 0) ? ',' + values[i] : values[i]);
-			}
-			sb.append("\r\n");
-		}
-		log.debug(sb.toString());
-	}
 
 	public static String getParameter(HttpServletRequest request, String name) {
 		String value = request.getParameter(name);
@@ -151,7 +132,7 @@ public class RequestUtils {
 	public static String getReturnUrl(HttpServletRequest request,
 			HttpServletResponse response) {
 		ParamSupport.ParamManager params = new ParamSupport.ParamManager();
-		Enumeration names = request.getParameterNames();
+		Enumeration<?> names = request.getParameterNames();
 		String enc = response.getCharacterEncoding();
 		while (names.hasMoreElements()) {
 			String name = (String) names.nextElement();

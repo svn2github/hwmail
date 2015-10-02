@@ -1,72 +1,75 @@
-/*
- * Copyright 2010 the original author or authors.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
 package com.hs.mail.web.controller;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.validation.BindException;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.Validator;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.hs.mail.web.fetchmail.FetchAccount;
-import com.hs.mail.web.fetchmail.FetchMailer;
-import com.hs.mail.web.util.RequestUtils;
+import com.hs.mail.imap.user.User;
+import com.hs.mail.imap.user.UserManager;
+import com.hs.mail.web.tools.FetchAccount;
+import com.hs.mail.web.tools.FetchMailer;
 
-/**
- * 
- * @author Won Chul Doh
- * @since Sep 2, 2010
- *
- */
-public class FetchAccountFormController extends SimpleFormController {
+@Controller
+public class FetchAccountFormController implements Validator {
 
-	@Override
-	protected boolean isFormSubmission(HttpServletRequest request) {
-		String todo = request.getParameter("todo");
-		return "docreate".equals(todo) || "doupdate".equals(todo);
+	@Autowired
+	private UserManager userManager;
+
+	// Set a form validator
+	@InitBinder
+	protected void initBinder(WebDataBinder binder) {
+		binder.setValidator(this);
 	}
 
-	@Override
-	protected Object formBackingObject(HttpServletRequest request)
-			throws Exception {
-		long userID = RequestUtils.getParameterLong(request, "ID", 0);
-		FetchAccount fetch = new FetchAccount();
-		fetch.setUserID(userID);
-		return fetch;
-	}
-	
-	@Override
-	protected void onBindAndValidate(HttpServletRequest request,
-			Object command, BindException errors) throws Exception {
-		FetchAccount fetch = (FetchAccount) command;
-		rejetMandatoryField("serverName", fetch.getServerName(), errors);
-		rejetMandatoryField("userName", fetch.getUserName(), errors);
-		rejetMandatoryField("password", fetch.getPassword(), errors);
+	@RequestMapping(value = "/domains/{domain}/accounts/{id}/fetch", method = RequestMethod.GET)
+	public String showFetchAccountForm(@PathVariable("domain") String domain, 
+			@PathVariable("id") long id,
+			Model model) {
+		FetchAccount fetch = new FetchAccount(id);
+		model.addAttribute("fetchForm", fetch);
+		return "fetch";
 	}
 	
-	private void rejetMandatoryField(String field, String value,
-			BindException errors) {
-		if (StringUtils.isEmpty(value)) {
-			// Mandatory field
-			errors.rejectValue(field, "field.required");
+	@RequestMapping(value = "/domains/{domain}/accounts/fetch", method = RequestMethod.POST)
+	public String fetchAccount(@PathVariable("domain") String domain, 
+			@ModelAttribute("fetchForm") @Validated FetchAccount fetch,
+			BindingResult result) {
+		if (result.hasErrors()) {
+			return "fetch";
+		}
+		
+		Store store = null;
+		try {
+			User user = userManager.getUser(fetch.getUserID());
+			store = connect(user.getUserID(), user.getPassword());
+			FetchMailer mailer = new FetchMailer(fetch, store.getFolder("INBOX"));
+			mailer.fetch();
+			return "ok";
+		} catch (MessagingException e) {
+			result.getModel().put("error", e);
+			return "fetch";
+		} finally {
+			if (store != null) {
+				try {
+					store.close();
+				} catch (MessagingException e) {
+				}
+			}
 		}
 	}
 	
@@ -79,25 +82,15 @@ public class FetchAccountFormController extends SimpleFormController {
 	}
 
 	@Override
-	protected ModelAndView onSubmit(HttpServletRequest request,
-			HttpServletResponse response, Object command, BindException errors)
-			throws Exception {
-		FetchAccount fetch = (FetchAccount) command;
-		String userName = RequestUtils.getParameter(request, "destUserName");
-		String password = RequestUtils.getParameter(request, "destPassword");
-		Store store = null;
-		try {
-			store = connect(userName, password);
-			FetchMailer mailer = new FetchMailer(fetch, store.getFolder("INBOX"));
-			mailer.fetch();
-			return new ModelAndView(getSuccessView(), errors.getModel());
-		} catch (Exception e) {
-			return showForm(request, response, errors);
-		} finally {
-			if (store != null) {
-				store.close();
-			}
-		}
+	public boolean supports(Class<?> clazz) {
+		return FetchAccount.class.equals(clazz);
+	}
+
+	@Override
+	public void validate(Object target, Errors errors) {
+		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "serverName", "field.required");
+		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "userName", "field.required");
+		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", "field.required");
 	}
 	
 }

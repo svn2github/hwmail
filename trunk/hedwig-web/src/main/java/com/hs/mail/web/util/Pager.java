@@ -24,20 +24,24 @@ package com.hs.mail.web.util;
 public class Pager {
 
 	// instance attributes
-	private int pageNumber;	// start page is 1
+	private int pageNumber;	// start page is 0
 	private int pageSize;
 	private int itemCount;
 	private boolean ascending;
 
 	public Pager(int page, int size, int count, boolean asc) {
-		this.pageNumber = page;
 		this.pageSize = size;
 		this.itemCount = count;
 		this.ascending = asc;
+		this.pageNumber = Math.min(page, Math.max(0, getPageCount() - 1));
 	}
 	
 	public int getPageNumber() {
 		return pageNumber;
+	}
+
+	public int getPageSize() {
+		return pageSize;
 	}
 
 	public int getItemCount() {
@@ -54,14 +58,14 @@ public class Pager {
 
 	public int getBegin() {
 		return (ascending) 
-				? (pageNumber - 1) * pageSize + 1 
-				: Math.max(1, itemCount - pageNumber * pageSize + 1);
+				? pageNumber * pageSize 
+				: Math.max(0, itemCount - (pageNumber + 1) * pageSize);
 	}
 
 	public int getEnd() {
 		return (ascending) 
-				? Math.min(itemCount, pageNumber * pageSize)
-				: itemCount - (pageNumber - 1) * pageSize;
+				? Math.min(itemCount - 1, (pageNumber + 1) * pageSize - 1)
+				: itemCount - pageNumber * pageSize - 1;
 	}
 
 }

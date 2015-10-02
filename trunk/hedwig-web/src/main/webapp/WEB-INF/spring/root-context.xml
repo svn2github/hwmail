@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	        <value>WEB-INF/default.properties</value>
+	    </property>
+	</bean>
+
+	<bean id="def.props" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    	<property name="location" value="WEB-INF/default.properties"/>
+    </bean>
+
+	<bean id="config" class="com.hs.mail.container.config.Config">
+		<property name="properties" ref="def.props" />
+		<property name="initData" value="false" />
+	</bean>
+
+	<bean id="jaasLoginConfig" class="com.hs.mail.security.config.JaasLoginSupport">
+		<property name="location" value="WEB-INF/login.config" />
+	</bean>
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+	</bean>
+
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+    <bean id="abstractDao" abstract="true" class="com.hs.mail.imap.dao.AbstractDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<bean id="mailboxDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMailboxDao"/>
+	<bean id="messageDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMessageDao"/>
+	<bean id="searchDao"  parent="abstractDao" class="com.hs.mail.imap.dao.OracleSearchDao"/>
+	<bean id="userDao"    parent="abstractDao" class="com.hs.mail.imap.dao.OracleUserDao"/>
+
+	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
+		factory-method="getInstance">
+		<property name="mailboxDao" ref="mailboxDao"/>
+		<property name="messageDao" ref="messageDao"/>
+		<property name="searchDao"  ref="searchDao"/>
+		<property name="userDao"    ref="userDao"/>
+	</bean>
+	
+	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
+		<property name="transactionManager" ref="txManager"/>
+	</bean>
+	
+</beans>

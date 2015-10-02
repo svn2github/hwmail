@@ -22,6 +22,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MailDateFormat;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 /**
@@ -67,6 +68,17 @@ public class MailUtils {
 		} catch (MessagingException mes) {
 			return new Date();
 		}
+	}
+
+	public static String getString(Message msg, String header) {
+		try {
+			String[] s = msg.getHeader(header);
+			if (s != null) {
+				return MimeUtility.decodeText(s[0]);
+			}
+		} catch (Exception e) {
+		}
+		return null;
 	}
 
 }
