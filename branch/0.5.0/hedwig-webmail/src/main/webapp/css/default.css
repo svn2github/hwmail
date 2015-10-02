@@ -1,0 +1,67 @@
+body {
+	padding-top: 50px;
+	padding-bottom: 40px;
+	background: url('../images/bgnoise.png');
+}
+#tree {
+	width: 100%;
+}
+.content-page {
+	padding: 0 25px 0 20px;
+	border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	background-color: #fff;
+}
+.progress.slim {
+	height: 6px !important;
+	padding: 2px !important;
+	background: url('../images/transparant-20.png');
+}
+.divider {
+	margin: 10px 0;
+	border: 0;
+	border-top: 1px solid #eee;
+	border-bottom: 1px solid #fff;
+}
+.aside-buttons .btn {
+	width: 100%;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	padding: 4px 0;
+}
+.star:before {
+	content: url('../images/star.png');
+	content: -web-kit-image-set('../images/star.png');
+}
+.star.on:before {
+	content: url('../images/star-lit.png');
+	content: -web-kit-image-set('../images/star-lit.png');
+}
+.strong {
+	font-weight: bold;
+}
+.form-horizontal .control-group {
+  margin-bottom: 10px;
+}
+.btn-file {
+  overflow: hidden;
+  position: relative;
+  vertical-align: middle;
+}
+.btn-file .multi {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  transform: translate(-300px, 0) scale(4);
+  font-size: 23px;
+  direction: ltr;
+  cursor: pointer;
+}
+.MultiFile-label {
+  display: inline;
+  padding-left: 16px;
+}
