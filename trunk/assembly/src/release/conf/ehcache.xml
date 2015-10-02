@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+	<defaultCache
+			maxEntriesLocalHeap="0"
+			eternal="true"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
+			/>
+
+	<cache name="fdCache"
+			maxEntriesLocalHeap="10000"
+			/>
+			
+	<cache name="hdCache"
+			maxEntriesLocalHeap="50000"
+			/>
+
+</ehcache>

@@ -1,3 +1,18 @@
+-- hedwig mysql schema
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--    http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
@@ -6,187 +21,188 @@ DROP SCHEMA IF EXISTS hedwig;
 CREATE SCHEMA hedwig;
 USE hedwig;
 
--- -----------------------------------------------------
--- Table `alias`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `alias` ;
+--
+-- Table `hw_alias`
+--
+DROP TABLE IF EXISTS `hw_alias` ;
 
-CREATE  TABLE IF NOT EXISTS `alias` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+CREATE  TABLE IF NOT EXISTS `hw_alias` (
+  `aliasid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `alias` VARCHAR(100) NOT NULL ,
   `deliver_to` BIGINT UNSIGNED NOT NULL ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`aliasid`) )
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_alias_user1` ON `alias` (`deliver_to` ASC) ;
+CREATE INDEX `ix_hw_alias_1` ON `hw_alias` (`deliver_to`) ;
+CREATE INDEX `ix_hw_alias_2` ON `hw_alias` (`alias` ASC) ;
 
 -- -----------------------------------------------------
--- Table `user`
+-- Table `hw_user`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `user` ;
+DROP TABLE IF EXISTS `hw_user` ;
 
-CREATE  TABLE IF NOT EXISTS `user` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `userid` VARCHAR(100) NOT NULL ,
+CREATE  TABLE IF NOT EXISTS `hw_user` (
+  `userid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `loginid` VARCHAR(100) NOT NULL ,
   `passwd` VARCHAR(34) NOT NULL ,
   `name` VARCHAR(60) NULL ,
   `maxmail_size` BIGINT UNSIGNED NOT NULL DEFAULT '0',
   `forward` VARCHAR(100) NULL ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`userid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE UNIQUE INDEX `uk_user_userid` ON `user` (`userid` ASC) ;
+CREATE UNIQUE INDEX `ux_hw_user_1` ON `hw_user` (`loginid` ASC) ;
 
 -- -----------------------------------------------------
--- Table `mailbox`
+-- Table `hw_mailbox`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mailbox` ;
+DROP TABLE IF EXISTS `hw_mailbox` ;
 
-CREATE  TABLE IF NOT EXISTS `mailbox` (
+CREATE  TABLE IF NOT EXISTS `hw_mailbox` (
   `mailboxid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `ownerid` BIGINT UNSIGNED NOT NULL ,
   `name` VARCHAR(255) NOT NULL ,
-  `noinferiors` CHAR NOT NULL DEFAULT 'N' ,
-  `noselect` CHAR NOT NULL DEFAULT 'N' ,
-  `readonly` CHAR NOT NULL DEFAULT 'N' ,
+  `noinferiors_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `noselect_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `readonly_flag` CHAR NOT NULL DEFAULT 'N' ,
   `nextuid` BIGINT UNSIGNED NOT NULL ,
   `uidvalidity` BIGINT UNSIGNED NOT NULL ,
   PRIMARY KEY (`mailboxid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `fk_mailbox_user` ON `mailbox` (`ownerid` ASC) ;
+CREATE INDEX `ix_hw_mailbox_1` ON `hw_mailbox` (`ownerid`) ;
+
+CREATE INDEX `ix_hw_mailbox_2` ON `hw_mailbox` (`name` ASC) ;
+
 
 -- -----------------------------------------------------
--- Table `subscription`
+-- Table `hw_subscription`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `subscription` ;
+DROP TABLE IF EXISTS `hw_subscription` ;
 
-CREATE  TABLE IF NOT EXISTS `subscription` (
+CREATE  TABLE IF NOT EXISTS `hw_subscription` (
   `mailboxid` BIGINT UNSIGNED NOT NULL ,
   `userid` BIGINT UNSIGNED NOT NULL ,
   `name` VARCHAR(255) NOT NULL )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE UNIQUE INDEX `uk_subscription` ON `subscription` (`userid` ASC, `name` ASC) ;
+CREATE UNIQUE INDEX `pk_hw_subscription` ON `hw_subscription` (`userid` ASC, `name` ASC) ;
 
 -- -----------------------------------------------------
--- Table `physmessage`
+-- Table `hw_physmessage`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `physmessage` ;
+DROP TABLE IF EXISTS `hw_physmessage` ;
 
-CREATE  TABLE IF NOT EXISTS `physmessage` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `size` BIGINT UNSIGNED NOT NULL ,
+CREATE  TABLE IF NOT EXISTS `hw_physmessage` (
+  `physmessageid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `rfcsize` BIGINT UNSIGNED NOT NULL ,
   `internaldate` DATETIME NOT NULL ,
   `subject` VARCHAR(500) NULL ,
   `sentdate` DATETIME NULL ,
   `fromaddr` VARCHAR(100) NULL DEFAULT '' ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`physmessageid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
 
 -- -----------------------------------------------------
--- Table `message`
+-- Table `hw_message`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `message` ;
+DROP TABLE IF EXISTS `hw_message` ;
 
-CREATE  TABLE IF NOT EXISTS `message` (
+CREATE  TABLE IF NOT EXISTS `hw_message` (
   `messageid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `mailboxid` BIGINT UNSIGNED NOT NULL ,
   `physmessageid` BIGINT UNSIGNED NOT NULL ,
-  `seen` CHAR NOT NULL DEFAULT 'N' ,
-  `answered` CHAR NOT NULL DEFAULT 'N' ,
-  `deleted` CHAR NOT NULL DEFAULT 'N' ,
-  `flagged` CHAR NOT NULL DEFAULT 'N' ,
-  `recent` CHAR NOT NULL DEFAULT 'Y' ,
-  `draft` CHAR NOT NULL DEFAULT 'N' ,
+  `seen_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `answered_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `deleted_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `flagged_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `recent_flag` CHAR NOT NULL DEFAULT 'Y' ,
+  `draft_flag` CHAR NOT NULL DEFAULT 'N' ,
   PRIMARY KEY (`messageid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `fk_message_mailbox1` ON `message` (`mailboxid` ASC) ;
+CREATE INDEX `ix_hw_message_1` ON `hw_message` (`mailboxid`) ;
 
-CREATE INDEX `fk_message_physmessage1` ON `message` (`physmessageid` ASC) ;
+CREATE INDEX `ix_hw_message_2` ON `hw_message` (`physmessageid`) ;
 
 
 -- -----------------------------------------------------
--- Table `headername`
+-- Table `hw_headername`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `headername` ;
+DROP TABLE IF EXISTS `hw_headername` ;
 
-CREATE  TABLE IF NOT EXISTS `headername` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+CREATE  TABLE IF NOT EXISTS `hw_headername` (
+  `headernameid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `headername` VARCHAR(100) NOT NULL ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`headernameid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE UNIQUE INDEX `uk_headername` ON `headername` (`headername` ASC) ;
+CREATE UNIQUE INDEX `ux_hw_headername_1` ON `hw_headername` (`headername`) ;
 
 -- -----------------------------------------------------
--- Table `headervalue`
+-- Table `hw_headervalue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `headervalue` ;
+DROP TABLE IF EXISTS `hw_headervalue` ;
 
-CREATE  TABLE IF NOT EXISTS `headervalue` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT ,
+CREATE  TABLE IF NOT EXISTS `hw_headervalue` (
+  `headervalueid` BIGINT NOT NULL AUTO_INCREMENT ,
   `physmessageid` BIGINT UNSIGNED NOT NULL ,
   `headernameid` BIGINT UNSIGNED NOT NULL ,
   `headervalue` TEXT NULL ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`headervalueid`) )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `fk_headervalue_physmessage1` ON `headervalue` (`physmessageid` ASC) ;
+CREATE INDEX `ix_hw_headervalue_1` ON `hw_headervalue` (`headernameid`) ;
 
-CREATE INDEX `fk_headervalue_headername1` ON `headervalue` (`headernameid` ASC) ;
+CREATE INDEX `ix_hw_headervalue_2` ON `hw_headervalue` (`physmessageid`) ;
 
 
 -- -----------------------------------------------------
 -- Table `acl`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `acl` ;
+DROP TABLE IF EXISTS `hw_acl` ;
 
-CREATE  TABLE IF NOT EXISTS `acl` (
-  `user_id` BIGINT UNSIGNED NOT NULL ,
+CREATE  TABLE IF NOT EXISTS `hw_acl` (
+  `userid` BIGINT UNSIGNED NOT NULL ,
   `mailboxid` BIGINT UNSIGNED NOT NULL ,
-  `lookup` CHAR NOT NULL DEFAULT 'N' ,
-  `read` CHAR NOT NULL DEFAULT 'N' ,
-  `seen` CHAR NOT NULL DEFAULT 'N' ,
-  `write` CHAR NOT NULL DEFAULT 'N' ,
-  `insert` CHAR NOT NULL DEFAULT 'N' ,
-  `post` CHAR NOT NULL DEFAULT 'N' ,
-  `create` CHAR NOT NULL DEFAULT 'N' ,
-  `delete` CHAR NOT NULL DEFAULT 'N' ,
-  `deletemsg` CHAR NOT NULL DEFAULT 'N' ,
-  `expunge` CHAR NOT NULL DEFAULT 'N' ,
-  `admin` CHAR NOT NULL DEFAULT 'N' ,
-  PRIMARY KEY (`user_id`, `mailboxid`) )
+  `lookup_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `read_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `seen_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `write_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `insert_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `post_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `create_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `delete_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `deletemsg_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `expunge_flag` CHAR NOT NULL DEFAULT 'N' ,
+  `admin_flag` CHAR NOT NULL DEFAULT 'N' ,
+  PRIMARY KEY (`userid`, `mailboxid`) )
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_acl_user1` ON `acl` (`user_id` ASC) ;
-
-CREATE INDEX `fk_acl_mailbox1` ON `acl` (`mailboxid` ASC) ;
+CREATE INDEX `ix_hw_acl_1` ON `hw_acl` (`mailboxid`) ;
 
 
 -- -----------------------------------------------------
--- Table `keyword`
+-- Table `hw_keyword`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `keyword` ;
+DROP TABLE IF EXISTS `hw_keyword` ;
 
-CREATE  TABLE IF NOT EXISTS `keyword` (
+CREATE  TABLE IF NOT EXISTS `hw_keyword` (
   `messageid` BIGINT UNSIGNED NOT NULL ,
   `keyword` VARCHAR(255) NOT NULL )
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_keyword_message1` ON `keyword` (`messageid` ASC) ;
+CREATE INDEX `ix_hw_keyword_1` ON `hw_keyword` (`messageid`) ;
 
 
 DELIMITER //
 
-DROP TRIGGER IF EXISTS `ins_message` //
-CREATE TRIGGER ins_message AFTER INSERT ON message FOR EACH ROW BEGIN
-    UPDATE mailbox SET nextuid=new.messageid+1 WHERE mailboxid=new.mailboxid;
+DROP TRIGGER IF EXISTS `trg_ai_hw_message` //
+CREATE TRIGGER trg_ai_hw_message AFTER INSERT ON hw_message FOR EACH ROW BEGIN
+    UPDATE hw_mailbox SET nextuid=new.messageid+1 WHERE mailboxid=new.mailboxid;
 END
 //
-
 
 DELIMITER ;
 

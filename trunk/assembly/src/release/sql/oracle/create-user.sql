@@ -1,0 +1,11 @@
+-- Hedwig db access control
+-- Call it under DBA user
+
+DROP USER hedwig CASCADE;
+CREATE USER hedwig IDENTIFIED BY hedwig
+-- DEFAULT TABLESPACE DBMAIL_TS_DATA
+-- TEMPORARY TABLESPACE TEMP
+-- ACCOUNT UNLOCK 
+;
+
+GRANT CONNECT, RESOURCE TO hedwig;
