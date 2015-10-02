@@ -1,23 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/maven-v4_0_0.xsd ">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>com.hs</groupId>
 	<artifactId>hedwig-parent</artifactId>
-	<version>0.5</version>
+	<version>0.6</version>
 	<packaging>pom</packaging>
 	<name>Hedwig</name>
-	
+
+	<properties>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<aspectj-version>1.6.10</aspectj-version>
+   	    <activation-version>1.1.1</activation-version>
+	    <javamail-version>1.4.7</javamail-version>
+	    <mime4j-version>0.6</mime4j-version>
+	    <jsieve-version>0.3</jsieve-version>
+		<dnsjava-version>2.1.7</dnsjava-version>
+		<netty-version>3.2.5.Final</netty-version>
+		<commons-cli-version>1.2</commons-cli-version>
+	    <commons-collections-version>3.2</commons-collections-version>
+	    <commons-dbcp-version>1.4</commons-dbcp-version>
+	    <commons-io-version>2.4</commons-io-version>
+	    <commons-lang3-version>3.3.2</commons-lang3-version>
+	    <ehcache-version>2.7.4</ehcache-version>
+	    <spring-version>3.2.14.RELEASE</spring-version>
+	    <jstl-version>1.2</jstl-version>
+	    <log4j-version>1.2.17</log4j-version>
+		<slf4j.version>1.7.5</slf4j.version>
+		<junit.version>4.11</junit.version>
+	</properties>
+
 	<modules>
 		<module>hedwig-api</module>
 		<module>hedwig-server</module>
 		<module>hedwig-web</module>
 		<module>assembly</module>
 	</modules>
-	
+
+	<scm>
+		<connection>svn+ssh://wonchul@svn.code.sf.net/p/hwmail/code/trunk</connection>
+	</scm>
+
 	<developers>
 		<developer>
 			<name>Doh Won Chul</name>
@@ -34,43 +56,34 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
-	<distributionManagement>
-		<site>
-			<id>${project.artifactId}-site</id>
-			<url>./</url>
-		</site>
-	</distributionManagement>
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Hedwig -->
 			<dependency>
-				<groupId>${pom.groupId}</groupId>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>hedwig-api</artifactId>
-				<version>${pom.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>${pom.groupId}</groupId>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>hedwig-server</artifactId>
-				<version>${pom.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j-version}</version>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>hedwig-web</artifactId>
+				<version>${project.version}</version>
 			</dependency>
+
+			<!-- AspectJ -->
 			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit-version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.dbunit</groupId>
-				<artifactId>dbunit</artifactId>
-				<version>${dbunit-version}</version>
-				<scope>test</scope>
-			</dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjrt</artifactId>
+				<version>${aspectj-version}</version>
+			</dependency>	
+
+			<!-- JavaBeans(TM) Activation Framework, JavaMail(TM) -->
 			<dependency>
 				<groupId>javax.activation</groupId>
 				<artifactId>activation</artifactId>
@@ -81,11 +94,34 @@
 				<artifactId>mail</artifactId>
 				<version>${javamail-version}</version>
 			</dependency>
+
+			<!-- Apache JAMES -->
 			<dependency>
-				<groupId>commons-beanutils</groupId>
-				<artifactId>commons-beanutils</artifactId>
-				<version>${commons-beanutils-version}</version>
+				<groupId>org.apache.james</groupId>
+				<artifactId>apache-mime4j</artifactId>
+				<version>${mime4j-version}</version>
 			</dependency>
+			<dependency>
+	    		<groupId>org.apache.james</groupId>
+	    		<artifactId>apache-jsieve</artifactId>
+				<version>${jsieve-version}</version>
+			</dependency>
+
+			<!-- DNS -->
+			<dependency>
+				<groupId>dnsjava</groupId>
+				<artifactId>dnsjava</artifactId>
+				<version>${dnsjava-version}</version>
+			</dependency>
+
+			<!-- Netty -->
+			<dependency>
+				<groupId>org.jboss.netty</groupId>
+				<artifactId>netty</artifactId>
+				<version>${netty-version}</version>
+			</dependency>
+
+			<!-- Apache commons -->
 			<dependency>
 				<groupId>commons-cli</groupId>
 				<artifactId>commons-cli</artifactId>
@@ -107,216 +143,160 @@
 				<version>${commons-io-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<version>${commons-lang-version}</version>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang3-version}</version>
 			</dependency>
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>${commons-logging-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-pool</groupId>
-				<artifactId>commons-pool</artifactId>
-				<version>${commons-pool-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>oro</groupId>
-				<artifactId>oro</artifactId>
-				<version>${oro-version}</version>
-			</dependency>
+
+			<!-- Caching -->
 			<dependency>
 				<groupId>net.sf.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
 				<version>${ehcache-version}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>${mockito-version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>${mysql-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjtools</artifactId>
-				<version>${aspectj-version}</version>
-			</dependency>
-			<dependency>
-			    <groupId>cglib</groupId>
-			    <artifactId>cglib-nodep</artifactId>
-			    <version>${cglib-version}</version>
-			    <scope>runtime</scope>
-			</dependency>
+
+			<!-- Spring Framework -->
 			<dependency>
 				<groupId>org.springframework</groupId>
-				<artifactId>spring</artifactId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring-version}</version>
+				<exclusions>
+					<!-- Exclude Commons Logging in favor of SLF4j -->
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					 </exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+			   <groupId>org.springframework</groupId>
+			   <artifactId>spring-context-support</artifactId>
+			   <version>${spring-version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
 				<version>${spring-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
-				<artifactId>spring-mock</artifactId>
-				<version>${spring-mock-version}</version>
+				<artifactId>spring-jdbc</artifactId>
+				<version>${spring-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+				<version>${spring-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring-version}</version>
+			</dependency>
+
+			<!-- JSP & Servlet -->
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>2.5</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet.jsp</groupId>
+				<artifactId>jsp-api</artifactId>
+				<version>2.1</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>jstl</artifactId>
+				<version>${jstl-version}</version>
+			</dependency>
+
+			<!-- Logging -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-log4j12</artifactId>
+				<version>${slf4j.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
+				<version>${log4j-version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.mail</groupId>
+						<artifactId>mail</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>javax.jms</groupId>
+						<artifactId>jms</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jdmk</groupId>
+						<artifactId>jmxtools</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jmx</groupId>
+						<artifactId>jmxri</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<!-- Test Artifacts -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
-		</dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring-version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>	
 	</dependencyManagement>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
-		        <plugin>
-		          <groupId>org.apache.maven.plugins</groupId>
-		          <artifactId>maven-surefire-plugin</artifactId>
-		          <version>${maven-surefire-plugin-version}</version>
-		        </plugin>
-		        <plugin>
-		          <groupId>org.apache.maven.plugins</groupId>
-		          <artifactId>maven-assembly-plugin</artifactId>
-		          <version>${maven-assembly-plugin-version}</version>
-		        </plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-antrun-plugin</artifactId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.5.5</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-					<debug>true</debug>
-					<optimize>false</optimize>
-					<showDeprecation>false</showDeprecation>
-					<showWarnings>true</showWarnings>
-					<failOnError>true</failOnError>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>aggregate</id>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-						<phase>site</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin-version}</version>
-				<configuration>
-					<forkMode>once</forkMode>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<configuration>
-					<outputDirectory>${basedir}/eclipse-classes</outputDirectory>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<links>
-						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
-					</links>
-					<linksource>true</linksource>
-					<maxmemory>900m</maxmemory>
-					<source>1.5</source>
-					<excludePackageNames>com.hs.mail.web.*</excludePackageNames>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>${maven-surefire-plugin-version}</version>
-				<configuration>
-					<aggregate>true</aggregate>
-				</configuration>
-			</plugin>
-			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-pmd-plugin</artifactId>
-		        <version>2.4</version>
-		        <configuration>
-		        	<targetJdk>1.5</targetJdk>
-		        </configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.5.2</version>
-				<configuration>
-					<instrumentation>
-						<excludes>
-							<exclude>com/hs/mail/**/*Test.class</exclude>
-						</excludes>
-					</instrumentation>
-				</configuration>
-			</plugin>			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.0.1</version>
-			</plugin>
-		</plugins>
-	</reporting>
-	
-	<properties>
-		<log4j-version>1.2.14</log4j-version>
-	    <junit-version>3.8.1</junit-version>
-	    <dbunit-version>2.2</dbunit-version>
-	    <activation-version>1.1.1</activation-version>
-	    <javamail-version>1.4.5</javamail-version>
-		<commons-beanutils-version>1.8.2</commons-beanutils-version>
-		<commons-cli-version>1.2</commons-cli-version>
-	    <commons-collections-version>3.2</commons-collections-version>
-	    <commons-dbcp-version>1.2.2</commons-dbcp-version>
-	    <commons-io-version>1.4</commons-io-version>
-	    <commons-lang-version>2.3</commons-lang-version>
-	    <commons-logging-version>1.1</commons-logging-version>
-	    <commons-pool-version>1.3</commons-pool-version>
-	    <oro-version>2.0.8</oro-version>
-	    <ehcache-version>1.6.2</ehcache-version>
-	    <mockito-version>1.8.1</mockito-version>
-	    <mysql-version>5.1.12</mysql-version>
-	    <aspectj-version>1.6.2</aspectj-version>
-	    <cglib-version>2.2</cglib-version>
-	    <spring-version>2.0.5</spring-version>
-	    <spring-mock-version>2.0.5</spring-mock-version>
-	    <maven-assembly-plugin-version>2.1</maven-assembly-plugin-version>
-		<maven-surefire-plugin-version>2.4.3</maven-surefire-plugin-version>
-	</properties>
+
 </project>
