@@ -24,7 +24,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jsieve.ConfigurationManager;
 import org.apache.jsieve.SieveConfigurationException;
 import org.apache.jsieve.SieveFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.mailet.MailetContext;
@@ -33,7 +34,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
 
 public class Sieve {
 
-	static Logger logger = Logger.getLogger(Sieve.class);
+	static Logger logger = LoggerFactory.getLogger(Sieve.class);
 			
 	public static final String DEFAULT_SIEVE = "default.sieve";
 

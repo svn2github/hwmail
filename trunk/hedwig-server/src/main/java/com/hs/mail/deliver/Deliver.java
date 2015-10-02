@@ -31,11 +31,12 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.james.mime4j.field.address.Address;
 import org.apache.james.mime4j.field.address.AddressList;
 import org.apache.james.mime4j.field.address.Mailbox;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
@@ -55,7 +56,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
 @SuppressWarnings("static-access")
 public class Deliver {
 	
-	static Logger logger = Logger.getLogger(Deliver.class);
+	static Logger logger = LoggerFactory.getLogger(Deliver.class);
 
 	/**
 	 * Delivery was successful.
@@ -114,8 +115,8 @@ public class Deliver {
 					? new File(dir) 
 					: new File(configFile.getParentFile().getParentFile(), "spool");
 			if (!spool.isDirectory()) {
-				logger.error("Spool directory does not exist: "
-						+ spool.getAbsolutePath());
+				logger.error("Spool directory does not exist: {}",
+						spool.getAbsolutePath());
 				System.exit(EX_CONFIG);
 			}
 			Config.setSpoolDirectory(spool);
@@ -167,7 +168,7 @@ public class Deliver {
 		
 		if (!file.exists()) {
 			// Message file must exist
-			logger.error("File not exist: " + file.getAbsolutePath());
+			logger.error("File not exist: {}", file.getAbsolutePath());
 			System.exit(EX_TEMPFAIL);
 		}
 		

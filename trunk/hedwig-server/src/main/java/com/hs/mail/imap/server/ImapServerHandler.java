@@ -17,8 +17,6 @@ package com.hs.mail.imap.server;
 
 import java.nio.channels.ClosedChannelException;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -26,6 +24,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.message.ImapRequestFactory;
@@ -44,7 +44,7 @@ import com.hs.mail.imap.server.codec.ImapMessage;
 
 public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 
-	private static Logger logger = Logger.getLogger(ImapServerHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(ImapServerHandler.class);
 
 	private static final boolean throttleIO = true;
 	
@@ -97,7 +97,7 @@ public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		logger.log(Level.WARN, "Exception from downstream.", e.getCause());
+		logger.warn("Exception from downstream.", e.getCause());
 		if (e.getCause() instanceof ReadTimeoutException) {
 			e.getChannel().close();
 		} else if (e.getCause() instanceof ClosedChannelException) {

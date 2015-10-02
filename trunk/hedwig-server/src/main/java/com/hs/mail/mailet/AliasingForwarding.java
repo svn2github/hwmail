@@ -24,8 +24,9 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.user.Alias;
@@ -42,7 +43,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
  */
 public class AliasingForwarding extends AbstractMailet {
 	
-	static Logger logger = Logger.getLogger(AliasingForwarding.class);
+	static Logger logger = LoggerFactory.getLogger(AliasingForwarding.class);
 
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
 		return CollectionUtils.isNotEmpty(recipients);
@@ -77,13 +78,8 @@ public class AliasingForwarding extends AbstractMailet {
 						}
 					} catch (Exception e) {
 						// Forwarding address is invalid or not found.
-						StringBuffer errorBuffer =
-							new StringBuffer(128)
-								.append("Failed to forwarding ")
-								.append(rcpt.getMailbox())
-								.append(" to ")
-								.append(user.getForwardTo());
-						logger.error(errorBuffer.toString());
+						logger.error("Failed to forwarding {} to {}", rcpt.getMailbox(),
+								user.getForwardTo());
 						errors.add(rcpt);
 					}
 				} else {
@@ -105,12 +101,9 @@ public class AliasingForwarding extends AbstractMailet {
 							.append("\r\n")
 							.append("The mailbox specified in the address does not exist.")
 							.toString();
-					logger.error(new StringBuffer(128)
-							.append("Permanent exception delivering mail (")
-							.append(message.getName())
-							.append("): ")
-							.append(errorMessage)
-							.append("\r\n").toString());
+					logger.error("Permanent exception delivering mail ({}): {}\r\n", 
+							message.getName(),
+							errorMessage);
 					errors.add(rcpt);
 					message.appendErrorMessage(errorMessage);
 				}

@@ -19,7 +19,7 @@ import java.util.Date;
 
 import javax.mail.Flags;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.message.request.ImapRequest;

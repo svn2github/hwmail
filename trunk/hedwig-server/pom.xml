@@ -1,16 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>com.hs</groupId>
 		<artifactId>hedwig-parent</artifactId>
-		<version>0.5</version>
-		<relativePath>../pom.xml</relativePath>
+		<version>0.6</version>
 	</parent>
-	
 	<artifactId>hedwig-server</artifactId>
-	<name>Hedwig :: Server</name>
+	<name>Hedwig::Server</name>
 
 	<repositories>
 		<repository>
@@ -22,22 +20,15 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
+	
 	<dependencies>
+		<!-- Hedwig -->
 		<dependency>
-			<groupId>com.hs</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>hedwig-api</artifactId>
-			<version>0.5</version>
 		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
+
+		<!-- JavaBeans(TM) Activation Framework, JavaMail(TM) -->
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
@@ -46,10 +37,26 @@
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 		</dependency>
+
+		<!-- Apache JAMES jSieve -->
 		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
+    		<groupId>org.apache.james</groupId>
+    		<artifactId>apache-jsieve</artifactId>
+    	</dependency>
+
+		<!-- DNS -->
+		<dependency>
+			<groupId>dnsjava</groupId>
+			<artifactId>dnsjava</artifactId>
 		</dependency>
+
+		<!-- Netty -->
+		<dependency>
+			<groupId>org.jboss.netty</groupId>
+			<artifactId>netty</artifactId>
+		</dependency>
+
+		<!-- Apache commons -->
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
@@ -67,90 +74,50 @@
 			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
+		
+		<!-- Spring -->
 		<dependency>
-		    <groupId>commons-logging</groupId>
-		    <artifactId>commons-logging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>dnsjava</groupId>
-		    <artifactId>dnsjava</artifactId>
-		    <version>2.0.6</version>
-		</dependency>
-		<dependency>
-			<groupId>oro</groupId>
-			<artifactId>oro</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.james</groupId>
-			<artifactId>apache-mime4j</artifactId>
-			<version>0.6</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.apache.james</groupId>
-    		<artifactId>apache-jsieve</artifactId>
-    		<version>0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.netty</groupId>
-			<artifactId>netty</artifactId>
-			<!--version>3.2.3.Final</version-->
-			<version>3.2.5.Final</version>
-			<scope>compile</scope>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+	
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>opensymphony</groupId>
-			<artifactId>quartz-all</artifactId>
-			<version>1.6.1</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>        
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-	    <resources>
-			<resource>
-			<directory>${basedir}/src/main/resources</directory>
-			<includes>
-				<include>**/*.properties</include>
-				<include>**/*.eml</include>
-			</includes>
-			</resource>
-	    </resources>
-		<plugins>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>pertest</forkMode>
-					<childDelegation>false</childDelegation>
-					<useFile>true</useFile>
-					<argLine>-Xmx512M</argLine>
-					<includes>
-						<include>**/*Test.*</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

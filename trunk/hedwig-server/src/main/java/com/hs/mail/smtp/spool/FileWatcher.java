@@ -22,8 +22,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class to watch files under some conditions
@@ -34,7 +35,7 @@ import org.apache.log4j.Logger;
  */
 public class FileWatcher implements Watcher {
 	
-	static Logger logger = Logger.getLogger(FileWatcher.class);
+	static Logger logger = LoggerFactory.getLogger(FileWatcher.class);
 	
     private List<Consumer> consumers = null;
     private MainJob mainJob = null;
@@ -85,8 +86,8 @@ public class FileWatcher implements Watcher {
 				}
 				FileUtils.forceMkdir(failureDirFile);
 			} catch (Exception e) {
-				logger.error("Cannot create failure directory "
-						+ failureDirFile);
+				logger.error("Cannot create failure directory {}",
+						failureDirFile);
 				return;
 			}
 			mainJob = new MainJob(this);
@@ -135,9 +136,7 @@ public class FileWatcher implements Watcher {
 	                if (!includeDirectory && file.isDirectory())
 	                    continue;
 	
-					if (logger.isInfoEnabled())
-						logger.info("Watcher will process the working file: "
-								+ file);
+					logger.info("Watcher will process the working file: {}", file);
 
 					processWorkingFile(file);
 	                
@@ -169,13 +168,13 @@ public class FileWatcher implements Watcher {
 					try {
 						FileUtils.forceDelete(workingFile);
 					} catch (IOException e) {
-						logger.warn("Cannot delete " + workingFile);
+						logger.warn("Cannot delete {}", workingFile);
 					}
 				} else if (sc == Consumer.CONSUME_ERROR_FAIL) {
 					try {
 						FileUtils.forceDelete(workingFile);
 					} catch (IOException e) {
-						logger.warn("Cannot delete " + workingFile);
+						logger.warn("Cannot delete {}", workingFile);
 					}
 				} else if (sc == Consumer.CONSUME_ERROR_MOVE) {
 					try {
@@ -185,7 +184,7 @@ public class FileWatcher implements Watcher {
 							FileUtils.moveDirectory(workingFile, failureDirFile);
 						}
 					} catch (IOException e) {
-						logger.warn("Cannot move " + workingFile + " to " + failureDirFile);
+						logger.warn("Cannot move {} to {}", workingFile, failureDirFile);
 					}
 				}
 			}
@@ -198,7 +197,7 @@ public class FileWatcher implements Watcher {
 					sc = consumer.consume(watcher, file);
 				} catch (Exception e) {
 					sc = Consumer.CONSUME_ERROR_KEEP;
-					logger.warn("Error during consuming: " + e.getMessage());
+					logger.warn("Error during consuming: {}", e.getMessage());
 				}
 			}
 			return sc;

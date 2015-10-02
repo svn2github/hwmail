@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.processor;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;

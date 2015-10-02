@@ -19,7 +19,8 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.server.ConnectionHandler;
 
@@ -32,7 +33,7 @@ import com.hs.mail.container.server.ConnectionHandler;
  */
 public class SocketConnection implements Runnable {
 
-    static Logger logger = Logger.getLogger(SocketConnection.class);
+    static Logger logger = LoggerFactory.getLogger(SocketConnection.class);
     
     private ConnectionHandler handler = null;
     private Socket socket = null;

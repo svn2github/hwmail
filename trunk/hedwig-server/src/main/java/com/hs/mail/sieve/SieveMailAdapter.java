@@ -19,24 +19,19 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
 import org.apache.james.mime4j.field.address.AddressList;
-import org.apache.james.mime4j.field.address.Mailbox;
-import org.apache.james.mime4j.field.address.MailboxList;
-import org.apache.james.mime4j.field.address.parser.ParseException;
-import org.apache.james.mime4j.message.Header;
 import org.apache.james.mime4j.parser.Field;
 import org.apache.jsieve.exception.InternetAddressException;
 import org.apache.jsieve.exception.SieveException;
 import org.apache.jsieve.mail.Action;
-import org.apache.jsieve.mail.AddressImpl;
 import org.apache.jsieve.mail.MailAdapter;
 import org.apache.jsieve.mail.SieveMailException;
 
+import com.hs.mail.imap.message.MessageHeader;
 import com.hs.mail.mailet.MailetContext;
 import com.hs.mail.smtp.message.SmtpMessage;
 
@@ -49,7 +44,7 @@ public class SieveMailAdapter implements MailAdapter {
 	/**
 	 * List of Actions to perform.
 	 */
-	private List fieldActions;
+	private List<Action> fieldActions;
     /**
      * The MailetContext.
      */
@@ -123,8 +118,8 @@ public class SieveMailAdapter implements MailAdapter {
 	 * 
 	 * @return List
 	 */
-	public List getActions() {
-		List actions = null;
+	public List<Action> getActions() {
+		List<Action> actions = null;
 		if (null == (actions = getActionsBasic())) {
 			updateActions();
 			return getActions();
@@ -145,8 +140,8 @@ public class SieveMailAdapter implements MailAdapter {
 	 * 
 	 * @return List
 	 */
-	protected List computeActions() {
-		return new ArrayList();
+	protected List<Action> computeActions() {
+		return new ArrayList<Action>();
 	}
 
 	/**
@@ -154,7 +149,7 @@ public class SieveMailAdapter implements MailAdapter {
 	 * 
 	 * @return List
 	 */
-	private List getActionsBasic() {
+	private List<Action> getActionsBasic() {
 		return fieldActions;
 	}
 
@@ -171,9 +166,9 @@ public class SieveMailAdapter implements MailAdapter {
      * @see org.apache.jsieve.mail.MailAdapter#executeActions()
      */
 	public void executeActions() throws SieveException {
-		ListIterator actionsIter = getActionsIterator();
+		ListIterator<Action> actionsIter = getActionsIterator();
 		while (actionsIter.hasNext()) {
-			Action action = (Action) actionsIter.next();
+			Action action = actionsIter.next();
 			try {
 				ActionDispatcher.getInstance().execute(action, this,
 						getMailetContext());
@@ -195,7 +190,7 @@ public class SieveMailAdapter implements MailAdapter {
 	 * @param actions
 	 *            The actions to set
 	 */
-	protected void setActions(List actions) {
+	protected void setActions(List<Action> actions) {
 		fieldActions = actions;
 	}
 
@@ -209,57 +204,42 @@ public class SieveMailAdapter implements MailAdapter {
     /**
      * @see org.apache.jsieve.mail.MailAdapter#getActionsIterator()
      */
-	public ListIterator getActionsIterator() {
+	public ListIterator<Action> getActionsIterator() {
         return getActions().listIterator();
 	}
 
 	public Object getContent() throws SieveMailException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public String getContentType() throws SieveMailException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
     /**
      * @see org.apache.jsieve.mail.MailAdapter#getHeader(String)
      */
-	public List getHeader(String name) throws SieveMailException {
-		List<Field> fields = getHeader().getFields(name);
-		List headers = new ArrayList(fields.size());
-		for (Field field : fields) {
-			headers.add(field.getBody());
-		}
-		return headers;
+	public List<String> getHeader(String name) throws SieveMailException {
+		return getMessageHeader().getValues(name);
 	}
 
     /**
      * @see org.apache.jsieve.mail.MailAdapter#getHeaderNames()
      */
-	public List getHeaderNames() throws SieveMailException {
-		List<Field> fields = getHeader().getFields();
-		Set headerNames = new HashSet();
+	public List<String> getHeaderNames() throws SieveMailException {
+		List<Field> fields = getMessageHeader().getHeader().getFields();
+		Set<String> headerNames = new HashSet<String>();
 		for (Field field : fields) {
 			headerNames.add(field.getName());
 		}
-		return new ArrayList(headerNames);
+		return new ArrayList<String>(headerNames);
 	}
 
     /**
      * @see org.apache.jsieve.mail.MailAdapter#getMatchingHeader(String)
      */
-	public List getMatchingHeader(String name) throws SieveMailException {
-		Iterator headerNamesIter = getHeaderNames().iterator();
-		List matchedHeaderValues = new ArrayList(32);
-		while (headerNamesIter.hasNext()) {
-			String headerName = (String) headerNamesIter.next();
-			if (headerName.trim().equalsIgnoreCase(name)) {
-				matchedHeaderValues.addAll(getHeader(headerName));
-			}
-		}
-		return matchedHeaderValues;
+	public List<String> getMatchingHeader(String name) throws SieveMailException {
+		return getMessageHeader().getValues(name);
 	}
 
     /**
@@ -273,26 +253,18 @@ public class SieveMailAdapter implements MailAdapter {
 		}
 	}
 
-	public Address[] parseAddresses(String headerName)
-			throws SieveMailException, InternetAddressException {
-		try {
-			Field field = getHeader().getField(headerName);
-            MailboxList list = AddressList.parse(field.getBody()).flatten();
-            final int size = list.size();
-            final Address[] results = new Address[size];
-            for (int i=0;i<size;i++) {
-                final Mailbox mailbox = list.get(i);
-                results[i] = new AddressImpl(mailbox.getLocalPart(), mailbox.getDomain());
-            }
-            return null;
-        } catch (ParseException e) {
-            throw new InternetAddressException(e);
-        }
+	public Address[] parseAddresses(String headerName) throws SieveMailException, 
+			InternetAddressException {
+		AddressList addresses = getMessageHeader().getAddressList(headerName);
+		if (addresses == null) {
+			return null;
+		}
+		return addresses.toArray(new Address[addresses.size()]);
 	}
-
-	private Header getHeader() {
+	
+	private MessageHeader getMessageHeader() {
 		try {
-			return fieldMessage.getMailMessage().getHeader().getHeader();
+			return fieldMessage.getMailMessage().getHeader();
 		} catch (IOException e) {
 			return null;
 		}

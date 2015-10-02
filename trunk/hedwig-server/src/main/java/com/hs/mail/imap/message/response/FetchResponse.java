@@ -34,7 +34,7 @@ public class FetchResponse extends AbstractImapResponse {
 	private long msgnum;
 	private Long uid;
 	/**
-	 * The [RFC-2822] size of the message.
+	 * The [RFC-822] size of the message.
 	 */
 	private Long size;
 	/**

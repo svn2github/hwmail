@@ -17,7 +17,8 @@ package com.hs.mail.smtp.processor;
 
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.container.server.socket.TcpTransport;
@@ -33,7 +34,7 @@ import com.hs.mail.smtp.SmtpSession;
  */
 public abstract class AbstractSmtpProcessor implements SmtpProcessor {
 
-	protected static Logger logger = Logger.getLogger(AbstractSmtpProcessor.class);
+	protected static Logger logger = LoggerFactory.getLogger(AbstractSmtpProcessor.class);
 	
 	public void process(SmtpSession session, TcpTransport trans,
 			StringTokenizer st) {

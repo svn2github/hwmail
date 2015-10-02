@@ -42,7 +42,7 @@ public class GetQuotaProcessor extends AbstractQuotaProcessor {
 			responder.taggedNo(request, HumanReadableText.NO_SUCH_QUOTA_ROOT);
 		} else {
 			UserManager manager = getUserManager();
-			Quota quota = manager.getQuota(session.getUserID(), quotaRoot);
+			Quota quota = manager.getQuota(session.getUserID(), 0, quotaRoot);
 			responder.respond(new QuotaResponse(quota));
 			responder.okCompleted(request);
 		}

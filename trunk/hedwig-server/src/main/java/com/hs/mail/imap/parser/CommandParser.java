@@ -85,7 +85,7 @@ public class CommandParser extends AbstractImapCommandParser {
 	}
     
     private boolean command_custom() {
-    	return xrevoke();
+    	return xrevoke() || xuid();
     }
 
     private boolean copy() {
@@ -453,6 +453,10 @@ public class CommandParser extends AbstractImapCommandParser {
 	private boolean uid() {
 		return kw("UID") && sp()
 				&& (copy() || fetch() || search() || sort() || store() || thread());
+	}
+	
+	private boolean xuid() {
+		return kw("UID") && sp() && (xrevoke());
 	}
 
     private boolean unsubscribe() {

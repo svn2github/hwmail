@@ -29,9 +29,10 @@ import javax.mail.FetchProfile;
 import javax.mail.Flags;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.james.mime4j.MimeException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import com.hs.mail.container.config.Config;
@@ -54,7 +55,7 @@ import com.hs.mail.util.FileUtils;
  */
 public class FetchResponseBuilder {
 	
-	private static Logger logger = Logger.getLogger(FetchResponseBuilder.class);
+	private static Logger logger = LoggerFactory.getLogger(FetchResponseBuilder.class);
 	
 	private MailboxManager manager;
 	private EnvelopeBuilder envelopeBuilder;

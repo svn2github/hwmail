@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.processor;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
@@ -39,7 +39,7 @@ public class CreateProcessor extends AbstractImapProcessor {
 			Responder responder) {
 		CreateRequest request = (CreateRequest) message;
 		String mailboxName = request.getMailbox();
-		mailboxName = StringUtils.chomp(mailboxName, Mailbox.folderSeparator);
+		mailboxName = StringUtils.removeEnd(mailboxName, Mailbox.folderSeparator);
 		if (ImapConstants.INBOX_NAME.equalsIgnoreCase(mailboxName)) {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_CREATE_INBOX);

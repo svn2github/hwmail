@@ -39,8 +39,9 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.container.config.Config;
@@ -65,7 +66,7 @@ import com.sun.mail.smtp.SMTPSendFailedException;
  */
 public class RemoteDelivery extends AbstractMailet {
 	
-	static Logger logger = Logger.getLogger(RemoteDelivery.class);
+	static Logger logger = LoggerFactory.getLogger(RemoteDelivery.class);
 	
 	private Session session = null;
 	private boolean debug = false;
@@ -203,7 +204,7 @@ public class RemoteDelivery extends AbstractMailet {
 				targetServers = getGatewaySmtpHostAddresses(gateway);
 			}
 			if (!targetServers.hasNext()) {
-				logger.info("No mail server found for: " + host);
+				logger.info("No mail server found for: {}", host);
 				StringBuilder exceptionBuffer = new StringBuilder(128).append(
 						"There are no DNS entries for the hostname ").append(
 						host).append(
@@ -220,19 +221,14 @@ public class RemoteDelivery extends AbstractMailet {
 			}
 		
 			MessagingException lastError = null;
-			StringBuilder logBuffer = null;
 			HostAddress outgoingMailServer = null;
 			while (targetServers.hasNext()) {
 				try {
 					outgoingMailServer = targetServers.next();
-					logBuffer = new StringBuilder(256)
-							.append("Attempting to deliver message to host ")
-							.append(outgoingMailServer.getHostName())
-							.append(" at ")
-							.append(outgoingMailServer.getHost())
-							.append(" for addresses ")
-							.append(Arrays.asList(addresses));
-					logger.info(logBuffer.toString());
+					logger.info("Attempting to deliver message to host {} at {} for addresses {}",
+							outgoingMailServer.getHostName(),
+							outgoingMailServer.getHost(),
+							Arrays.asList(addresses));
 					Transport transport = null;
 					try {
 						transport = session.getTransport(outgoingMailServer);
@@ -261,28 +257,20 @@ public class RemoteDelivery extends AbstractMailet {
 							transport = null;
 						}
 					}
-					logBuffer = new StringBuilder(256)
-							.append("Successfully sent message to host ")
-							.append(outgoingMailServer.getHostName())
-							.append(" at ")
-							.append(outgoingMailServer.getHost())
-							.append(" for addresses ")
-							.append(Arrays.asList(addresses));
-					logger.info(logBuffer.toString());
+					logger.info("Successfully sent message to host {} at {} for addresses {}",
+							outgoingMailServer.getHostName(),
+							outgoingMailServer.getHost(),
+							Arrays.asList(addresses));
 					recipients.clear();
 					return true;
 				} catch (SendFailedException sfe) {
 					if (sfe.getValidSentAddresses() != null) {
 						Address[] validSent = sfe.getValidSentAddresses();
 						if (validSent.length > 0) {
-							logBuffer = new StringBuilder(256)
-									.append("Successfully sent message to host ")
-									.append(outgoingMailServer.getHostName())
-									.append(" at ")
-									.append(outgoingMailServer.getHost())
-									.append(" for addresses ")
-									.append(Arrays.asList(validSent));
-							logger.info(logBuffer.toString());
+							logger.info("Successfully sent message to host {} at {} for addresses {}",
+									outgoingMailServer.getHostName(),
+									outgoingMailServer.getHost(),
+									Arrays.asList(validSent));
 							// Remove the addresses to which this message was
 							// sent successfully
 							List<InternetAddress> temp = new ArrayList<InternetAddress>();
@@ -308,14 +296,9 @@ public class RemoteDelivery extends AbstractMailet {
 					
 					if (!ArrayUtils.isEmpty(sfe.getValidUnsentAddresses())) {
 						// Valid addresses remained, so continue with any other server.
-						if (logger.isDebugEnabled())
-							logger
-									.debug("Send failed, "
-											+ sfe.getValidUnsentAddresses().length
-											+ " valid recipients("
-											+ Arrays.asList(sfe
-													.getValidUnsentAddresses())
-											+ ") remain, continuing with any other servers");
+						logger.debug("Send failed, {} valid recipients({}) remain, continuing with any other servers",
+								sfe.getValidUnsentAddresses().length,
+								Arrays.asList(sfe.getValidUnsentAddresses()));
 			            lastError = sfe;
 						continue;
 					} else {
@@ -396,14 +379,10 @@ public class RemoteDelivery extends AbstractMailet {
 	 */
 	private boolean failMessage(SmtpMessage message, Address[] addresses,
 			MessagingException ex, boolean permanent) {
-        StringBuffer logBuffer =
-            new StringBuffer(64)
-        		.append((permanent) ? "Permanent" : "Temporary")
-                .append(" exception delivering mail (")
-                .append(message.getName())
-                .append("): ")
-                .append(ex.getMessage().trim());
-        logger.error(logBuffer.toString());
+    	logger.error("{} exception delivering mail ({}): {}",
+        		permanent ? "Permanent" : "Temporary",
+        		message.getName(),
+        		ex.getMessage().trim());
 		if (!permanent) {
 			int retries = message.getRetryCount();
 			if (retries < maxRetries) {
@@ -411,10 +390,8 @@ public class RemoteDelivery extends AbstractMailet {
 			}
 		}
 		if (message.isNotificationMessage()) {
-			if (logger.isDebugEnabled())
-				logger.debug(
-					"Null reverse-path: no bounce will be generated for "
-							+ message.getName());
+			logger.debug("Null reverse-path: no bounce will be generated for {}",
+					message.getName());
 			return true;
 		}
 		String errorMessage = buildErrorMessage(addresses, ex);
@@ -511,9 +488,8 @@ public class RemoteDelivery extends AbstractMailet {
 							}
 						};
 					} catch (UnknownHostException uhe) {
-						logger.error("Unknown gateway host: "
-								+ uhe.getMessage().trim());
-						logger.error("This could be a DNS server error or configuration error.");
+						logger.error("Unknown gateway host: {}\nThis could be a DNS server error or configuration error.",
+								uhe.getMessage().trim());
 					}
 				}
 				return addresses != null && addresses.hasNext();

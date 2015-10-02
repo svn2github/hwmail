@@ -19,14 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.field.address.AddressList;
 import org.apache.james.mime4j.field.address.DomainList;
 import org.apache.james.mime4j.field.address.Group;
 import org.apache.james.mime4j.field.address.Mailbox;
 import org.apache.james.mime4j.field.address.MailboxList;
 import org.apache.james.mime4j.field.address.parser.ParseException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import com.hs.mail.imap.ImapConstants;
@@ -39,7 +40,7 @@ import com.hs.mail.imap.ImapConstants;
  */
 public class EnvelopeBuilder {
 	
-	private static Logger logger = Logger.getLogger(EnvelopeBuilder.class);
+	private static Logger logger = LoggerFactory.getLogger(EnvelopeBuilder.class);
 	
 	public static final String[] WANTED_FIELDS = new String[] {
 			ImapConstants.RFC822_DATE, ImapConstants.RFC822_SUBJECT,

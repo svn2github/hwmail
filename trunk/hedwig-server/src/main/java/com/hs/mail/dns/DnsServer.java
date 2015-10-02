@@ -31,7 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.xbill.DNS.CNAMERecord;
 import org.xbill.DNS.Cache;
@@ -59,7 +60,7 @@ import com.hs.mail.smtp.message.HostAddress;
  */
 public class DnsServer implements InitializingBean {
 
-	static Logger logger = Logger.getLogger(DnsServer.class);
+	static Logger logger = LoggerFactory.getLogger(DnsServer.class);
 	
 	/**
 	 * A resolver instance used to retrieve DNS records.
@@ -120,7 +121,7 @@ public class DnsServer implements InitializingBean {
 			resolver = new ExtendedResolver(getDnsServers());
 			Lookup.setDefaultResolver(resolver);
 		} catch (UnknownHostException e) {
-			logger.fatal("DNS server counld not be initialized. The DNS servers specified are not recognized hosts.", e);
+			logger.error("DNS server counld not be initialized. The DNS servers specified are not recognized hosts.", e);
 			throw e;
 		}
 		
@@ -186,22 +187,13 @@ public class DnsServer implements InitializingBean {
 			// If we found no results, we'll add the original domain name if
 			// it's a valid DNS entry
 			if (servers.size() == 0) {
-                StringBuffer logBuffer =
-                    new StringBuffer(128)
-                            .append("Couldn't resolve MX records for domain ")
-                            .append(hostname)
-                            .append(".");
-                logger.info(logBuffer.toString());
+                logger.info("Couldn't resolve MX records for domain {}.", hostname);
                 Record cnames[] = lookup(hostname, Type.CNAME);
                 Collection<String> cnameMXrecords = null;
                 if (cnames != null && cnames.length > 0) {
                     cnameMXrecords = findMXRecordsRaw(((CNAMERecord) cnames[0]).getTarget().toString());
                 } else {
-                    logBuffer = new StringBuffer(128)
-		                    .append("Couldn't find CNAME records for domain ")
-		                    .append(hostname)
-		                    .append(".");
-                    logger.info(logBuffer.toString());
+                    logger.info("Couldn't find CNAME records for domain {}.", hostname);
                 }
 				if (cnameMXrecords == null) {
                     try {
@@ -211,11 +203,7 @@ public class DnsServer implements InitializingBean {
                         // The original domain name is not a valid host,
                         // so we can't add it to the server list.  In this
                         // case we return an empty list of servers
-                    	logBuffer = new StringBuffer(128)
-                    			.append("Couldn't resolve IP address for host ")
-                    			.append(hostname)
-                    			.append(".");
-                    	logger.error(logBuffer.toString());
+                    	logger.error("Couldn't resolve IP address for host {}.", hostname);
                     }
 				} else {
 					 servers.addAll(cnameMXrecords);
@@ -253,29 +241,21 @@ public class DnsServer implements InitializingBean {
     	try {
 			name = Name.fromString(namestr, Name.root);
 		} catch (TextParseException e) {
-			logger.error("Couldn't parse name " + namestr, e);
+			logger.error("Couldn't parse name {}", namestr, e);
 			return null;
 		}
 		int dclass = DClass.IN;
 		
 		SetResponse cached = cache.lookupRecords(name, type, dnsCredibility);
 		if (cached.isSuccessful()) {
-			if (logger.isDebugEnabled())
-				logger.debug(new StringBuffer(256)
-		                    .append("Retrieving MX record for ")
-		                    .append(name).append(" from cache")
-		                    .toString());
+			logger.debug("Retrieving MX record for {} from cache", name);
 			return processSetResponse(cached);
 		} else if (cached.isNXDOMAIN() || cached.isNXRRSET()) {
 			return null;
 		} else if (querysent) {
 			return null;
 		} else {
-			if (logger.isDebugEnabled())
-				logger.debug(new StringBuffer(256)
-			                .append("Looking up MX record for ")
-			                .append(name)
-			                .toString());
+			logger.debug("Looking up MX record for {}", name);
 			Record question = Record.newRecord(name, type, dclass);
 			Message query = Message.newQuery(question);
 			Message response = null;
@@ -316,7 +296,7 @@ public class DnsServer implements InitializingBean {
 		answers = new Record[answerCount];
 
 		for (int i = 0; i < rrsets.length; i++) {
-			Iterator iter = rrsets[i].rrs();
+			Iterator<?> iter = rrsets[i].rrs();
 			while (iter.hasNext()) {
 				Record r = (Record) iter.next();
 				answers[n++] = r;
@@ -390,11 +370,9 @@ public class DnsServer implements InitializingBean {
 							// this should never happen, since we just got
 							// this host from mxHosts, which should have
 							// already done this check.
-							StringBuffer logBuffer = new StringBuffer(128)
-									.append("Couldn't resolve IP address for discovered host ")
-									.append(nextHostname)
-									.append(".");
-							logger.error(logBuffer.toString());
+							logger.error(
+									"Couldn't resolve IP address for discovered host {}.",
+									nextHostname);
 						}
 	                    
 						final InetAddress[] ipAddresses = addrs;

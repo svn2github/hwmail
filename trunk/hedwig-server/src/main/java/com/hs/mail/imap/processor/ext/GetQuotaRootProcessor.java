@@ -40,16 +40,23 @@ public class GetQuotaRootProcessor extends AbstractQuotaProcessor {
 			QuotaResponder responder) throws Exception {
 		GetQuotaRootRequest request = (GetQuotaRootRequest) message;
 		String mailboxName = request.getMailbox();
-		MailboxManager mManager = getMailboxManager();
-		Mailbox mailbox = mManager.getMailbox(session.getUserID(), mailboxName);
-		if (mailbox == null) {
-			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
+		Mailbox mailbox = null;
+		if (!"".equals(mailboxName)) {
+			// If not root folder
+			MailboxManager mManager = getMailboxManager();
+			mailbox = mManager.getMailbox(session.getUserID(), mailboxName);
+			if (mailbox == null) {
+				responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
+				return;
+			}
 		} else {
-			UserManager uManager = getUserManager();
-			Quota quota = uManager.getQuota(session.getUserID(), "");
-			responder.respond(new QuotaResponse(quota, mailboxName));
-			responder.okCompleted(request);
+			mailbox = Mailbox.getDefaultMailbox(session.getUserID());
 		}
+		UserManager uManager = getUserManager();
+		Quota quota = uManager.getQuota(mailbox.getOwnerID(),
+				mailbox.getMailboxID(), "");
+		responder.respond(new QuotaResponse(quota, mailboxName));
+		responder.okCompleted(request);
 	}
 
 }

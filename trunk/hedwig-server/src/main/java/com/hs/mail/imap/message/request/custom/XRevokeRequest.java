@@ -2,6 +2,7 @@ package com.hs.mail.imap.message.request.custom;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.ImapSession.State;
+import com.hs.mail.imap.message.SequenceRange;
 import com.hs.mail.imap.message.request.ImapRequest;
 
 /**
@@ -12,15 +13,22 @@ import com.hs.mail.imap.message.request.ImapRequest;
  */
 public class XRevokeRequest extends ImapRequest {
 
-	private final String messageID;
+	private final SequenceRange[] sequenceSet;
+	private final boolean useUID;
 	
-	public XRevokeRequest(String tag, String command, String messageID) {
+	public XRevokeRequest(String tag, String command,
+			SequenceRange[] sequenceSet, boolean useUID) {
 		super(tag, command);
-		this.messageID = messageID;
+		this.sequenceSet = sequenceSet;
+		this.useUID = useUID;
 	}
 	
-	public String getMessageID() {
-		return messageID;
+	public SequenceRange[] getSequenceSet() {
+		return sequenceSet;
+	}
+
+	public boolean isUseUID() {
+		return useUID;
 	}
 
 	@Override

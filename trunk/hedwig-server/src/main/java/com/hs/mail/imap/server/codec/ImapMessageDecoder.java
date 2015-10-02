@@ -175,6 +175,9 @@ public abstract class ImapMessageDecoder extends
 		}
 	}
 
+	/**
+	 * @see SearchRequest#decode()
+	 */
 	private String toString(ChannelBuffer buffer) {
 		byte[] dst = new byte[buffer.readableBytes()];
 		buffer.getBytes(buffer.readerIndex(), dst);

@@ -17,7 +17,7 @@ package com.hs.mail.imap.schedule;
 
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * 

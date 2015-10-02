@@ -46,9 +46,8 @@ public class LoginProcessor extends AbstractImapProcessor {
 			MailboxManager mailboxManager = getMailboxManager();
 			final String inboxName = ImapConstants.INBOX_NAME;
 			if (!mailboxManager.mailboxExists(userid, inboxName)) {
-				if (logger.isDebugEnabled())
-					logger.debug("INBOX does not exist for " + username
-							+ ". Creating it.");
+				logger.debug("INBOX does not exist for {}. Creating it.",
+						username);
 				mailboxManager.createMailbox(userid, inboxName);
 			}
 			responder.okCompleted(request);

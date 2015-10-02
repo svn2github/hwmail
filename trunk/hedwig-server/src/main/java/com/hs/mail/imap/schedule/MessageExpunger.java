@@ -22,9 +22,10 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.message.search.ComparisonKey;
@@ -40,7 +41,7 @@ import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
  */
 public class MessageExpunger {
 	
-	static Logger logger = Logger.getLogger(MessageExpunger.class);
+	static Logger logger = LoggerFactory.getLogger(MessageExpunger.class);
 	
 	private MailboxManager manager;
 
@@ -73,13 +74,9 @@ public class MessageExpunger {
 	
 	private void expungeMailboxes(Map<String, Date> criteria, long timeLimit) {
 		for (String name : criteria.keySet()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Expunging messages from "
-						+ name
-						+ " which are older than "
-						+ DateFormatUtils.ISO_DATE_FORMAT.format(criteria
-								.get(name)) + ".");
-			}
+			logger.debug("Expunging messages from {} which are older than {}",
+					name,
+					DateFormatUtils.ISO_DATE_FORMAT.format(criteria.get(name)) + ".");
 			String mbox = BASE64MailboxEncoder.encode(name);
 			List<Long> mailboxIdes = manager.getMailboxIDList(mbox);
 			if (CollectionUtils.isNotEmpty(mailboxIdes)) {

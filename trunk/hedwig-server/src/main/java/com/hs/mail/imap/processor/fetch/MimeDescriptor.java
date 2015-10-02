@@ -58,7 +58,10 @@ public class MimeDescriptor implements Serializable {
 		this.type = type;
 		this.subType = subType;
 		this.Id = Id;
-		this.description = description;
+		// If description is consist of multiple lines, Javamail raise exception
+		// when parsing BOSYSTRUCTURE.
+		// So we omit the description intentionally.
+		// this.description = description;
 		this.encoding = encoding;
 		this.parameters = parameters;
 		this.disposition = disposition;

@@ -26,7 +26,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.field.AbstractField;
 import org.apache.james.mime4j.message.Header;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.message.MailMessage;
@@ -45,7 +46,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
  */
 public class ToRepository extends AbstractMailet {
 
-	static Logger logger = Logger.getLogger(ToRepository.class);
+	static Logger logger = LoggerFactory.getLogger(ToRepository.class);
 	
 	private BodyStructureBuilder builder = null;
 	

@@ -15,10 +15,11 @@
  */
 package com.hs.mail.imap.processor;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.imap.ImapSession;
@@ -42,7 +43,7 @@ import com.hs.mail.imap.user.UserManager;
  */
 public abstract class AbstractImapProcessor implements ImapProcessor {
 	
-	static Logger logger = Logger.getLogger(AbstractImapProcessor.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractImapProcessor.class);
 
 	private UnsolicitedResponseBuilder builder = new UnsolicitedResponseBuilder();
 	
@@ -74,12 +75,11 @@ public abstract class AbstractImapProcessor implements ImapProcessor {
 			Responder responder) throws Exception;
 
 	protected MailboxManager getMailboxManager() {
-		return (MailboxManager) ComponentManager
-				.getBeanOfType(MailboxManager.class);
+		return ComponentManager.getBeanOfType(MailboxManager.class);
 	}
 	
 	protected UserManager getUserManager() {
-		return (UserManager) ComponentManager.getBeanOfType(UserManager.class);
+		return ComponentManager.getBeanOfType(UserManager.class);
 	}
 	
 	protected Responder createResponder(Channel channel, ImapRequest request) {

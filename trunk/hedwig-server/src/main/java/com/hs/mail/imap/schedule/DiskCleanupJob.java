@@ -17,11 +17,9 @@ package com.hs.mail.imap.schedule;
 
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.log4j.Logger;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -32,27 +30,22 @@ import com.hs.mail.imap.mailbox.MailboxManager;
  * @since Sep 28, 2010
  *
  */
-public class DiskCleanupJob extends QuartzJobBean {
-
-	static Logger logger = Logger.getLogger(DiskCleanupJob.class);
+public class DiskCleanupJob {
 	
-	private MailboxManager manager;
+	static Logger logger = LoggerFactory.getLogger(DiskCleanupJob.class);
 
-	public void setMailboxManager(MailboxManager manager) {
-		this.manager = manager;
+	private MailboxManager mailboxManager;
+
+	public void setMailboxManager(MailboxManager mailboxManager) {
+		this.mailboxManager = mailboxManager;
 	}
-
-	@Override
-	protected void executeInternal(JobExecutionContext context)
-			throws JobExecutionException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Starting disk cleanup job.");
-		}
+	
+	public void execute() {
+		logger.debug("Starting disk cleanup job.");
 		String prop = Config.getProperty("stop_cron_after", "2h");
-		Date stopAt = ScheduleUtils.getTimeAfter(prop, DateUtils.addHours(
-				new Date(), 2));
+		Date stopAt = ScheduleUtils.getTimeAfter(prop, DateUtils.addHours(new Date(), 2));
 		if ((prop = Config.getProperty("expunge_after", null)) != null) {
-			new MessageExpunger(manager).expunge(prop, stopAt.getTime());
+			new MessageExpunger(mailboxManager).expunge(prop, stopAt.getTime());
 		}
 		if ((prop = Config.getProperty("compress_after", null)) != null) {
 			new MessageCompressor().compress(prop, stopAt.getTime());

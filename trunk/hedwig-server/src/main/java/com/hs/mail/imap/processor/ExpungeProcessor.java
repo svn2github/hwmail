@@ -61,8 +61,8 @@ public class ExpungeProcessor extends AbstractExpungeProcessor {
 							+ "\r\n");
 				} else {
 					// This case is impossible.
-					logger.error("Failed to convert UID " + uid
-							+ " to message number.");
+					logger.error("Failed to convert UID {} to message number.",
+							uid);
 				}
 			}
 			selected.resetEvents();

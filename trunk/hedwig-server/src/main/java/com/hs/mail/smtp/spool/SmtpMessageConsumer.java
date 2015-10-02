@@ -20,8 +20,9 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.hs.mail.mailet.Mailet;
@@ -37,7 +38,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
  */
 public class SmtpMessageConsumer implements Consumer, InitializingBean {
 	
-	static Logger logger = Logger.getLogger(SmtpMessageConsumer.class);
+	static Logger logger = LoggerFactory.getLogger(SmtpMessageConsumer.class);
 	
     private static final long DEFAULT_DELAY_TIME = 120000; // 2*60*1000 millis (2 minutes)
 	
@@ -94,13 +95,9 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			// up and processed later.
 			// We only tell the watcher to do not delete the message. 
 			// The original message was "stored" by the mailet.
-			StringBuilder logBuffer = new StringBuilder(128)
-					.append("Storing message ")
-					.append(message.getName())
-					.append(" into spool after ")
-					.append(retries)
-					.append(" retries");
-			logger.info(logBuffer.toString());
+			logger.info("Storing message {} into spool after {} retries",
+					message.getName(),
+					retries);
 			return Consumer.CONSUME_ERROR_KEEP;
 		}
 
@@ -128,10 +125,9 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 		for (Mailet aMailet : mailets) {
 			try {
 				if (aMailet.accept(msg.getRecipients(), msg)) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Processing " + msg.getName()
-								+ " through " + aMailet.getClass().getName());
-					}
+					logger.debug("Processing {} through {}",
+							msg.getName(),
+							aMailet.getClass().getName());
 					aMailet.service(msg.getRecipients(), msg);
 				}
 			} catch (Exception e) {

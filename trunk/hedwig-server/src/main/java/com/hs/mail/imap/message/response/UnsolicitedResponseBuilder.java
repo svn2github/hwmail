@@ -17,7 +17,8 @@ package com.hs.mail.imap.message.response;
 
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
@@ -34,7 +35,7 @@ import com.hs.mail.imap.mailbox.UidToMsnMapper;
  */
 public class UnsolicitedResponseBuilder {
 	
-	static Logger logger = Logger.getLogger(UnsolicitedResponseBuilder.class);
+	static Logger logger = LoggerFactory.getLogger(UnsolicitedResponseBuilder.class);
 
 	public UnsolicitedResponse build(SelectedMailbox selected,
 			EventTracker tracker) {
@@ -78,8 +79,8 @@ public class UnsolicitedResponseBuilder {
 				response.addExpungedMsn(msgnum);
 			} else {
 				// This case is impossible.
-				logger.error("Failed to convert UID " + messageID
-						+ " to message number.");
+				logger.error("Failed to convert UID {} to message number.",
+						messageID);
 			}
 		}
 	}
@@ -94,8 +95,8 @@ public class UnsolicitedResponseBuilder {
 				response.addFlagsResponse(msgnum, dao.getFlags(messageID));
 			} else {
 				// This case is impossible.
-				logger.error("Failed to convert UID " + messageID
-						+ " to message number.");
+				logger.error("Failed to convert UID {} to message number.",
+						messageID);
 			}
 		}
 	}

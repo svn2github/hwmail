@@ -24,8 +24,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLEngine;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -35,6 +34,8 @@ import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.hs.mail.container.config.Config;
@@ -49,7 +50,7 @@ import com.hs.mail.imap.server.codec.ImapRequestDecoder;
  */
 public class ImapServer implements InitializingBean {
 	
-	private static Logger log = Logger.getLogger(ImapServer.class);
+	private static Logger logger = LoggerFactory.getLogger(ImapServer.class);
 
 	/**
 	 * The host name of network interface to which the service will bind. If not
@@ -143,11 +144,8 @@ public class ImapServer implements InitializingBean {
 		}
 		bootstrap.bind(endpoint);
 		
-		StringBuilder logBuffer = new StringBuilder(64)
-				.append(getServiceType())
-				.append(" started on port ")
-				.append(getPort());
-		Logger.getLogger("console").info(logBuffer.toString());
+		LoggerFactory.getLogger("console").info("{} started on port {}",
+				getServiceType(), getPort());
 	}
 	
 	private ChannelPipelineFactory createPipelineFactory() {
@@ -189,7 +187,7 @@ public class ImapServer implements InitializingBean {
 				handler.setDebugOut(new PrintStream(fos));
 			} catch (FileNotFoundException e) {
 				// Ignore this exception
-				log.error(e.getMessage());
+				logger.error(e.getMessage());
 			}
 		}
 		return handler;

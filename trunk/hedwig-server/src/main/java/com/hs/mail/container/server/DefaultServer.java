@@ -21,8 +21,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 
 import com.hs.mail.container.server.socket.ServerSocketFactory;
@@ -36,7 +37,7 @@ import com.hs.mail.container.server.socket.SocketConnection;
  */
 public class DefaultServer implements Server {
 
-	static Logger logger = Logger.getLogger(DefaultServer.class);
+	static Logger logger = LoggerFactory.getLogger(DefaultServer.class);
 
 	/**
 	 * The port on which this server will be made available.
@@ -185,11 +186,8 @@ public class DefaultServer implements Server {
 		mainThread = new MainSocketThread();
 		mainThread.start();
 
-		StringBuilder logBuffer = new StringBuilder(64)
-				.append(getServiceType())
-				.append(" started on port ")
-				.append(port);
-		Logger.getLogger("console").info(logBuffer.toString());
+		LoggerFactory.getLogger("console").info("{} started on port {}",
+				getServiceType(), port);
 	}
 	
 	public void stop() {
@@ -228,11 +226,7 @@ public class DefaultServer implements Server {
 					try {
 						taskExecutor.execute(sc);
 					} catch (Exception e) {
-                        if (logger.isDebugEnabled()) {
-							logger.error("Cannot add work into thread pool: " + e.getMessage(), e);
-						} else {
-							logger.error("Cannot add work into thread pool: " + e.getMessage());
-						}
+						logger.error("Cannot add work into thread pool", e);
                         
                         if (soc != null) {
                         	try {
@@ -252,28 +246,18 @@ public class DefaultServer implements Server {
 						soc = null;
 					}
 					
-					if (logger.isDebugEnabled()) {
-						logger.warn("IOException occurred: " + e.getMessage(), e);
-					} else {
-						logger.warn("IOException occurred: " + e.getMessage());
-					}
+					logger.warn("IOException occurred", e);
 					
 					try {
 						synchronized (this) {
 							if (this.canContinue) {
-								if (logger.isInfoEnabled()) {
-									logger.info("Will reopen server socket.");
-								}
+								logger.info("Will reopen server socket.");
 								this.serverSocket.close();
 								open();
 							}
 						}
 					} catch (Exception oe) {
-                        if (logger.isDebugEnabled()) {
-                            logger.error("Cannot reopen server socket: " + oe.getMessage(), oe);
-                        } else {
-                            logger.error("Cannot reopen server socket: " + oe.getMessage());
-                        }
+						logger.error("Cannot reopen server socket", oe); 
 						break;
 					}
 				}
@@ -292,11 +276,7 @@ public class DefaultServer implements Server {
 							this.serverSocket = serverSocketFactory.createServerSocket(port);
 						}
 					} catch (IOException ae) {
-						if (logger.isDebugEnabled()) {
-							logger.error("Cannot open server socket (" + port + "," + backlog + "):" + e.getMessage(), e);
-						} else {
-							logger.error("Cannot open server socket (" + port + "," + backlog + "):" + e.getMessage());
-						}
+						logger.error("Cannot open server socket ({}, {})", port, backlog, ae);
 					}
 				}
 			} else {
@@ -307,11 +287,7 @@ public class DefaultServer implements Server {
 						this.serverSocket = serverSocketFactory.createServerSocket(port);
 					}
 				} catch (IOException e) {
-					if (logger.isDebugEnabled()) {
-						logger.error("Cannot open server socket (" + port + "," + backlog + "):" + e.getMessage(), e);
-					} else {
-						logger.error("Cannot open server socket (" + port + "," + backlog + "):" + e.getMessage());
-					}
+					logger.error("Cannot open server socket ({}, {})", port, backlog, e);
 				}
 			}
 		}

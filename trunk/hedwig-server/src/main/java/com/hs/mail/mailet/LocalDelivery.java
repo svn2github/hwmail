@@ -21,7 +21,8 @@ import java.util.Set;
 
 import javax.mail.MessagingException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.smtp.message.Recipient;
@@ -37,7 +38,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
  */
 public class LocalDelivery extends AbstractMailet {
 
-	static Logger logger = Logger.getLogger(LocalDelivery.class);
+	static Logger logger = LoggerFactory.getLogger(LocalDelivery.class);
 
 	private List<Mailet> mailets;
 	
@@ -69,8 +70,8 @@ public class LocalDelivery extends AbstractMailet {
 			try {
 				if (aMailet.accept(temp, message)) {
 					if (logger.isDebugEnabled()) {
-						logger.debug("Processing " + message.getName()
-								+ " through " + aMailet.getClass().getName());
+						logger.debug("Processing {} through {}", message.getName(), 
+								aMailet.getClass().getName());
 					}
 					aMailet.service(temp, message);
 				}

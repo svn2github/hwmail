@@ -20,9 +20,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.util.FileUtils;
@@ -35,7 +36,7 @@ import com.hs.mail.util.FileUtils;
  */
 public class MessageCompressor {
 	
-	static Logger logger = Logger.getLogger(MessageCompressor.class);
+	static Logger logger = LoggerFactory.getLogger(MessageCompressor.class);
 
 	private static final String DOT_GZIP_EXTENSION = "." + FileUtils.GZIP_EXTENSION;
 	private static final String COMPRESSED = ".compressed";
@@ -50,12 +51,9 @@ public class MessageCompressor {
 			Date start = getStartDate(base);
 			if (start != null) {
 				Date date = start;
-				if (logger.isDebugEnabled()) {
-					logger.debug("Compressing directories from "
-							+ DateFormatUtils.ISO_DATE_FORMAT.format(start)
-							+ " to "
-							+ DateFormatUtils.ISO_DATE_FORMAT.format(base));
-				}
+				logger.debug("Compressing directories from {} to {}",
+						DateFormatUtils.ISO_DATE_FORMAT.format(start),
+						DateFormatUtils.ISO_DATE_FORMAT.format(base));
 				while (date.before(base)
 						&& System.currentTimeMillis() < timeLimit) {
 					compressDirectories(date, timeLimit);
@@ -94,10 +92,7 @@ public class MessageCompressor {
 			for (int i = 0; i < subdirs.length
 					&& System.currentTimeMillis() < timeLimit; i++) {
 				if (!new File(subdirs[i], COMPRESSED).exists()) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Start compressing "
-								+ subdirs[i].getAbsolutePath());
-					}
+					logger.debug("Start compressing {}", subdirs[i].getAbsolutePath());
 					compressDirectory(subdirs[i]);
 				}
 			}

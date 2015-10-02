@@ -1,51 +1,30 @@
 package com.hs.mail.imap.processor.fetch;
 
-import java.io.File;
-import java.io.FileInputStream;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
 
-import junit.framework.TestCase;
+import org.apache.james.mime4j.MimeException;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+public class BodyStructureBuilderTest {
 
-import com.hs.mail.util.FileUtils;
-
-public class BodyStructureBuilderTest extends TestCase {
-
-	private EnvelopeBuilder envelopeBuilder;
-	private BodyStructureBuilder bodyStructureBuilder;
-
-	protected void setUp() throws Exception {
-		super.setUp();
+	private static EnvelopeBuilder envelopeBuilder;
+	private static BodyStructureBuilder bodyStructureBuilder;
+	
+	@BeforeClass
+	public static void oneTimeSetUp() {
 		envelopeBuilder = new EnvelopeBuilder();
 		bodyStructureBuilder = new BodyStructureBuilder(envelopeBuilder);
 	}
-
-	public void testBuild() throws Exception {
-		Resource normal = new ClassPathResource("/text_html.eml");
-		MimeDescriptor descriptorNormal = bodyStructureBuilder.build(normal
-				.getInputStream());
-
-		File zipped = File.createTempFile("hwm", ".zip");
-		FileUtils.compress(normal.getFile(), zipped);
-		MimeDescriptor descriptorZipped = bodyStructureBuilder
-				.build(new GZIPInputStream(new FileInputStream(zipped)));
-		zipped.delete();
-			
-		assertTrue(EqualsBuilder.reflectionEquals(descriptorNormal,
-				descriptorZipped));
-		assertTrue(descriptorNormal.getBodyOctets() == 1930
-				&& descriptorNormal.getLines() == 25
-				&& "text".equals(descriptorNormal.getType())
-				&& "html".equals(descriptorNormal.getSubType()));
-	}
 	
-	protected void tearDown() throws Exception {
-		super.tearDown();
+	@Test
+	public void testBuild() throws IOException, MimeException {
+		InputStream input = getClass().getResourceAsStream("/321");
+		MimeDescriptor descriptor = bodyStructureBuilder.build(input);
+		assertNotNull(descriptor);
 	}
 
 }

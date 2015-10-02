@@ -17,7 +17,7 @@ package com.hs.mail.imap.processor;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.ImapConstants;
@@ -71,7 +71,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 				referenceName = "";
 			} else {
 				// Remove separator from the end of reference name.
-				referenceName = StringUtils.chomp(referenceName,
+				referenceName = StringUtils.removeEnd(referenceName,
 						Mailbox.folderSeparator);
 			}
 			doList(session, responder, referenceName, mailboxName);

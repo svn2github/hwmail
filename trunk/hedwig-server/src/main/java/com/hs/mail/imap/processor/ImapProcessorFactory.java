@@ -43,11 +43,13 @@ import com.hs.mail.imap.message.request.StatusRequest;
 import com.hs.mail.imap.message.request.StoreRequest;
 import com.hs.mail.imap.message.request.SubscribeRequest;
 import com.hs.mail.imap.message.request.UnsubscribeRequest;
+import com.hs.mail.imap.message.request.custom.XRevokeRequest;
 import com.hs.mail.imap.message.request.ext.GetQuotaRequest;
 import com.hs.mail.imap.message.request.ext.GetQuotaRootRequest;
 import com.hs.mail.imap.message.request.ext.NamespaceRequest;
 import com.hs.mail.imap.message.request.ext.SetQuotaRequest;
 import com.hs.mail.imap.message.request.ext.SortRequest;
+import com.hs.mail.imap.processor.custom.XRevokeProcessor;
 import com.hs.mail.imap.processor.ext.GetQuotaProcessor;
 import com.hs.mail.imap.processor.ext.GetQuotaRootProcessor;
 import com.hs.mail.imap.processor.ext.NamespaceProcessor;
@@ -95,6 +97,7 @@ public class ImapProcessorFactory {
 		registerProcess(NamespaceRequest.class, new NamespaceProcessor());
 		registerProcess(SetQuotaRequest.class, new SetQuotaProcessor());
 		registerProcess(SortRequest.class, new SortProcessor());
+		registerProcess(XRevokeRequest.class, new XRevokeProcessor());
 	}
 
 	private static void registerProcess(Class<? extends ImapRequest> clazz,
