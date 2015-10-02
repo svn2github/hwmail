@@ -94,6 +94,8 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 				new Object[] { new Long(mailboxID) }, Long.class);
 	}
 	
+	abstract protected SearchQuery getSearchQuery();
+	
 	private void appendSort(StringBuffer sql, String field, boolean reverse) {
 		sql.append(" ORDER BY p.").append(field);
 		if (reverse)
@@ -127,10 +129,10 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	private List<Long> query(UidToMsnMapper map, long mailboxID, String name,
 			final String pattern) {
 		if (StringUtils.isEmpty(pattern)) {
-			String sql = SearchQuery.toQuery(mailboxID, name, true);
+			String sql = getSearchQuery().toQuery(mailboxID, name, true);
 			return getJdbcTemplate().queryForList(sql, Long.class);
 		} else {
-			String sql = SearchQuery.toQuery(mailboxID, name, false);
+			String sql = getSearchQuery().toQuery(mailboxID, name, false);
 			final List<Long> results = new ArrayList<Long>();
 			getJdbcTemplate().query(sql, new RowCallbackHandler() {
 				public void processRow(ResultSet rs) throws SQLException {
@@ -169,7 +171,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	}
 	
 	private List<Long> query(UidToMsnMapper map, long mailboxID, KeywordKey key) {
-		String sql = SearchQuery.toQuery(mailboxID, key);
+		String sql = getSearchQuery().toQuery(mailboxID, key);
 		if (key.getTestSet()) {
 			return getJdbcTemplate().queryForList(sql, Long.class);
 		} else {
@@ -179,7 +181,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	}
 
 	private List<Long> query(UidToMsnMapper map, long mailboxID, CompositeKey key) {
-		String sql = SearchQuery.toQuery(mailboxID, key);
+		String sql = getSearchQuery().toQuery(mailboxID, key);
 		return getJdbcTemplate().queryForList(sql, Long.class);
 	}
 	

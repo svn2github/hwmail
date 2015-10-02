@@ -18,7 +18,6 @@ package com.hs.mail.imap.dao;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.hs.mail.imap.message.search.ComparisonKey;
 import com.hs.mail.imap.message.search.CompositeKey;
@@ -40,9 +39,9 @@ import com.hs.mail.imap.message.search.SubjectKey;
  * @since Apr 8, 2010
  *
  */
-class SearchQuery {
+abstract class SearchQuery {
 	
-	static String toQuery(long mailboxID, CompositeKey key) {
+	String toQuery(long mailboxID, CompositeKey key) {
 		StringBuilder sql = new StringBuilder(
 				"SELECT messageid FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ")
 				.append(mailboxID).append(" AND m.physmessageid = p.physmessageid");
@@ -56,7 +55,7 @@ class SearchQuery {
 		return sql.toString();
 	}
 
-	static String toQuery(long mailboxID, String headername, boolean emptyValue) {
+	String toQuery(long mailboxID, String headername, boolean emptyValue) {
 		if (emptyValue) {
 			return String
 					.format("SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
@@ -68,14 +67,14 @@ class SearchQuery {
 		}
 	}
 
-	static String toQuery(long mailboxID, KeywordKey key) {
+	String toQuery(long mailboxID, KeywordKey key) {
 		return String
 				.format(
 						"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = %d AND m.messageid = k.messageid AND k.keyword = '%s'",
 						mailboxID, key.getPattern());
 	}
 
-	private static String toQuery(SearchKey key) {
+	private String toQuery(SearchKey key) {
 		if (key instanceof FlagKey) {
 			return flagQuery((FlagKey) key);
 		} else if (key instanceof FromStringKey) {
@@ -93,7 +92,7 @@ class SearchQuery {
 		}
 	}
 
-	private static String flagQuery(FlagKey key) {
+	private String flagQuery(FlagKey key) {
 		String s = FlagUtils.getFlagColumnName(key.getFlag());
 		if (StringUtils.isNotEmpty(s)) {
 			String v = key.isSet() ? "Y" : "N";
@@ -104,22 +103,18 @@ class SearchQuery {
 		}
 	}
 	
-	private static String dateQuery(String field, DateKey key) {
-		return String.format("DATE(%s) %s DATE('%s')", field, getOp(key
-				.getComparison()), DateFormatUtils.ISO_DATE_FORMAT.format(key
-				.getDate()));
-	}
-	
-	private static String stringQuery(String field, StringKey key) {
+	private String stringQuery(String field, StringKey key) {
 		return String.format("%s LIKE '%%%s%%'", field, key.getPattern());
 	}
 	
-	private static String numberQuery(String field, IntegerComparisonKey key) {
+	private String numberQuery(String field, IntegerComparisonKey key) {
 		return String.format("%s %s %d", field, getOp(key.getComparison()), key
 				.getNumber());
 	}
 
-	private static String getOp(int comparison) {
+	abstract protected String dateQuery(String field, DateKey key);
+	
+	protected String getOp(int comparison) {
 		switch (comparison) {
 		case ComparisonKey.LE:
 			return "<=";
