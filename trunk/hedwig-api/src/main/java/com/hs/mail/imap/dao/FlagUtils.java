@@ -21,8 +21,8 @@ import java.util.List;
 
 import javax.mail.Flags;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Mapping between message's system flags and message table's column name
@@ -37,8 +37,8 @@ public class FlagUtils {
 			Flags.Flag.ANSWERED, Flags.Flag.DELETED, Flags.Flag.FLAGGED,
 			Flags.Flag.RECENT, Flags.Flag.DRAFT };
 
-	private static String[] attrArray = { "seen", "answered", "deleted",
-			"flagged", "recent", "draft" };
+	private static String[] attrArray = { "seen_flag", "answered_flag", 
+			"deleted_flag", "flagged_flag", "recent_flag", "draft_flag" };
 
 	static String getParam(Flags flags, Flags.Flag flag) {
 		return flags.contains(flag) ? "Y" : "N";
@@ -63,7 +63,7 @@ public class FlagUtils {
 		return flags;
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static String buildParams(Flags.Flag[] flags, boolean replace, boolean set,
 			List params) {
 		StringBuilder sb = new StringBuilder();

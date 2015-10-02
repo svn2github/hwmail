@@ -3,13 +3,13 @@ package com.hs.mail.imap.dao;
 /**
  * 
  * @author Won Chul Doh
- * @since Apr 5, 2010
+ * @since July 26, 2015
  *
  */
-public class MySqlSearchDao extends AnsiSearchDao {
+public class OracleSearchDao extends AnsiSearchDao {
 
 	/**
 	 * Nothing to override
 	 */
-	
+
 }

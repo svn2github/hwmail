@@ -66,22 +66,22 @@ public abstract class BasicLoginModule implements LoginModule {
 	/**
 	 * State shared with other configured LoginModules.
 	 */
-	protected Map sharedState;
+	protected Map<String, ?> sharedState;
 
 	/**
 	 * Options specified in the login Configuration for this particular
 	 * LoginModule.
 	 */
-	protected Map options;
+	protected Map<String, ?> options;
 
 	/**
 	 * Class for password encoder
 	 */
-	protected Class encoder;
+	protected Class<?> encoder;
 	
 	protected boolean debug = false;
 
-	private static final Class DEFAULT_ENCODER_CLASS = com.hs.mail.security.login.PlaintextPasswordEncoder.class;
+	private static final Class<?> DEFAULT_ENCODER_CLASS = com.hs.mail.security.login.PlaintextPasswordEncoder.class;
 
 	protected BasicLoginModule() {
 		success = false;

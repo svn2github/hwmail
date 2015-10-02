@@ -60,16 +60,13 @@ public class MailMessage extends FetchData {
 	}
 	
 	public String getFrom() {
-		return (header.getFrom() != null) ? header.getFrom().getAddress()
-				: null;
+		Mailbox f = header.getFrom();
+		return (f != null) ? f.getAddress() : null;
 	}
 	
 	public String getReplyTo() {
 		Mailbox m = header.getReplyTo();
-		if (m == null)
-			return getFrom();
-		else
-			return header.getReplyTo().getAddress();
+		return (m == null) ? getFrom() : m.getAddress();
 	}
 	
 	public InputStream getInputStream() throws IOException {

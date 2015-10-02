@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.user;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class implements object representing user who has account in the Mail
@@ -90,8 +90,12 @@ public class User {
 		this.quota = quota;
 	}
 	
-	public String getUserName() {
+	public String getLocalPart() {
 		return StringUtils.substringBefore(userID, "@");
+	}
+	
+	public String getDomain() {
+		return StringUtils.substringAfter(userID, "@");
 	}
 
 }

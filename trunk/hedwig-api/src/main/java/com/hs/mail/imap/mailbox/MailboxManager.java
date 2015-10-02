@@ -181,6 +181,9 @@ public interface MailboxManager {
 	public void addMessage(final long ownerID, final MailMessage message,
 			String mailboxName);
 
+	public void addMessage(final long ownerID, final MailMessage message, 
+			final long mailboxID);
+
 	/**
 	 * Appends a message to this mailbox.
 	 * 
@@ -206,7 +209,7 @@ public interface MailboxManager {
 	 */
 	public void deleteMessage(final long uid);
 
-	public List<Long> getRevocableMessageIDList(String messageID);
+	public List<Long> getSiblingMessageIDList(long uid);
 	
 	/**
 	 * Copies a message to the given mailbox.

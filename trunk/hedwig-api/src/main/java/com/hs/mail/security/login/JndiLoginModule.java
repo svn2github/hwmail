@@ -36,7 +36,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.CredentialException;
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.security.UserPrincipal;
 
@@ -100,7 +100,6 @@ public class JndiLoginModule extends BasicLoginModule {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	protected boolean authenticate(String username, String password)
 			throws Exception {
 		DirContext context = null;
@@ -114,7 +113,7 @@ public class JndiLoginModule extends BasicLoginModule {
 				String[] attribs = StringUtils.split(returnAttribute, ",");
 				constraints.setReturningAttributes(attribs);
 			}
-			NamingEnumeration ne = context.search(base, searchFilter,
+			NamingEnumeration<?> ne = context.search(base, searchFilter,
 					constraints);
 			if (ne == null || !ne.hasMore()) {
 				return false;
@@ -135,12 +134,11 @@ public class JndiLoginModule extends BasicLoginModule {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected DirContext open() throws NamingException {
 		if (context == null) {
 			try {
 				// Set up the environment for creating the initial context
-				Hashtable env = new Hashtable();
+				Hashtable<String, String> env = new Hashtable<String, String>();
 				env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactory);
 				if (StringUtils.isNotEmpty(username)) {
 					env.put(Context.SECURITY_PRINCIPAL, username);

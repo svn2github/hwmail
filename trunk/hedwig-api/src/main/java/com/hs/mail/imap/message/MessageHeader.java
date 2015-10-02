@@ -17,7 +17,9 @@ package com.hs.mail.imap.message;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.MimeIOException;
@@ -79,6 +81,15 @@ public class MessageHeader {
 		return header;
 	}
 
+	public List<String> getValues(String fieldName) {
+		List<UnstructuredField> fields = obtainFields(fieldName);
+		List<String> results = new ArrayList<String>(fields.size());
+		for (UnstructuredField field : fields) {
+			results.add(field.getValue());
+		}
+		return results;
+	}
+    
     public String getSubject() {
 		UnstructuredField field = obtainField(FieldName.SUBJECT);
 		if (field == null)
@@ -126,6 +137,14 @@ public class MessageHeader {
         return getAddressList(FieldName.BCC);
     }
 
+    public AddressList getAddressList(String fieldName) {
+		AddressListField field = obtainField(fieldName);
+		if (field == null)
+			return null;
+
+		return field.getAddressList();
+	}
+    
     private MailboxList getMailboxList(String fieldName) {
         MailboxListField field = obtainField(fieldName);
         if (field == null)
@@ -134,14 +153,6 @@ public class MessageHeader {
         return field.getMailboxList();
     }
 
-    private AddressList getAddressList(String fieldName) {
-		AddressListField field = obtainField(fieldName);
-		if (field == null)
-			return null;
-
-		return field.getAddressList();
-	}
-    
 	<F extends Field> F obtainField(String fieldName) {
 		if (header == null)
 			return null;
@@ -150,5 +161,14 @@ public class MessageHeader {
 		F field = (F) header.getField(fieldName);
 		return field;
 	}
-	
+
+	<F extends Field> List<F> obtainFields(String fieldName) {
+		if (header == null)
+			return null;
+
+		@SuppressWarnings("unchecked")
+		List<F> fields = (List<F>) header.getFields(fieldName);
+		return fields;
+	}
+
 }

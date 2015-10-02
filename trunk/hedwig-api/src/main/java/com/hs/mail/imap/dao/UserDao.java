@@ -62,9 +62,9 @@ public interface UserDao {
 
 	public long getQuotaLimit(long ownerID);
 	
-	public long getQuotaUsage(long ownerID);
+	public long getQuotaUsage(long ownerID, long mailboxID);
 
-	public Quota getQuota(long ownerID, String quotaRoot);
+	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot);
 
 	public void setQuota(long ownerID, Quota quota);
 

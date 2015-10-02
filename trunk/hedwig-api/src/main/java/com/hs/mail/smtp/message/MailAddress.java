@@ -29,7 +29,7 @@ import com.hs.mail.smtp.SmtpException;
  * @since Jun 1, 2010
  *
  */
-public class MailAddress implements Serializable, Comparable {
+public class MailAddress implements Serializable, Comparable<Object> {
 
 	private static final long serialVersionUID = -3308891400855394336L;
 

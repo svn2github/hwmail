@@ -49,7 +49,7 @@ public interface MessageDao {
 	
 	public void deletePhysicalMessage(long physMessageID);
 	
-	public List<Long> getRevocableMessageIDList(String messageID);
+	public List<Long> getMessagesByHeader(long headerNameID, String messageID);
 
 	public void setFlags(long messageID, Flags flags, boolean replace, boolean set);
 	
@@ -61,6 +61,8 @@ public interface MessageDao {
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
 
+	public Map.Entry<Long, String> getHeader(long physMessageID, String field);
+	
 	public void addHeader(long physMessageID, MessageHeader header);
 
 	public long getHeaderNameID(String headerName);

@@ -211,5 +211,15 @@ public class Mailbox {
 			return "";
 		}
 	}
+	
+	/**
+	 * Get the default IMAP mailbox representing the root of the naming
+	 * hierarchy.
+	 */
+	public static Mailbox getDefaultMailbox(long ownerID) {
+		Mailbox mailbox = new Mailbox("");
+		mailbox.setOwnerID(ownerID);
+		return mailbox;
+	}
 
 }

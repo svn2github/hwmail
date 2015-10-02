@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.message.search;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.hs.mail.imap.message.SequenceRange;
 
@@ -53,7 +53,7 @@ public final class SequenceKey extends SearchKey {
 			return false;
 		SequenceKey sk = (SequenceKey) obj;
 		return sk.useUid == this.useUid
-				&& ArrayUtils.isEquals(sk.sequenceSet, this.sequenceSet);
+				&& new EqualsBuilder().append(sk.sequenceSet, this.sequenceSet).isEquals();
 	}
 
 	@Override

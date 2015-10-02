@@ -1,24 +1,8 @@
-/*
- * Copyright 2010 the original author or authors.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
 package com.hs.mail.imap.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -31,29 +15,28 @@ import com.hs.mail.imap.user.User;
 /**
  * 
  * @author Won Chul Doh
- * @since Mar 23, 2010
+ * @since July 26, 2015
  *
  */
-public class MySqlUserDao extends AnsiUserDao {
+public class OracleUserDao extends AnsiUserDao {
 
 	public List<User> getUserList(String domain, int page, int pageSize) {
 		int offset = (page - 1) * pageSize;
-		String sql = "SELECT * FROM hw_user WHERE loginid LIKE ? ORDER BY loginid LIMIT ?, ?";
+		String sql = "SELECT * FROM (SELECT u.*, ROW_NUMBER() OVER( ORDER BY loginid ) rn FROM hw_user u WHERE u.loginid LIKE ?) WHERE rn BETWEEN ? AND ?";
 		return getJdbcTemplate().query(sql,
 				new Object[] {
 						new StringBuilder("%@").append(escape(domain)).toString(), 
-						new Integer(offset),
-						new Integer(pageSize) }, userMapper);
+						new Integer(offset + 1),
+						new Integer(offset + pageSize) }, userMapper);
 	}
-	
+
 	public long addUser(final User user) {
-		final String sql = "INSERT INTO hw_user (loginid, passwd, maxmail_size, forward) VALUES(?, ?, ?, ?)";
+		final String sql = "INSERT INTO hw_user (userid, loginid, passwd, maxmail_size, forward) VALUES(sq_hw_user.NEXTVAL, ?, ?, ?, ?)";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement pstmt = con.prepareStatement(sql,
-						Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement pstmt = con.prepareStatement(sql, new String[] { "userid" });
 				pstmt.setString(1, user.getUserID());
 				pstmt.setString(2, user.getPassword());
 				pstmt.setLong(3, user.getQuota());
@@ -68,22 +51,21 @@ public class MySqlUserDao extends AnsiUserDao {
 
 	public List<Alias> getAliasList(String domain, int page, int pageSize) {
 		int offset = (page - 1) * pageSize;
-		String sql = "SELECT a.*, u.loginid FROM hw_alias a, hw_user u WHERE a.alias LIKE ? AND a.deliver_to = u.userid ORDER BY a.alias LIMIT ?, ?";
+		String sql = "SELECT * FROM (SELECT a.*, u.loginid, ROW_NUMBER() OVER( ORDER BY a.alias ) rn FROM hw_alias a, hw_user u WHERE a.alias LIKE ? AND a.deliver_to = u.userid) WHERE rn BETWEEN ? AND ?";
 		return getJdbcTemplate().query(sql,
 				new Object[] {
 						new StringBuilder("%@").append(escape(domain)).toString(), 
-						new Integer(offset),
-						new Integer(pageSize) }, aliasMapper);
+						new Integer(offset + 1),
+						new Integer(offset + pageSize) }, aliasMapper);
 	}
 
 	public long addAlias(final Alias alias) {
-		final String sql = "INSERT INTO hw_alias (alias, deliver_to) VALUES(?, ?)";
+		final String sql = "INSERT INTO hw_alias (aliasid, alias, deliver_to) VALUES(sq_hw_alias.NEXTVAL, ?, ?)";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement pstmt = con.prepareStatement(sql,
-						Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement pstmt = con.prepareStatement(sql, new String[] { "aliasid" });
 				pstmt.setString(1, alias.getAlias());
 				pstmt.setLong(2, alias.getDeliverTo());
 				return pstmt;
@@ -93,13 +75,13 @@ public class MySqlUserDao extends AnsiUserDao {
 		alias.setID(id);
 		return id;
 	}
-	
+
 	public long getQuotaUsage(long ownerID, long mailboxID) {
 		if (mailboxID != 0) {
-			String sql = "SELECT SUM(rfcsize) FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ?  AND m.physmessageid=p.physmessageid";
+			String sql = "SELECT NVL(SUM(rfcsize), 0) FROM hw_message m, hw_physmessage p WHERE m.mailboxid=? AND m.physmessageid=p.physmessageid";
 			return queryForLong(sql, new Object[] { new Long(mailboxID) });
 		} else {
-			String sql = "SELECT SUM(rfcsize) FROM hw_mailbox b, hw_message m, hw_physmessage p WHERE b.ownerid=? AND b.mailboxid=m.mailboxid AND m.physmessageid=p.physmessageid";
+			String sql = "SELECT NVL(SUM(rfcsize), 0) FROM hw_mailbox b, hw_message m, hw_physmessage p WHERE b.ownerid=? AND b.mailboxid=m.mailboxid AND m.physmessageid=p.physmessageid";
 			return queryForLong(sql, new Object[] { new Long(ownerID) });
 		}
 	}

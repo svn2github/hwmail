@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.user;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class represents user's alias which will be expanded to local user's
@@ -84,4 +84,8 @@ public class Alias {
 		return StringUtils.substringBefore(alias, "@");
 	}
 	
+	public String getDomain() {
+		return StringUtils.substringAfter(alias, "@");
+	}
+
 }

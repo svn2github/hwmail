@@ -28,7 +28,8 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -54,7 +55,7 @@ import com.hs.mail.smtp.message.MailAddress;
  */
 public class DefaultUserManager implements UserManager {
 
-	private static Logger logger = Logger.getLogger(UserManager.class);
+	private static Logger logger = LoggerFactory.getLogger(UserManager.class);
 	
 	private TransactionTemplate transactionTemplate;
 	
@@ -122,9 +123,9 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public long addUser(final User user) {
-		return (Long) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Long>() {
+					public Long doInTransaction(TransactionStatus status) {
 						try {
 							return DaoFactory.getUserDao().addUser(user);
 						} catch (DataAccessException ex) {
@@ -136,9 +137,9 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public int updateUser(final User user) {
-		return (Integer) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Integer>() {
+					public Integer doInTransaction(TransactionStatus status) {
 						try {
 							return DaoFactory.getUserDao().updateUser(user);
 						} catch (DataAccessException ex) {
@@ -221,9 +222,9 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public long addAlias(final Alias alias) {
-		return (Long) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Long>() {
+					public Long doInTransaction(TransactionStatus status) {
 						try {
 							return DaoFactory.getUserDao().addAlias(alias);
 						} catch (DataAccessException ex) {
@@ -235,9 +236,9 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public int updateAlias(final Alias alias) {
-		return (Integer) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Integer>() {
+					public Integer doInTransaction(TransactionStatus status) {
 						try {
 							return DaoFactory.getUserDao().updateAlias(alias);
 						} catch (DataAccessException ex) {
@@ -265,11 +266,12 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public long getQuotaUsage(long ownerID) {
-		return DaoFactory.getUserDao().getQuotaUsage(ownerID);
+		return DaoFactory.getUserDao().getQuotaUsage(ownerID, 0);
 	}
 
-	public Quota getQuota(long ownerID, String quotaRoot) {
-		Quota quota = DaoFactory.getUserDao().getQuota(ownerID, quotaRoot);
+	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot) {
+		Quota quota = DaoFactory.getUserDao().getQuota(ownerID, mailboxID,
+				quotaRoot);
 		if (quota.resources[0].limit == 0) {
 			quota.resources[0].limit = Config.getDefaultQuota();
 		}

@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.dao;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -28,7 +28,7 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
  * @since Feb 11, 2010
  *
  */
-public abstract class AbstractDao extends JdbcDaoSupport {
+abstract class AbstractDao extends JdbcDaoSupport {
 
 	/**
 	 * Query given SQL to create a prepared statement from SQL and a list of
@@ -47,13 +47,21 @@ public abstract class AbstractDao extends JdbcDaoSupport {
 	 * @throws DataAccessException
 	 *             if the query fails
 	 */
-	protected Object queryForObject(String sql, Object[] args, RowMapper rowMapper) throws DataAccessException {
+	protected <T> T queryForObject(String sql, Object[] args, RowMapper<T> rowMapper) throws DataAccessException {
 		try {
 			return getJdbcTemplate().queryForObject(sql, args, rowMapper);
 		} catch (EmptyResultDataAccessException ex) {
 			return null;
 		}
 	}
+	
+	protected <T> T queryForObject(String sql, Class<T> requiredType, Object... args) throws DataAccessException {
+		try {
+			return getJdbcTemplate().queryForObject(sql, requiredType, args);
+		} catch (EmptyResultDataAccessException ex) {
+			return null;
+		}
+	}	
 
 	/**
 	 * Query given SQL to create a prepared statement from SQL and a list of
@@ -73,7 +81,7 @@ public abstract class AbstractDao extends JdbcDaoSupport {
 	 */
 	protected long queryForLong(String sql, Object[] args) throws DataAccessException {
 		try {
-			return getJdbcTemplate().queryForLong(sql, args);
+			return getJdbcTemplate().queryForObject(sql, args, Long.class);
 		} catch (EmptyResultDataAccessException ex) {
 			return 0;
 		}
@@ -96,7 +104,7 @@ public abstract class AbstractDao extends JdbcDaoSupport {
 	 */
 	protected int queryForInt(String sql, Object[] args) throws DataAccessException {
 		try {
-			return getJdbcTemplate().queryForInt(sql, args);
+			return getJdbcTemplate().queryForObject(sql, args, Integer.class);
 		} catch (EmptyResultDataAccessException ex) {
 			return 0;
 		}

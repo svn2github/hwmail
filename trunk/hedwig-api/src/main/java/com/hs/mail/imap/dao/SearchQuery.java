@@ -17,8 +17,8 @@ package com.hs.mail.imap.dao;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.hs.mail.imap.message.search.ComparisonKey;
 import com.hs.mail.imap.message.search.CompositeKey;
@@ -44,8 +44,8 @@ class SearchQuery {
 	
 	static String toQuery(long mailboxID, CompositeKey key) {
 		StringBuilder sql = new StringBuilder(
-				"SELECT messageid FROM message m, physmessage p WHERE m.mailboxid=")
-				.append(mailboxID).append(" AND m.physmessageid=p.id");
+				"SELECT messageid FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ")
+				.append(mailboxID).append(" AND m.physmessageid = p.physmessageid");
 		List<SearchKey> keys = key.getSearchKeys();
 		String s = null;
 		for (SearchKey k : keys) {
@@ -59,11 +59,11 @@ class SearchQuery {
 	static String toQuery(long mailboxID, String headername, boolean emptyValue) {
 		if (emptyValue) {
 			return String
-					.format("SELECT messageid FROM message m JOIN physmessage p ON m.physmessageid=p.id JOIN headervalue v ON v.physmessageid=p.id JOIN headername n ON v.headernameid=n.id  WHERE mailboxid=%d AND headername='%s'",
+					.format("SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
 							mailboxID, headername);
 		} else {
 			return String
-					.format("SELECT m.messageid, v.headervalue FROM message m JOIN physmessage p ON m.physmessageid=p.id JOIN headervalue v ON v.physmessageid=p.id JOIN headername n ON v.headernameid=n.id  WHERE mailboxid=%d AND headername='%s'",
+					.format("SELECT m.messageid, v.headervalue FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
 							mailboxID, headername);
 		}
 	}
@@ -71,7 +71,7 @@ class SearchQuery {
 	static String toQuery(long mailboxID, KeywordKey key) {
 		return String
 				.format(
-						"SELECT m.messageid FROM message m, keyword k WHERE m.mailboxid=%d AND m.messageid=k.messageid AND k.keyword='%s'",
+						"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = %d AND m.messageid = k.messageid AND k.keyword = '%s'",
 						mailboxID, key.getPattern());
 	}
 
@@ -85,7 +85,7 @@ class SearchQuery {
 		} else if (key instanceof SentDateKey) {
 			return dateQuery("sentdate", (SentDateKey) key);
 		} else if (key instanceof SizeKey) {
-			return numberQuery("size", (SizeKey) key);
+			return numberQuery("rfcsize", (SizeKey) key);
 		} else if (key instanceof SubjectKey) {
 			return stringQuery("subject", ((SubjectKey) key));
 		} else { // AllKey

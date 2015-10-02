@@ -18,7 +18,6 @@ package com.hs.mail.imap.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -34,21 +33,21 @@ import com.hs.mail.imap.message.MessageHeader;
 /**
  * 
  * @author Won Chul Doh
- * @since Mar 23, 2010
+ * @since July 26, 2015
  *
  */
-public class MySqlMessageDao extends AnsiMessageDao {
+public class OracleMessageDao extends AnsiMessageDao {
 
 	@Override
 	protected long addPhysicalMessage(final MailMessage message) {
-		final String sql = "INSERT INTO hw_physmessage (rfcsize, internaldate, subject, sentdate, fromaddr) VALUES(?, ?, ?, ?, ?)";
+		final String sql = "INSERT INTO hw_physmessage (physmessageid, rfcsize, internaldate, subject, sentdate, fromaddr) VALUES(sq_hw_physmessage.NEXTVAL, ?, ?, ?, ?, ?)";
 		final MessageHeader header = message.getHeader();
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
 				PreparedStatement pstmt = con.prepareStatement(sql,
-						Statement.RETURN_GENERATED_KEYS);
+						new String[] { "physmessageid" });
 				pstmt.setLong(1, message.getSize()); // size
 				pstmt.setTimestamp(2, new Timestamp(message.getInternalDate()
 						.getTime())); // internaldate
@@ -69,14 +68,14 @@ public class MySqlMessageDao extends AnsiMessageDao {
 
 	@Override
 	protected void addMessage(long physMessageID, long mailboxID) {
-		String sql = "INSERT INTO hw_message (physmessageid, mailboxid) VALUES(?, ?)";
+		String sql = "INSERT INTO hw_message (messageid, physmessageid, mailboxid) VALUES(sq_hw_message.NEXTVAL, ?, ?)";
 		getJdbcTemplate().update(sql,
 				new Object[] { new Long(physMessageID), new Long(mailboxID) });
 	}
 
 	@Override
 	protected void addMessage(long physMessageID, long mailboxID, Flags flags) {
-		String sql = "INSERT INTO hw_message (physmessageid, mailboxid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag) VALUES(?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO hw_message (messageid, physmessageid, mailboxid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag) VALUES(sq_hw_message.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
 		getJdbcTemplate().update(
 				sql,
 				new Object[] { new Long(physMessageID), new Long(mailboxID),
@@ -91,14 +90,10 @@ public class MySqlMessageDao extends AnsiMessageDao {
 	public void copyMessage(long messageID, long mailboxID) {
 		// The flags and internal date of the message SHOULD be preserved, and
 		// the Recent flag SHOULD be set, in the copy.
-		String sql = "INSERT INTO hw_message (mailboxid, physmessageid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag) SELECT ?, physmessageid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag FROM hw_message WHERE messageid = ?";
+		String sql = "INSERT INTO hw_message (messageid, mailboxid, physmessageid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag) SELECT sq_hw_message.NEXTVAL, ?, physmessageid, seen_flag, answered_flag, deleted_flag, flagged_flag, draft_flag FROM hw_message WHERE messageid = ?";
 		getJdbcTemplate().update(sql,
 				new Object[] { new Long(mailboxID), new Long(messageID) });
 	}
-	
-//-------------------------------------------------------------------------
-// Methods dealing with message header
-//-------------------------------------------------------------------------
 
 	@Override
 	protected long addHeaderName(final String headerName) {
@@ -106,9 +101,9 @@ public class MySqlMessageDao extends AnsiMessageDao {
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				String sql = "INSERT INTO hw_headername (headername) VALUES(?)";
+				String sql = "INSERT INTO hw_headername (headernameid, headername) VALUES(sq_hw_headername.NEXTVAL, ?)";
 				PreparedStatement pstmt = con.prepareStatement(sql,
-						Statement.RETURN_GENERATED_KEYS);
+						new String[] { "headernameid" } );
 				pstmt.setString(1, headerName);
 				return pstmt;
 			}
@@ -117,9 +112,12 @@ public class MySqlMessageDao extends AnsiMessageDao {
 	}
 
 	@Override
-	protected void addHeaderValue(long physMessageID, long headerNameID,
-			String headerValue) {
-		String sql = "INSERT INTO hw_headervalue (physmessageid, headernameid, headervalue) VALUES(?, ?, ?)";
+	protected void addHeaderValue(long physMessageID, long headerNameID, String headerValue) {
+		String sql = "INSERT INTO hw_headervalue (headervalueid, physmessageid, headernameid, headervalue) VALUES(sq_hw_headervalue.NEXTVAL, ?, ?, ?)";
+		if (headerValue.length() > 4000) {
+			// FIXME - Save to CLOB, and make header value column to point the CLOB 
+			headerValue = headerValue.substring(0, 3990) + "...";
+		}
 		getJdbcTemplate().update(
 				sql,
 				new Object[] { new Long(physMessageID), new Long(headerNameID),

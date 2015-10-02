@@ -32,7 +32,8 @@ import net.sf.ehcache.Ehcache;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -43,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
 import com.hs.mail.imap.dao.MessageDao;
@@ -65,7 +67,7 @@ import com.hs.mail.util.EhCacheWrapper;
  */
 public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 
-	private static Logger logger = Logger.getLogger(DefaultMailboxManager.class);
+	private static Logger logger = LoggerFactory.getLogger(DefaultMailboxManager.class);
 	
 	private TransactionTemplate transactionTemplate;
 	private EhCacheWrapper<Long, FetchData> fdCache;
@@ -159,9 +161,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 
 	public Mailbox createMailbox(final long ownerID, final String mailboxName) {
-		return (Mailbox) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Mailbox>() {
+					public Mailbox doInTransaction(TransactionStatus status) {
 						try {
 							MailboxDao dao = DaoFactory.getMailboxDao();
 							return dao.createMailbox(ownerID, mailboxName);
@@ -291,8 +293,8 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			if (fdCache != null && fd != null) {
 				fdCache.put(uid, fd);
 			} else if (fd == null) {
-				logger.error("Failed to retrieve fetch data for message ["
-						+ uid + "]");
+				logger.error("Failed to retrieve fetch data for message [{}]",
+						uid);
 			}
 		}
 		return fd;
@@ -315,6 +317,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			mailbox = createMailbox(ownerID, mailboxName);
 		}
 		final long mailboxID = mailbox.getMailboxID();
+		addMessage(ownerID, message, mailboxID);
+		eventDispatcher.added(mailboxID);
+	}
+	
+	public void addMessage(final long ownerID, final MailMessage message, 
+			final long mailboxID) {
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
 					public void doInTransactionWithoutResult(
@@ -322,7 +330,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 						try {
 							MessageDao dao = DaoFactory.getMessageDao();
 							dao.addMessage(mailboxID, message);
-							eventDispatcher.added(mailboxID);
 						} catch (DataAccessException ex) {
 							status.setRollbackOnly();
 							throw ex;
@@ -358,9 +365,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 
 	private long appendMessage(final long mailboxID, final MailMessage message) {
-		return (Long) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+		return getTransactionTemplate().execute(
+				new TransactionCallback<Long>() {
+					public Long doInTransaction(TransactionStatus status) {
 						try {
 							MessageDao dao = DaoFactory.getMessageDao();
 							dao.addMessage(mailboxID, message, message.getFlags());
@@ -397,9 +404,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	public List<Long> getRevocableMessageIDList(String messageID) {
+	public List<Long> getSiblingMessageIDList(long uid) {
+		FetchData fd = getMessageFetchData(uid);
 		MessageDao dao = DaoFactory.getMessageDao();
-		return dao.getRevocableMessageIDList(messageID);
+		Map.Entry<Long, String> entry = dao.getHeader(fd.getPhysMessageID(),
+				ImapConstants.RFC822_MESSAGE_ID);
+		return dao.getMessagesByHeader(entry.getKey(), entry.getValue());
 	}
 	
 	public void copyMessage(final long uid, final long mailboxID) {
@@ -420,8 +430,8 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 
 	public void resetRecent(final long mailboxID) {
 		List<Long> recents = (List<Long>) getTransactionTemplate().execute(
-				new TransactionCallback() {
-					public Object doInTransaction(TransactionStatus status) {
+				new TransactionCallback<List<Long>>() {
+					public List<Long> doInTransaction(TransactionStatus status) {
 						try {
 							MessageDao dao = DaoFactory.getMessageDao();
 							return dao.resetRecent(mailboxID);
@@ -432,9 +442,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 					}
 				});
 		if (fdCache != null && CollectionUtils.isNotEmpty(recents)) {
-			for (long uid : recents) {
-				fdCache.remove(uid);
-			}
+			fdCache.remove(recents);
 		}
 	}
 

@@ -32,9 +32,10 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.hs.mail.container.server.SSLContextFactory;
@@ -48,7 +49,7 @@ import com.hs.mail.util.InetAddressMatcher;
  */
 public class Config implements InitializingBean {
 	
-	static Logger console = Logger.getLogger("console");
+	static Logger console = LoggerFactory.getLogger("console");
 
 	public static final String ZIPFILE_EXTENSION = "zip";
 	public static final String MDCPOSTFIX = "__";
@@ -221,26 +222,26 @@ public class Config implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		dataDirectory = getFileProperty("data_directory", "${app.home}"
 				+ File.separator + "data");
-		console.info("Data directory is: " + dataDirectory.getCanonicalPath());
+		console.info("Data directory is: {}", dataDirectory.getCanonicalPath());
 		
 		tempDirectory = getFileProperty("temp_directory", "${app.home}"
 				+ File.separator + "temp");
-		console.info("Temp directory is: " + tempDirectory.getCanonicalPath());
+		console.info("Temp directory is: {}", tempDirectory.getCanonicalPath());
 		
 		spoolDirectory = getFileProperty("queue_directory", "${app.home}"
 				+ File.separator + "spool");
-		console.info("Spool directory is: " + spoolDirectory.getCanonicalPath());
+		console.info("Spool directory is: {}", spoolDirectory.getCanonicalPath());
 	
 		authScheme = getProperty("auth_scheme", null);
-		console.info("Authentication scheme is "
-				+ ((authScheme != null) ? authScheme : "not specified"));
+		console.info("Authentication scheme is {}",
+				((authScheme != null) ? authScheme : "not specified"));
 		
 		String fields = getProperty("default_cache_fields", DEF_CACHE_FIELDS);
 		defaultCacheFields = buildDefaultCacheFields(StringUtils.split(fields, ','));
 		
 		long quota = getNumberProperty("default_quota", 0);
 		defaultQuota = quota * 1024 * 1024;
-		console.info("Default quota is: " + quota + "MB");
+		console.info("Default quota is: {}MB", quota);
 		
 		hostName = getProperty("myhostname", null);
 		if (null == hostName) {
@@ -250,7 +251,7 @@ public class Config implements InitializingBean {
 				hostName = "localhost";
 			}
 		}
-		console.info("Local host is: " + hostName);
+		console.info("Local host is: {}", hostName);
 
 		String domain = getProperty("mydomain", null);
 		if (null == domain) {
@@ -259,12 +260,12 @@ public class Config implements InitializingBean {
 			domains = StringUtils.split(domain, ",");
 		}
 		for (int i = 0; i < domains.length; i++) {
-			console.info("Handling mail for: " + domains[i]);
+			console.info("Handling mail for: {}", domains[i]);
 		}
 		
 		String networks = getProperty("mynetworks", "0.0.0.0/0.0.0.0");
 		authorizedNetworks = new InetAddressMatcher(networks);
-		console.info("SMTP relaying is allowded to: " + networks);
+		console.info("SMTP relaying is allowded to: {}", networks);
 		
 		helloName = getProperty("smtp_helo_name", hostName);
 		
@@ -280,13 +281,13 @@ public class Config implements InitializingBean {
 			postmaster = postmaster + "@"
 					+ (domainName != null ? domainName : hostName);
 		}
-		console.info("Postmaster address is: " + postmaster);
+		console.info("Postmaster address is: {}", postmaster);
 		
 		maxMessageSize = getNumberProperty("message_size_limit", 10240000);
-		console.info("Maximum message size is: " + maxMessageSize);
+		console.info("Maximum message size is: {}", maxMessageSize);
 		
 		maxRcpt = (int) getNumberProperty("smtp_recipient_limit", 0);
-		console.info("Maximun recipients count is: " + maxRcpt);
+		console.info("Maximun recipients count is: {}", maxRcpt);
 		
 		saslAuthEnabled = getBooleanProperty("smtp_sasl_auth_enable", false);
 

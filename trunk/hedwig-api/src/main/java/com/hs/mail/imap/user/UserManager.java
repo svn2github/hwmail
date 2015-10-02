@@ -79,7 +79,7 @@ public interface UserManager {
 	
 	public long getQuotaUsage(long ownerID);
 
-	public Quota getQuota(long ownerID, String quotaRoot);
+	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot);
 
 	public void setQuota(final long ownerID, final Quota quota);
 	
