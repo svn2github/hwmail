@@ -116,8 +116,9 @@ public class ImapServer implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		// Configure the server.
 		ServerBootstrap bootstrap = new ServerBootstrap(
-				new NioServerSocketChannelFactory(Executors
-						.newCachedThreadPool(), Executors.newCachedThreadPool()));
+				new NioServerSocketChannelFactory(
+						Executors.newCachedThreadPool(),
+						Executors.newCachedThreadPool(), getWorkerCount()));
 
 		// Do not create many instances of Timer.
 		// HashedWheelTimer creates a new thread whenever it is instantiated and
@@ -145,6 +146,12 @@ public class ImapServer implements InitializingBean {
 		
 		LoggerFactory.getLogger("console").info("{} started on port {}",
 				getServiceType(), getPort());
+	}
+	
+	private int getWorkerCount() {
+		int defaultWorkerCount = Runtime.getRuntime().availableProcessors() * 2;
+		return (int) Config.getNumberProperty("imap_thread_count",
+				defaultWorkerCount);
 	}
 	
 	private ChannelPipelineFactory createPipelineFactory() {
