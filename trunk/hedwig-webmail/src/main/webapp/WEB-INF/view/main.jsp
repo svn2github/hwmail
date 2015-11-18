@@ -233,6 +233,10 @@ $(function() {
 	}).on('click', '.mail-body address', function() {
 		$(this).toggleClass('showcc');
 	});
+
+	$('#modal').on('hidden.bs.modal', function() {
+		$(this).find('.modal-body').empty();
+	});
 });
 </script>
 </head>

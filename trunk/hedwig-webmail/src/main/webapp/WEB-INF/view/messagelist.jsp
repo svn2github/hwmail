@@ -42,7 +42,7 @@
 		<a id="read" class="btn btn-default btn-sm"><fmt:message key="menu.read"/></a>
 </c:if>
 <c:if test="${path == prefs.sentMailArchive}">
-		<a id="revoke" class="btn btn-default btn-sm">Revoke</a>
+		<a id="revoke" class="btn btn-default btn-sm"><fmt:message key="menu.revoke"/></a>
 </c:if>
 <c:if test="${path != prefs.draftFolder}">
 		<div class="btn-group">
@@ -87,11 +87,14 @@
 				<td><input type="checkbox" name="uids" value="${msg.UID}"/></td>
 				<td class="star"><i class="fa fa-lg fa-star<c:if test='${not msg.flagged}'>-o</c:if>"></i></td>
 		<c:choose>
-			<c:when test="${path == prefs.draftFolder || path == prefs.sentMailArchive || path == prefs.toSendFolder}">
-				<td><a href="#" data-toggle="tooltip" title="<c:out value='${msg.to}'/>"><wma:address value="${msg.to}"/></a></td>
+			<c:when test="${path == prefs.sentMailArchive}">
+				<td><a href="#to"><wma:address value="${msg.to}" maxLength="1"/></a></td>
+			</c:when>
+			<c:when test="${path == prefs.draftFolder || path == prefs.toSendFolder}">
+				<td><wma:address value="${msg.to}" maxLength="1"/></td>
 			</c:when>
 			<c:otherwise>
-				<td><a href="#" data-toggle="tooltip" title="<c:out value='${msg.from}'/>"><wma:address value="${msg.from}"/></a></td>
+				<td><a href="#from"><wma:address value="${msg.from}"/></a></td>
 			</c:otherwise>
 		</c:choose>
 				<td>
@@ -142,13 +145,39 @@ $(function() {
     	});
 	}
 
-	var $form = $('#msg-list-form'), path = $('#path').val(),
+	function showRecipients( uid, callback ) {
+    	$('#modal')
+			.find('.modal-header').hide().end()
+			.find('.modal-body').html('<span class="fa fa-circle-o-notch fa-spin fa-3x text-primary"></span>')
+	    		.load(
+	    			'message/recipients?' + $.param({path:$('#path').val(), uid:uid}),
+		    		callback
+		    	).end()
+	    	.modal('show');
+    }
+
+    function revoke( recipients ) {
+		var $form = $('#modal').find('form'),
+			param = $form.serializeArray(),
+			status = ['OK', 'NOPERM', 'CANNOT', 'NONEXISTENT'];
+		if (recipients) {
+			param.push({name:'recipients', value:recipients});
+		}
+		$.post('message/revoke', param, function(data) {
+			$.each(data, function(key, value) {
+				var $tr = $form.find('a[href="#' + key + '"]').closest('tr');
+				if ($tr.length) {
+					$tr.children('td:last').text(status[value]);
+				}
+			});
+		});
+    }
+
+    var $form = $('#msg-list-form'), path = $('#path').val(),
 		$unread = $form.find('#inbox-unread');
 
 	if ($unread.length == 1)
 		$('#side-menu').find('#inbox-unread').text($unread.val());
-
-	$('[data-toggle="tooltip"]').tooltip({placement:'right'});
 
 	$('select[name=criteria]').val($('input[name=_criteria]').val());
 	$('input[name=term]').val($('input[name=_term]').val());
@@ -179,6 +208,14 @@ $(function() {
     	if (!$(this).is(':checked') && $('#checkall').is(':checked')) 
     		$('#checkall').prop('checked', false);
     	$(this).closest('tr').toggleClass('checked');
+    }).on('click', 'a[href=#to]', function() {
+    	var tr = $(this).closest('tr'),
+    		uid = tr.find('input[name=uids]').val();
+    	showRecipients(uid, function() {
+    		$(this).find('a').on('click', function() {
+    			revoke( $(this).attr('href').substring(1) );
+    		});
+    	});
     }).on('click', 'a[href=#open]', function() {
     	var tr = $(this).closest('tr'),
     		uid = tr.find('input[name=uids]').val();
@@ -227,14 +264,6 @@ $(function() {
 					refresh();
 				});
 			});
-	}).on('click', '#revoke', function() {
-		var checked = $form.find('input[name=uids]:checked');
-		if (checked.length != 1) {
-			eModal.alert('<fmt:message key="message.select"/>');
-			return;
-		}
-		$.post('message/revoke', $form.serializeArray(), function() {
-		});
 	}).on('click', '#read', function(event) {
 		var checked = $form.find('input[name=uids]:checked');
 		if (checked.length == 0) {
@@ -248,6 +277,15 @@ $(function() {
 				$(this).prop('checked', false).closest('tr').removeClass('recent unread');
 			});
 		});
+	}).on('click', '#revoke', function() {
+		var checked = $form.find('input[name=uids]:checked');
+		if (checked.length != 1) {
+			eModal.alert('<fmt:message key="message.select"/>');
+			return;
+		}
+	    showRecipients(checked.val(), function() {
+	    	revoke();
+    	});
 	}).on('click', 'td.star', function() {
 		var uid = $(this).closest('tr').find('input[name=uids]').val();
 			star = $(this).find('.fa'),

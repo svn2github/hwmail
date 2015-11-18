@@ -11,6 +11,7 @@ public class WmaAddressTag extends OutSupport {
 	private static final long serialVersionUID = 1L;
 
 	private Object value_;
+	private int maxLength = 0;
 	
 	public WmaAddressTag() {
 		super();
@@ -21,8 +22,13 @@ public class WmaAddressTag extends OutSupport {
         this.value_ = value_;
     }
 	
-	private void init() {
+    public void setMaxLength(int maxLength) {
+		this.maxLength = maxLength;
+	}
+
+    private void init() {
 		value_ = null;
+		maxLength = 0;
 	}
 
 	@Override
@@ -45,6 +51,10 @@ public class WmaAddressTag extends OutSupport {
 				InternetAddress[] addresses = InternetAddress.parse(addresslist);
 				for (int i = 0; i < addresses.length; i++) {
 					if (i > 0) {
+						if (maxLength == i) {
+							buffer.append(",...");
+							break;
+						}
 						buffer.append(',');
 					}
 					String personal = addresses[i].getPersonal();

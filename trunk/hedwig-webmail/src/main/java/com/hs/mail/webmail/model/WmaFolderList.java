@@ -70,7 +70,7 @@ public class WmaFolderList {
 			boolean recursive, char separator) throws WmaException {
 		try {
 			FancytreeNode[] subfolders = buildFolderList(folder, recursive);
-			if (recursive) {
+			if (recursive && subfolders.length > 0) {
 				return rebuild(new FancytreeNode(folder), subfolders, separator);
 			} else {
 				return subfolders;

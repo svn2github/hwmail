@@ -1,5 +1,8 @@
 package com.hs.mail.webmail.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.mail.Flags;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +22,7 @@ import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.model.impl.HwFolder;
 import com.hs.mail.webmail.model.impl.WmaComposeMessage;
 import com.hs.mail.webmail.model.impl.WmaDisplayMessage;
+import com.hs.mail.webmail.model.impl.WmaRecipient;
 import com.hs.mail.webmail.util.RequestUtils;
 import com.hs.mail.webmail.util.WmaUtils;
 
@@ -137,16 +141,33 @@ public class MessageController {
 		WmaFolder folder = store.getWmaFolder(path);
 		folder.writeMessagePart(response, uid, part);
 	}
-	
-	@RequestMapping(value = "/message/revoke")
-	public void revoke(@RequestParam(value = "uids") long[] uids,
-			HttpSession httpsession, HttpServletRequest request)
+
+	@RequestMapping(value = "/message/recipients")
+	public String recipients(@RequestParam(value = "uid") long uid,
+			Model model, HttpSession httpsession, HttpServletRequest request)
 			throws Exception {
 		WmaSession session = new WmaSession(httpsession);
 		String path = RequestUtils.getRequiredParameter(request, "path");
 		WmaStore store = session.getWmaStore();
 		HwFolder folder = HwFolder.createLight(store.getFolder(path));
-		folder.revokeByUID(uids[0]);
+		List<WmaRecipient> recipients = folder.createWmaRecipientList(uid, -1);
+		model.addAttribute("path", path);
+		model.addAttribute("recipients", recipients);
+		return "recipients";
+	}
+
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/message/revoke")
+	@ResponseBody
+	public Map revoke(@RequestParam(value = "uids") long[] uids,
+			HttpSession httpsession, HttpServletRequest request)
+			throws Exception {
+		WmaSession session = new WmaSession(httpsession);
+		String path = RequestUtils.getRequiredParameter(request, "path");
+		String[] recipients = RequestUtils.getParameterValues(request, "recipients");
+		WmaStore store = session.getWmaStore();
+		HwFolder folder = HwFolder.createLight(store.getFolder(path));
+		return folder.revoke(uids[0], -1, "UNSEEN", recipients);
 	}
 	
 	private String compose(WmaSession session, String path, long uid, String to, 
