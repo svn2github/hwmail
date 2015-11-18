@@ -1,8 +1,6 @@
 package com.hs.mail.smtp.server;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.IOException;
 
 import org.springframework.beans.factory.InitializingBean;
 
@@ -10,6 +8,7 @@ import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.DefaultServer;
 import com.hs.mail.container.server.socket.DefaultServerSocketFactory;
 import com.hs.mail.container.server.socket.TLSServerSocketFactory;
+import com.hs.mail.util.RollingPrintStream;
 
 /**
  * 
@@ -39,10 +38,9 @@ public class SmtpServer extends DefaultServer implements InitializingBean {
 			String path = Config.getProperty("smtp_protocol_log", null);
 			if (path != null) {
 				try {
-					FileOutputStream fos = new FileOutputStream(path);
 					((SmtpConnectionHandler) connectionHandler)
-							.setDebugOut(new PrintStream(fos));
-				} catch (FileNotFoundException e) {
+							.setDebugOut(new RollingPrintStream(path));
+				} catch (IOException e) {
 					// Ignore this exception
 				}
 			}

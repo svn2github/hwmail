@@ -15,9 +15,7 @@
  */
 package com.hs.mail.imap.server;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -41,6 +39,7 @@ import org.springframework.beans.factory.InitializingBean;
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.server.codec.ImapMessageEncoder;
 import com.hs.mail.imap.server.codec.ImapRequestDecoder;
+import com.hs.mail.util.RollingPrintStream;
 
 /**
  * NIO IMAP Server which use Netty
@@ -183,9 +182,8 @@ public class ImapServer implements InitializingBean {
 		String path = Config.getProperty("imap_protocol_log", null);
 		if (path != null) {
 			try {
-				FileOutputStream fos = new FileOutputStream(path);
-				handler.setDebugOut(new PrintStream(fos));
-			} catch (FileNotFoundException e) {
+				handler.setDebugOut(new RollingPrintStream(path));
+			} catch (IOException e) {
 				// Ignore this exception
 				logger.error(e.getMessage());
 			}
