@@ -44,7 +44,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
-import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
 import com.hs.mail.imap.dao.MessageDao;
@@ -404,14 +403,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	public List<Long> getSiblingMessageIDList(long uid) {
-		FetchData fd = getMessageFetchData(uid);
-		MessageDao dao = DaoFactory.getMessageDao();
-		Map.Entry<Long, String> entry = dao.getHeader(fd.getPhysMessageID(),
-				ImapConstants.RFC822_MESSAGE_ID);
-		return dao.getMessagesByHeader(entry.getKey(), entry.getValue());
-	}
-	
 	public void copyMessage(final long uid, final long mailboxID) {
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
@@ -580,6 +571,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			}
 		}
 		return false;
+	}
+
+	public List<Map<String, Object>> getMessageByMessageID(long userId,
+			String messageID) {
+		MessageDao dao = DaoFactory.getMessageDao();
+		return dao.getMessageByMessageID(userId, messageID);
 	}
 	
 }

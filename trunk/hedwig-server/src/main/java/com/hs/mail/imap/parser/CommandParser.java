@@ -452,7 +452,7 @@ public class CommandParser extends AbstractImapCommandParser {
 	
 	private boolean uid() {
 		return kw("UID") && sp()
-				&& (copy() || fetch() || search() || sort() || store() || thread());
+				&& (copy() || fetch() || search() || sort() || store() || thread() || xrevoke());
 	}
 	
 	private boolean xuid() {
@@ -468,16 +468,20 @@ public class CommandParser extends AbstractImapCommandParser {
 	}
 	
 	private boolean xrevoke() {
-		if (!kw("XREVOKE") || !sp() || !sequence_set())
+		if (!kw("XREVOKE") || !sp() || !number())
 			return false;
-		if (!sp() || !kw("FROM"))
+		if (!sp() || !xrevoke_flag())
 			return true;
 		if (sp())
 			do
 				if (!userid())
 					return false;
-			while (kw(","));
+			while (sp());
 		return true;
+	}
+	
+	private boolean xrevoke_flag() {
+		return kw("ALL") || kw("UNSEEN") || kw("RECENT");
 	}
     
     /******************************************

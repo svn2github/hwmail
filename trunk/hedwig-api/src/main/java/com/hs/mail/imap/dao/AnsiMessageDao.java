@@ -17,6 +17,7 @@ import org.apache.james.mime4j.parser.Field;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageHeader;
@@ -109,16 +110,6 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		Object[] param = { new Long(physMessageID) };
 		getJdbcTemplate().update(sql[0], param);
 		getJdbcTemplate().update(sql[1], param);
-	}
-	
-	public List<Long> getMessagesByHeader(long headerNameID, String headerValue) {
-		String sql = "SELECT messageid FROM hw_message "
-			+ "WHERE physmessageid IN (" 
-			+				"SELECT physmessageid FROM hw_headervalue " 
-			+				 "WHERE headernameid = ? " 
-			+				   "AND headervalue = ?)";
-		return getJdbcTemplate().queryForList(sql, new Object[] { headerNameID, headerValue },
-				Long.class);
 	}
 	
 	public List<Long> resetRecent(long mailboxID) {
@@ -271,6 +262,23 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 			result = addHeaderName(headerName);
 		}
 		return result;
+	}
+
+	public List<Map<String, Object>> getMessageByMessageID(long userId,
+			String messageID) {
+		String sql = "SELECT m.messageid, m.seen_flag, m.deleted_flag, m.recent_flag "
+				+      "FROM hw_message m, hw_mailbox b "
+				+     "WHERE m.mailboxid = b.mailboxid "
+				+       "AND b.ownerid = ? "
+				+       "AND physmessageid IN (" 
+				+           "SELECT physmessageid FROM hw_headervalue " 
+				+            "WHERE headernameid = ("
+				+                  "SELECT headernameid FROM hw_headername WHERE headername = ?)"
+				+              "AND headervalue = ?)";
+		return getJdbcTemplate().queryForList(
+				sql,
+				new Object[] { new Long(userId), ImapConstants.RFC822_MESSAGE_ID,
+						messageID });
 	}
 	
 	abstract protected long addHeaderName(final String headerName);

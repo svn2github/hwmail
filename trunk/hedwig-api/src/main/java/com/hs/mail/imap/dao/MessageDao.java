@@ -49,8 +49,6 @@ public interface MessageDao {
 	
 	public void deletePhysicalMessage(long physMessageID);
 	
-	public List<Long> getMessagesByHeader(long headerNameID, String messageID);
-
 	public void setFlags(long messageID, Flags flags, boolean replace, boolean set);
 	
 	public List<Long> resetRecent(long messageID);
@@ -66,5 +64,8 @@ public interface MessageDao {
 	public void addHeader(long physMessageID, MessageHeader header);
 
 	public long getHeaderNameID(String headerName);
-	
+
+	public List<Map<String, Object>> getMessageByMessageID(long userId,
+			String messageID);
+
 }

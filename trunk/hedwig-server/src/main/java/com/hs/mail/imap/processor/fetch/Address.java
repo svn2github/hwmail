@@ -86,5 +86,11 @@ public class Address implements Serializable {
     public String getHostName() {
     	return hostName;
     }
+    
+	public String getAddress() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(mailboxName).append('@').append(hostName);
+		return sb.toString();
+	}
 	
 }

@@ -209,8 +209,6 @@ public interface MailboxManager {
 	 */
 	public void deleteMessage(final long uid);
 
-	public List<Long> getSiblingMessageIDList(long uid);
-	
 	/**
 	 * Copies a message to the given mailbox.
 	 * 
@@ -257,5 +255,8 @@ public interface MailboxManager {
 	 * @return map containing header name and value entries
 	 */
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
-	
+
+	public List<Map<String, Object>> getMessageByMessageID(long userId,
+			String messageID);
+
 }

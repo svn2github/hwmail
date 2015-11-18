@@ -74,5 +74,7 @@ public interface ImapConstants {
 	public static final String STARTTLS = "STARTTLS";	// RFC2595, RFC3501
 
 	public static final String UIDPLUS = "UIDPLUS";	// RFC4315
+	
+	public static final String XREVOKE = "XREVOKE"; // Custom
 
 }

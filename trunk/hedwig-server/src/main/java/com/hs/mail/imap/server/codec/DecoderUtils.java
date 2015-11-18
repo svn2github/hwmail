@@ -110,7 +110,7 @@ public class DecoderUtils {
 		}
 	}
 	
-	private static long parseSeqNumber(String value) {
+	public static long parseSeqNumber(String value) {
 		if (value.length() == 1 && value.charAt(0) == '*') {
 			return Long.MAX_VALUE;
 		}

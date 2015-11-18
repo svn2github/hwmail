@@ -44,12 +44,15 @@ public interface HumanReadableText {
 	public static final String MAILBOX_NOT_FOUND = "No such mailbox.";
 	
 	public static final String MAILBOX_NOT_SELECTABLE = "Mailbox is not selectable.";
+	
+	public static final String MESSAGE_NOT_FOUND = "No such message.";
 
 	public static final String NAMESPACE_NOT_EXIST = "No such namespace";
 	
 	public static final String NO_SUCH_QUOTA_ROOT = "No such quota root.";
+	
+	public static final String PERMISSION_DENIED = "Permission denied.";
 
 	public static final String UNSUPPORTED_AUTHENTICATION_MECHANISM = "Authentication mechanism is unsupported.";
 	
-
 }

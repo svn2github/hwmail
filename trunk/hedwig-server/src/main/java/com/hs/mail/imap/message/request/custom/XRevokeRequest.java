@@ -1,8 +1,9 @@
 package com.hs.mail.imap.message.request.custom;
 
+import java.util.List;
+
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.ImapSession.State;
-import com.hs.mail.imap.message.SequenceRange;
 import com.hs.mail.imap.message.request.ImapRequest;
 
 /**
@@ -13,18 +14,36 @@ import com.hs.mail.imap.message.request.ImapRequest;
  */
 public class XRevokeRequest extends ImapRequest {
 
-	private final SequenceRange[] sequenceSet;
+	private final long sequenceNumber;
+	private String flag;
+	private List<String> recipients;
 	private final boolean useUID;
 	
 	public XRevokeRequest(String tag, String command,
-			SequenceRange[] sequenceSet, boolean useUID) {
+			long sequenceNumber, boolean useUID) {
 		super(tag, command);
-		this.sequenceSet = sequenceSet;
+		this.sequenceNumber = sequenceNumber;
 		this.useUID = useUID;
 	}
 	
-	public SequenceRange[] getSequenceSet() {
-		return sequenceSet;
+	public long getSequenceNumber() {
+		return sequenceNumber;
+	}
+
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	public List<String> getRecipients() {
+		return recipients;
+	}
+
+	public void setRecipients(List<String> recipients) {
+		this.recipients = recipients;
 	}
 
 	public boolean isUseUID() {
