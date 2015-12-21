@@ -41,18 +41,39 @@ import com.hs.mail.imap.message.search.SubjectKey;
  */
 abstract class SearchQuery {
 	
-	String toQuery(long mailboxID, CompositeKey key) {
+	String toQuery(long mailboxID, CompositeKey key, boolean and) {
 		StringBuilder sql = new StringBuilder(
 				"SELECT messageid FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ")
-				.append(mailboxID).append(" AND m.physmessageid = p.physmessageid");
+				.append(mailboxID).append(
+						" AND m.physmessageid = p.physmessageid");
 		List<SearchKey> keys = key.getSearchKeys();
-		String s = null;
-		for (SearchKey k : keys) {
-			if ((s = toQuery(k)) != null) {
-				sql.append(" AND ").append(s);
-			}
+		String c = condition(keys, and);
+		if (c != null) {
+			sql.append(" AND ").append(c);
 		}
 		return sql.toString();
+	}
+	
+	String condition(List<SearchKey> keys, boolean and) {
+		String[] array = new String[keys.size()];
+		String s = null;
+		int i = 0;
+		for (SearchKey k : keys) {
+			if ((s = toQuery(k)) != null) {
+				array[i++] = s;
+			}
+		}
+		if (i == 0) 
+			return null;
+		if (i == 1)
+			return array[0];
+		if (and)
+			return StringUtils.join(array, " AND ", 0, i); 
+		else
+			return new StringBuilder("(")
+					.append(StringUtils.join(array, " OR ", 0, i))
+					.append(")")
+					.toString();
 	}
 
 	String toQuery(long mailboxID, String headername, boolean emptyValue) {

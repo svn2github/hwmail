@@ -68,9 +68,12 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 		} else if (key instanceof KeywordKey) {
 			return query(map, mailboxID, (KeywordKey) key);
 		} else if (key instanceof CompositeKey) {
-			return query(map, mailboxID, (CompositeKey) key);
+			// Shouldn't reach here!
+			return query(map, mailboxID, (CompositeKey) key, true);
 		} else {
-			return query(map, mailboxID, new CompositeKey(key));
+			// When the key is not composite, the last parameter is not
+			// important
+			return query(map, mailboxID, new CompositeKey(key), true);
 		}
 	}
 	
@@ -111,14 +114,8 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	}
 
 	private List<Long> query(UidToMsnMapper map, long mailboxID, NotKey key) {
-		SearchKey k = key.getSearchKey();
-		if (k.isComposite()) {
-			return ListUtils.subtract(map.getUIDList(),
-					query(map, mailboxID, k));
-		} else {
-			return ListUtils.subtract(map.getUIDList(), query(map, mailboxID,
-					new CompositeKey(k)));
-		}
+		return ListUtils.subtract(map.getUIDList(),
+				query(map, mailboxID, key.getSearchKey()));
 	}
 	
 	private List<Long> query(UidToMsnMapper map, long mailboxID,
@@ -180,19 +177,22 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 		}
 	}
 
-	private List<Long> query(UidToMsnMapper map, long mailboxID, CompositeKey key) {
-		String sql = getSearchQuery().toQuery(mailboxID, key);
+	private List<Long> query(UidToMsnMapper map, long mailboxID,
+			CompositeKey key, boolean and) {
+		String sql = getSearchQuery().toQuery(mailboxID, key, and);
 		return getJdbcTemplate().queryForList(sql, Long.class);
 	}
 	
 	private List<Long> conjunctionQuery(UidToMsnMapper map, long mailboxID,
 			SearchKeyList key, boolean and) {
-		List<Long> result = null;
+		List<Long> list = null;
+		List<Long> temp = null;
 		List<SearchKey> keys = key.getSearchKeys();
 		CompositeKey ck = null;
 		for (SearchKey k : keys) {
 			if (k.isComposite()) {
-				result = query(result, map, mailboxID, k, and);
+				temp = query(map, mailboxID, k);
+				list = conjunction(list, temp, and);
 			} else {
 				if (ck == null) {
 					ck = new CompositeKey();
@@ -201,21 +201,20 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 			}
 		}
 		if (ck != null) {
-			return query(result, map, mailboxID, ck, and);
-		} else {
-			return result;
-		}
-	}
-	
-	private List<Long> query(List<Long> result, UidToMsnMapper map, long mailboxID,
-			SearchKey key, boolean and) {
-		List<Long> list = query(map, mailboxID, key);
-		if (CollectionUtils.isNotEmpty(result)) {
-			return (and) ? ListUtils.intersection(result, list) 
-						 : ListUtils.sum(result, list);
+			temp = query(map, mailboxID, ck, and);
+			return conjunction(list, temp, and);
 		} else {
 			return list;
 		}
 	}
 	
+	private List<Long> conjunction(List<Long> list1, List<Long> list2, boolean and) {
+		if (CollectionUtils.isNotEmpty(list1)) {
+			return (and) ? ListUtils.intersection(list1, list2) 
+						 : ListUtils.sum(list1, list2);
+		} else {
+			return list2;
+		}
+	}
+
 }

@@ -51,30 +51,5 @@ public interface ImapConstants {
 	public static final String RFC822_MESSAGE_ID = "Message-ID";
 	
 	public static final String RFC822_RETURN_PATH = "Return-Path";
-    
-    /**
-     * Capabilities
-     */
-	public static final String VERSION = "IMAP4rev1";
-
-	public static final String ACL = "ACL";	// RFC4314
-
-	public static final String CHILDREN = "CHILDREN";	// RFC3348
-	
-	public static final String LITERAL_PLUS = "LITERAL+";	// RFC2088
-	
-	public static final String LOGINDISABLED = "LOGINDISABLED";	// RC2595, RFC3501
-	
-	public static final String NAMESPACE = "NAMESPACE";	// RFC2342
-	
-	public static final String QUOTA = "QUOTA";	// RFC2087
-
-	public static final String SORT = "SORT";	// RFC5256
-	
-	public static final String STARTTLS = "STARTTLS";	// RFC2595, RFC3501
-
-	public static final String UIDPLUS = "UIDPLUS";	// RFC4315
-	
-	public static final String XREVOKE = "XREVOKE"; // Custom
 
 }
