@@ -17,7 +17,6 @@ package com.hs.mail.imap.processor;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.message.request.CapabilityRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
@@ -31,9 +30,17 @@ import com.hs.mail.imap.message.responder.Responder;
  */
 public class CapabilityProcessor extends AbstractImapProcessor {
 	
-	private static String[] capabilities = { ImapConstants.VERSION,
-			ImapConstants.CHILDREN, ImapConstants.NAMESPACE,
-			ImapConstants.QUOTA, ImapConstants.SORT, ImapConstants.XREVOKE };
+	private static final String VERSION = "IMAP4rev1";
+	
+	private final static String[] capabilities = { 
+			VERSION,
+			"CHILDREN", 	// RFC3348
+			"LITERAL+",		// RFC2088
+			"NAMESPACE",	// RFC2342
+			"QUOTA", 		// RFC2087
+			"SORT",			// RFC5256 
+			"XREVOKE"		// CUSTOM 
+	};
 	
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
