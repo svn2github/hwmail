@@ -222,8 +222,8 @@ public class SearchRequestBuilder extends AbstractUidRequestBuilder {
 	private static String decode(String s, String charset) {
 		if (charset != null) {
 			try {
-				if (!MailUtils.isAscii(s) && !"ISO8859_1".equals(charset)) {
-					return new String(s.getBytes("ISO8859_1"), charset);
+				if (!MailUtils.isAscii(s) && !"UTF-8".equals(charset)) {
+					return new String(s.getBytes("UTF-8"), charset);
 				}
 			} catch (UnsupportedEncodingException e) {
 			}

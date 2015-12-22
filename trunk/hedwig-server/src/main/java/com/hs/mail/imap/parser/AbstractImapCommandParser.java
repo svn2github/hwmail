@@ -32,15 +32,19 @@ public class AbstractImapCommandParser {
 	protected StringBuffer buffer;
 	protected int pos;
 	protected LinkedList<Token> tokens;
+	protected int index;
+	protected String[] literals;
 
-	public AbstractImapCommandParser(StringReader in) {
+	public AbstractImapCommandParser(StringReader in, String[] astrings) {
 		reader = in;
 		pushback = new char[32];
 		buffer = new StringBuffer();
 		pos = -1;
 		tokens = new LinkedList<Token>();
+		literals = astrings;
+		index = 0;
 	}
-
+	
     /******************************************
      * THE COMMAND GRAMMAR STARTS HERE        *
      ******************************************/
@@ -80,10 +84,7 @@ public class AbstractImapCommandParser {
 	}
 	
     protected boolean atom_specials(char c) {
-/*		return c == '(' || c == ')' || c == '{' || c == ' ' || c <= '\037'
-				|| c >= '\177' || list_wildcard(c) || quoted_special(c)
-				|| resp_special(c); 
-*/		return c == '(' || c == ')' || c == '{' || c == ' ' || c < 32
+		return c == '(' || c == ')' || c == '{' || c == ' ' || c < 32
 			|| c == 127 || list_wildcard(c) || quoted_special(c)
 			|| resp_special(c); 
 	}
@@ -159,7 +160,7 @@ public class AbstractImapCommandParser {
 		return c == '*' || c == '%';
 	}
 
-    protected boolean literal() {
+    protected boolean literal(boolean stringfy) {
 		if (read() != '{') {
 			unread();
 			return false;
@@ -179,10 +180,19 @@ public class AbstractImapCommandParser {
 			unreadAll();
 			return false;
 		}
-		int length = Integer.parseInt(buffer.substring(1, buffer.length() - 1));
-		buffer.setLength(0);
-		buffer.append(length);
-		newToken((sync) ? Token.Type.LITERAL_SYNC : Token.Type.LITERAL);
+		int length = Integer.parseInt(strip(buffer));
+		if (stringfy) {
+			if (literals == null || index >= literals.length) {
+				throw new LiteralException(sync, length);
+			}
+			buffer.setLength(0);
+			buffer.append(literals[index++]);
+			newToken(Token.Type.ASTRING);
+		} else {
+			buffer.setLength(0);
+			buffer.append(length);
+			newToken(sync ? Token.Type.LITERAL_SYNC : Token.Type.LITERAL);
+		}
 		return true;
 	}
 
@@ -315,7 +325,7 @@ public class AbstractImapCommandParser {
 	}
 
     protected boolean string() {
-		return quoted() || literal();
+		return quoted() || literal(true);
 	}
 
     private boolean time() {
@@ -331,10 +341,6 @@ public class AbstractImapCommandParser {
      ******************************************/
     
     protected boolean crlf() {
-		if (read() != '\r') {
-			unread();
-			return false;
-		}
 		if (read() != '\n') {
 			unread();
 			return false;
@@ -482,6 +488,10 @@ public class AbstractImapCommandParser {
 		Token token = new Token(type, value);
 		tokens.add(token);
 		buffer.setLength(0);
+	}
+	
+	private static String strip(StringBuffer buffer) {
+		return buffer.substring(1, buffer.length() - 1);
 	}
 	
 }

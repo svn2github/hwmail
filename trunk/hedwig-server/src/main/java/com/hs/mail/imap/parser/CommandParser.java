@@ -27,8 +27,8 @@ import java.util.LinkedList;
  */
 public class CommandParser extends AbstractImapCommandParser {
 
-	public CommandParser(StringReader in) {
-		super(in);
+	public CommandParser(StringReader in, String[] astrings) {
+		super(in, astrings);
 	}
 
     /******************************************
@@ -42,7 +42,7 @@ public class CommandParser extends AbstractImapCommandParser {
 		sp();
 		date_time();
 		sp();
-		return literal();
+		return literal(false);
 	}
 	
     private boolean authenticate() {

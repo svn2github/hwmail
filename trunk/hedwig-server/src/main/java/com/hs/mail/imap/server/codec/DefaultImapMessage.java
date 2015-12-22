@@ -15,14 +15,11 @@
  */
 package com.hs.mail.imap.server.codec;
 
-import java.io.StringReader;
 import java.util.LinkedList;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
-import com.hs.mail.imap.parser.CommandParser;
 import com.hs.mail.imap.parser.Token;
 
 /**
@@ -38,21 +35,10 @@ public class DefaultImapMessage implements ImapMessage {
 	private boolean needContinuationRequest = false;
 	protected LinkedList<Token> tokens = null;
 	
-    public DefaultImapMessage(String request) {
-		CommandParser parser = new CommandParser(new StringReader(request));
-		tokens = parser.command();
-		if (CollectionUtils.isNotEmpty(tokens)) {
-			Token last = tokens.get(tokens.size() - 1);
-			if (last.isLiteral()) {
-				int length = Integer.parseInt(last.value);
-				setLiteralLength(length);
-				if (Token.Type.LITERAL == last.type) {
-					needContinuationRequest = true;
-				}
-			}
-		}
+	public DefaultImapMessage(LinkedList<Token> tokens) {
+		this.tokens = tokens;
 	}
-    
+
 	public String getCommand() {
 		return (tokens.size() > 0) ? tokens.get(1).value : null;
 	}
@@ -61,15 +47,24 @@ public class DefaultImapMessage implements ImapMessage {
 		return tokens;
 	}
 
+	public void setTokens(LinkedList<Token> tokens) {
+		this.tokens = tokens;
+		this.literalLength = -1;
+		Token last = tokens.getLast();
+		if (last.isLiteral()) {
+			setLiteralLength(Integer.parseInt(last.value));
+			setNeedContinuationRequest(last.type == Token.Type.LITERAL);
+		}
+	}
+
 	public ChannelBuffer getLiteral() {
 		return literal;
 	}
 
 	public void setLiteral(ChannelBuffer literal) {
-		if (null == literal) {
-			literal = ChannelBuffers.EMPTY_BUFFER;
-		}
-		this.literal = literal;
+		this.literal = (literal == null) 
+				? ChannelBuffers.EMPTY_BUFFER
+				: literal;
 	}
 
 	public long getLiteralLength() {
@@ -84,4 +79,12 @@ public class DefaultImapMessage implements ImapMessage {
 		return needContinuationRequest;
 	}
 
+	public void setNeedContinuationRequest(boolean needContinuationRequest) {
+		this.needContinuationRequest = needContinuationRequest;
+	}
+
+	public boolean isNeedParsing() {
+		return (tokens == null);
+	}
+	
 }

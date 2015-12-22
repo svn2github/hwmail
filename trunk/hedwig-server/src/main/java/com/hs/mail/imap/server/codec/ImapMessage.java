@@ -35,6 +35,8 @@ public interface ImapMessage {
 	
 	LinkedList<Token> getTokens();
 	
+	void setTokens(LinkedList<Token> tokens);
+	
 	/**
 	 * Returns the content of this message. If there is no content, an
 	 * {@link ChannelBuffers#EMPTY_BUFFER} is returned.
@@ -66,5 +68,9 @@ public interface ImapMessage {
 	 * request before reading literal data.
 	 */
 	boolean isNeedContinuationRequest();
+
+	void setNeedContinuationRequest(boolean needContinuationRequest);
+
+	boolean isNeedParsing();
 	
 }

@@ -15,8 +15,7 @@
  */
 package com.hs.mail.imap.server.codec;
 
-import java.io.UnsupportedEncodingException;
-
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -33,15 +32,21 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 public abstract class ImapMessageDecoder extends
 		ReplayingDecoder<ImapMessageDecoder.State> {
 
-	// private static final String DEFAULT_PREFIX = "literal";
-	
-    // private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
+	/**
+	 * Carriage return
+	 */
+	private static final byte CR = 13;
 
+	/**
+	 * Line feed character
+	 */
+	private static final byte LF = 10;
+	
 	private final int maxLineLength;
-	protected volatile ImapMessage message;
-	private String request;
-	private volatile ChannelBuffer content;
-	// private volatile DeferredFileOutputStream os;
+	protected String request;
+	protected String[] astring;
+	protected ImapMessage message;
+	protected ChannelBuffer content;
 
 	/**
 	 * The internal state of <code>ImapMessageDecoder</code>.
@@ -49,7 +54,7 @@ public abstract class ImapMessageDecoder extends
 	 */
 	protected enum State {
 		READ_COMMAND, 
-		READ_LITERAL, 
+		READ_LITERAL,
 		READ_REMAINDER
 	}
 
@@ -81,12 +86,10 @@ public abstract class ImapMessageDecoder extends
 		switch (state) {
 		case READ_COMMAND: {
 			request = readLine(buffer, maxLineLength);
-			message = createMessage(request);
+			message = createMessage();
 			if (message.getLiteralLength() != -1) {
 				checkpoint(State.READ_LITERAL);
-				if (message.isNeedContinuationRequest()) {
-					channel.write("+ OK\r\n");
-				}
+				resetLiteral(channel);
 			} else {
 				return message;
 			}
@@ -98,33 +101,46 @@ public abstract class ImapMessageDecoder extends
 			checkpoint(State.READ_REMAINDER);
 		}
 		case READ_REMAINDER: {
-			// FIXME - RFC 3501 7.5
+			// FIXME - RFC 3501 7.5 - Read remainder of the command
 			String remainder = readLine(buffer, maxLineLength);
-			return reset(remainder);
+			if (message.isNeedParsing()) {
+				request = StringUtils.chomp(request) + remainder;
+				parseMessage(message);
+				if (message.getLiteralLength() != -1) {
+					checkpoint(State.READ_LITERAL);
+					resetLiteral(channel);
+					return null;
+				}
+			}
+			return reset();
 		}
 		default:
 			throw new Error("Shouldn't reach here.");
 		}
 	}
-
-	private Object reset(String remainder) throws Exception {
+	
+	private Object reset() throws Exception {
 		ImapMessage message = this.message;
 		ChannelBuffer content = this.content;
 
 		if (content != null) {
-			if ("APPEND".equalsIgnoreCase(message.getCommand())) {
-				message.setLiteral(content);
-			} else {
-				request = request.substring(0, request.lastIndexOf('{'))
-						+ toString(content) + remainder;
-				message = createMessage(request);
-			}
+			message.setLiteral(content);
 			this.content = null;
 		}
 		this.message = null;
+		this.request = null;
+		this.astring = null;
 
 		checkpoint(State.READ_COMMAND);
 		return message;
+	}
+	
+	private void resetLiteral(Channel channel) {
+		this.content = null;
+		if (message.isNeedContinuationRequest()) {
+			// Need continuation request
+			channel.write("+ OK\r\n");
+		}
 	}
 
 	private void readFixedLengthContent(ChannelBuffer buffer) {
@@ -136,32 +152,20 @@ public abstract class ImapMessageDecoder extends
 		}
 	}
 	
-	/*private void readFixedLengthChunk(ChannelBuffer buffer) throws IOException {
-		if (os == null) {
-			os = new DeferredFileOutputStream(DEFAULT_BUFFER_SIZE,
-					File.createTempFile(DEFAULT_PREFIX, null));
-		}
-		IOUtils.copyLarge(
-				new ChannelBufferInputStream(buffer, (int) message
-						.getLiteralLength()), os);
-	}*/
-
-	protected abstract ImapMessage createMessage(String line) throws Exception;
-
 	private String readLine(ChannelBuffer buffer, int maxLineLength)
 			throws TooLongFrameException {
 		StringBuilder sb = new StringBuilder(128);
 		int lineLength = 0;
 		while (true) {
 			byte nextByte = buffer.readByte();
-			if (nextByte == ImapCodecUtil.CR) {
+			if (nextByte == CR) {
 				nextByte = buffer.readByte();
-				if (nextByte == ImapCodecUtil.LF) {
-					sb.append(ImapCodecUtil.CRLF);
+				if (nextByte == LF) {
+					sb.append('\n');
 					return sb.toString();
 				}
-			} else if (nextByte == ImapCodecUtil.LF) {
-				sb.append((char) ImapCodecUtil.LF);
+			} else if (nextByte == LF) {
+				sb.append('\n');
 				return sb.toString();
 			} else {
 				if (lineLength >= maxLineLength) {
@@ -174,18 +178,8 @@ public abstract class ImapMessageDecoder extends
 			}
 		}
 	}
-
-	/**
-	 * @see SearchRequest#decode()
-	 */
-	private String toString(ChannelBuffer buffer) {
-		byte[] dst = new byte[buffer.readableBytes()];
-		buffer.getBytes(buffer.readerIndex(), dst);
-		try {
-			return new String(dst, "ISO8859_1");
-		} catch (UnsupportedEncodingException e) {
-			return new String(dst);
-		}
-	}
 	
+	protected abstract ImapMessage createMessage();
+	protected abstract void parseMessage(ImapMessage message);
+
 }

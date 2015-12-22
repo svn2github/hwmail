@@ -46,6 +46,7 @@ public class SearchProcessorTest extends AbstractImapProcessorTest {
 		when(selectedMailbox.getCachedUids()).thenReturn(Collections.EMPTY_LIST);
     }
     
+	@SuppressWarnings("unchecked")
 	private void check(SearchKey key) {
 		when(
 				mailboxManager.search(any(UidToMsnMapper.class), eq(1L),

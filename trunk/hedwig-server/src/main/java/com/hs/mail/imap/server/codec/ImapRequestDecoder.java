@@ -15,6 +15,18 @@
  */
 package com.hs.mail.imap.server.codec;
 
+import java.io.StringReader;
+import java.util.LinkedList;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.jboss.netty.util.CharsetUtil;
+
+import com.hs.mail.imap.parser.CommandParser;
+import com.hs.mail.imap.parser.LiteralException;
+import com.hs.mail.imap.parser.Token;
+
+
+
 /**
  * 
  * @author Won Chul Doh
@@ -32,8 +44,29 @@ public class ImapRequestDecoder extends ImapMessageDecoder {
 	}
 
 	@Override
-	protected ImapMessage createMessage(String line) throws Exception {
-		return new DefaultImapMessage(line);
+	protected ImapMessage createMessage() {
+		ImapMessage message = new DefaultImapMessage(null);
+		parseMessage(message);
+		return message;
 	}
-
+	
+	@Override
+	protected void parseMessage(ImapMessage message) {
+		try {
+			LinkedList<Token> tokens = parse(request);
+			message.setTokens(tokens);
+		} catch (LiteralException ex) {
+			message.setLiteralLength(ex.getLength());
+			message.setNeedContinuationRequest(!ex.isSynchronous());
+		}
+	}
+	
+	private LinkedList<Token> parse(String line) {
+		if (content != null) {
+			astring = ArrayUtils.add(astring, content.toString(CharsetUtil.UTF_8));
+		}
+		CommandParser parser = new CommandParser(new StringReader(request), astring);
+		return parser.command();
+	}
+	
 }

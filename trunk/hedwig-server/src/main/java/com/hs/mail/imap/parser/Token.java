@@ -29,19 +29,18 @@ public class Token {
 
 	public Type type;
 	public String value;
-	public Token next;
 
 	public Token(Type type, String value) {
         this.type = type;
         this.value = value;
 	}
 	
-	public boolean isLiteral() {
-		return (Type.LITERAL == type || Type.LITERAL_SYNC == type);
-	}
-	
 	public String toString() {
 		return type + "=\"" + value + "\"";
 	}
 
+	public boolean isLiteral() {
+		return (type == Type.LITERAL || type == Type.LITERAL_SYNC);
+	}
+	
 }

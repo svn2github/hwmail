@@ -1,6 +1,7 @@
 package com.hs.mail.imap.message.builder;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 import java.util.LinkedList;
@@ -18,8 +19,8 @@ import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SequenceKey;
 import com.hs.mail.imap.parser.CommandParser;
 import com.hs.mail.imap.parser.Token;
+import com.hs.mail.imap.server.codec.DefaultImapMessage;
 import com.hs.mail.imap.server.codec.ImapMessage;
-import com.hs.mail.imap.test.MockImapMessage;
 
 public class SearchRequestBuilderTest {
 
@@ -62,7 +63,7 @@ public class SearchRequestBuilderTest {
 	}
 	
 	private void check(SearchKey[] keys, String command) {
-		ImapMessage message = new MockImapMessage(parse(command));
+		ImapMessage message = new DefaultImapMessage(parse(command));
 		ImapRequest request = ImapRequestFactory.createImapRequest(message);
 		assertTrue(request instanceof SearchRequest);
 		SearchKey searchKey = null;
@@ -78,7 +79,7 @@ public class SearchRequestBuilderTest {
 	}
 
 	private LinkedList<Token> parse(String command) {
-		CommandParser parser = new CommandParser(new StringReader(command + "\r\n"));
+		CommandParser parser = new CommandParser(new StringReader(command + "\n"), null);
 		return parser.command();
 	}
 	
