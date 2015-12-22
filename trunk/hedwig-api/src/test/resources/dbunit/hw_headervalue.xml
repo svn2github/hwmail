@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dataset.dtd">
+<dataset>
+	<table name="hw_headervalue">
+		<column>headervalueid</column>
+		<column>physmessageid</column>
+		<column>headernameid</column>
+		<column>headervalue</column>
+		<row>
+			<value>35457</value>
+			<value>2469</value>
+			<value>5</value>
+			<value><![CDATA[=?ks_c_5601-1987?B?J7Hou+on?= <san.kim@konantech.com>,	=?ks_c_5601-1987?B?J7nOwLHBpCDGwMDltNQn?= <yjmin@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35458</value>
+			<value>2469</value>
+			<value>6</value>
+			<value><![CDATA[=?ks_c_5601-1987?B?J77Iw+Gx2SC6u7rOwOW01Cc=?= <ckahn@konantech.com>,	<wonchul.do@konantech.com>,	<sunguk.hwang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35462</value>
+			<value>2469</value>
+			<value>9</value>
+			<value><![CDATA[Fri, 23 Oct 2015 16:37:55 +0900]]></value>
+		</row>
+		<row>
+			<value>35463</value>
+			<value>2469</value>
+			<value>8</value>
+			<value><![CDATA[<014801d10d65$bea0c400$3be24c00$@kim@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35548</value>
+			<value>2476</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgIA==?=" <wonchul.do@konantech.com>,	"=?utf-8?B?7Zmp7ISg6rWtIA==?=" <sunguk.hwang@konantech.com>,	"=?utf-8?B?7JiI7ZiE7KCVIA==?=" <hyunjung.ye@konantech.com>,	"=?utf-8?B?7LWc7IaM7JewIA==?=" <soyoun.choi@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35550</value>
+			<value>2476</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-b09474aad18b44f9a9cd6ed68d758962@jelee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35551</value>
+			<value>2476</value>
+			<value>9</value>
+			<value><![CDATA[Mon, 26 Oct 2015 13:27:46 +0900]]></value>
+		</row>
+		<row>
+			<value>35646</value>
+			<value>2484</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?7J2066y46riwICAgICAgIA==?=" <mklee@konantech.com>,	"=?utf-8?B?7Jik7LC966+8ICAgICAgIA==?=" <changmin.oh@konantech.com>,	"=?utf-8?B?7J207ZiE66+8ICAgICAgIA==?=" <hyunmini@konantech.com>,	"=?utf-8?B?7J207KKF7JqwICAgICAgIA==?=" <jwlee@konantech.com>,	"=?utf-8?B?64+E7JuQ7LKgICAgICAgIA==?=" <wonchul.do@konantech.com>,	"=?utf-8?B?7Zmp7ISg6rWtICAgICAgIA==?=" <sunguk.hwang@konantech.com>,	"=?utf-8?B?67CV66eM7IiYICAgICAgIA==?=" <mansoo.park@konantech.com>,	"=?utf-8?B?7J6E7JiB6rK9ICAgICAgIA==?=" <yklim@konantech.com>,	"=?utf-8?B?7J207KeA7ZaJICAgICAgIA==?=" <jihaeng.lee@konantech.com>,	"=?utf-8?B?7Jyg7KeE7Z2sICAgICAgIA==?=" <jhyoo@konantech.com>,	"=?utf-8?B?7J207JiB66+8ICAgICAgIA==?=" <ym.lee@konantech.com>,	"=?utf-8?B?6rCV67OR7IKwICAgICAgIA==?=" <byeongsan.kang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35647</value>
+			<value>2484</value>
+			<value>6</value>
+			<value><![CDATA[=?utf-8?B?7JaR7Iq57ZiEIA==?= <yan@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35649</value>
+			<value>2484</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-1cbf8f15a7e14f37b6cef0395338ead4@hyungju.lee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35650</value>
+			<value>2484</value>
+			<value>9</value>
+			<value><![CDATA[Mon, 26 Oct 2015 21:17:14 +0900]]></value>
+		</row>
+		<row>
+			<value>35657</value>
+			<value>2485</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgIA==?=" <wonchul.do@konantech.com>,	"=?utf-8?B?6rmA7KCV6raMIA==?=" <jungkwon.kim@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35659</value>
+			<value>2485</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-d5e445e8af774e5aaec12e0d40636dd8@hyungju.lee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35660</value>
+			<value>2485</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 09:47:40 +0900]]></value>
+		</row>
+		<row>
+			<value>35667</value>
+			<value>2486</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgICA=?=" <wonchul.do@konantech.com>,	"=?utf-8?B?7Zmp7ISg6rWtICA=?=" <sunguk.hwang@konantech.com>,	"=?utf-8?B?7JiI7ZiE7KCVICA=?=" <hyunjung.ye@konantech.com>,	"=?utf-8?B?7LWc7IaM7JewICA=?=" <soyoun.choi@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35669</value>
+			<value>2486</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-4a551280d5d74050a3c2cf779c2e7d7f@jelee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35670</value>
+			<value>2486</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 10:27:41 +0900]]></value>
+		</row>
+		<row>
+			<value>35691</value>
+			<value>2488</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?7J207KeA7ZicIA==?=" <jihye.lee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35692</value>
+			<value>2488</value>
+			<value>6</value>
+			<value><![CDATA[=?utf-8?B?64+E7JuQ7LKgIA==?= <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35694</value>
+			<value>2488</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-b8e3ac9ba7e4422d8732c663e7d6b6d3@sunguk.hwang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35695</value>
+			<value>2488</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 10:41:05 +0900]]></value>
+		</row>
+		<row>
+			<value>35708</value>
+			<value>2489</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 11:02:43 +0900]]></value>
+		</row>
+		<row>
+			<value>35711</value>
+			<value>2489</value>
+			<value>5</value>
+			<value><![CDATA[=?utf-8?B?64+E7JuQ7LKgIA==?= <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35718</value>
+			<value>2489</value>
+			<value>8</value>
+			<value><![CDATA[<gab562edb4399296@promatch.co.kr>]]></value>
+		</row>
+		<row>
+			<value>35727</value>
+			<value>2490</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?7Zmp7ISg6rWtICA=?=" <sunguk.hwang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35728</value>
+			<value>2490</value>
+			<value>6</value>
+			<value><![CDATA[=?utf-8?B?64+E7JuQ7LKgIA==?= <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35730</value>
+			<value>2490</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-a6ab75dc8226429f905ceb1058e5d508@jihye.lee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35731</value>
+			<value>2490</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 11:14:02 +0900]]></value>
+		</row>
+		<row>
+			<value>35791</value>
+			<value>2495</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 13:09:07 +0900]]></value>
+		</row>
+		<row>
+			<value>35796</value>
+			<value>2495</value>
+			<value>5</value>
+			<value><![CDATA[<wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35800</value>
+			<value>2495</value>
+			<value>8</value>
+			<value><![CDATA[1445918947791.2617161.1.45758]]></value>
+		</row>
+		<row>
+			<value>35923</value>
+			<value>2505</value>
+			<value>5</value>
+			<value><![CDATA[<wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>35928</value>
+			<value>2505</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 14:43:01 +0900]]></value>
+		</row>
+		<row>
+			<value>35929</value>
+			<value>2505</value>
+			<value>8</value>
+			<value><![CDATA[<002001d1107a$57d338d0$0779aa70$@nate.com>]]></value>
+		</row>
+		<row>
+			<value>36163</value>
+			<value>2522</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgIA==?=" <wonchul.do@konantech.com>,	"=?utf-8?B?7Zmp7ISg6rWtIA==?=" <sunguk.hwang@konantech.com>,	"=?utf-8?B?7J207KCV7J2AIA==?=" <jelee@konantech.com>,	"=?utf-8?B?6rmA66+47KCVIA==?=" <mijung.kim@konantech.com>,	"=?utf-8?B?6rmA7JiB6re8IA==?=" <youngkeun.kim@konantech.com>,	"=?utf-8?B?7J207KeA7ZicIA==?=" <jihye.lee@konantech.com>,	"=?utf-8?B?7LWc7IaM7JewIA==?=" <soyoun.choi@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36165</value>
+			<value>2522</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-4ef3ed3bce1c4e949f1bb750e905fee1@hyunjung.ye@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36166</value>
+			<value>2522</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 18:25:10 +0900]]></value>
+		</row>
+		<row>
+			<value>36177</value>
+			<value>2523</value>
+			<value>9</value>
+			<value><![CDATA[Tue, 27 Oct 2015 19:28:09 +0900]]></value>
+		</row>
+		<row>
+			<value>36180</value>
+			<value>2523</value>
+			<value>5</value>
+			<value><![CDATA["wonchul.do@konantech.com" <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36237</value>
+			<value>2528</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgICA=?=" <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36238</value>
+			<value>2528</value>
+			<value>6</value>
+			<value><![CDATA[=?utf-8?B?6rmA65GQ7ISxIA==?= <doosung.kim@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36240</value>
+			<value>2528</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-604fd84e258a44069d5d02a377d1a443@eunjung.kang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36241</value>
+			<value>2528</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 28 Oct 2015 09:47:37 +0900]]></value>
+		</row>
+		<row>
+			<value>36253</value>
+			<value>2529</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 28 Oct 2015 10:19:29 +0900 (KST)]]></value>
+		</row>
+		<row>
+			<value>36255</value>
+			<value>2529</value>
+			<value>5</value>
+			<value><![CDATA[=?UTF-8?B?7Jik7KCc7Jyk?= <jyoh@handysoft.co.kr>]]></value>
+		</row>
+		<row>
+			<value>36256</value>
+			<value>2529</value>
+			<value>6</value>
+			<value><![CDATA[=?UTF-8?B?64+E7JuQ7LKg?= <wonchul.do@konantech.com>, 	=?UTF-8?B?7J6E6raM6riw?= <kklim@handysoft.co.kr>]]></value>
+		</row>
+		<row>
+			<value>36257</value>
+			<value>2529</value>
+			<value>8</value>
+			<value><![CDATA[<853726134.18276.1445995169927.JavaMail.handy@smtp.dummydomain.com>]]></value>
+		</row>
+		<row>
+			<value>36276</value>
+			<value>2530</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?6rCV7J2A7KCVICA=?=" <eunjung.kang@konantech.com>,	"=?utf-8?B?64+E7JuQ7LKgICAg?=" <wonchul.do@konantech.com>,	"=?utf-8?B?6rmA65GQ7ISxICAg?=" <doosung.kim@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36278</value>
+			<value>2530</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-173455fbb7d949cf93dfc8bd23184645@hyungju.lee@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36279</value>
+			<value>2530</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 28 Oct 2015 10:32:26 +0900]]></value>
+		</row>
+		<row>
+			<value>36379</value>
+			<value>2538</value>
+			<value>5</value>
+			<value><![CDATA["=?utf-8?B?64+E7JuQ7LKgIA==?=" <wonchul.do@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36381</value>
+			<value>2538</value>
+			<value>8</value>
+			<value><![CDATA[<DUZON-fbc988e5c2254bd89943a324aa7d0fa6@eunjung.kang@konantech.com>]]></value>
+		</row>
+		<row>
+			<value>36382</value>
+			<value>2538</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 28 Oct 2015 14:13:19 +0900]]></value>
+		</row>
+		<row>
+			<value>36411</value>
+			<value>2542</value>
+			<value>9</value>
+			<value><![CDATA[Mon, 16 Nov 2015 18:25:05 +0900 (KST)]]></value>
+		</row>
+		<row>
+			<value>36413</value>
+			<value>2542</value>
+			<value>5</value>
+			<value><![CDATA[hyunjung@hedwig.org, jelee@hedwig.org, jihye@hedwig.org, mijung@hedwig.org, 	soyoun@hedwig.org, wdo@hedwig.org, youngun@hedwig.org]]></value>
+		</row>
+		<row>
+			<value>36414</value>
+			<value>2542</value>
+			<value>8</value>
+			<value><![CDATA[<1122270886.2.1447665905590.JavaMail.wdo@VAIOWDO>]]></value>
+		</row>
+		<row>
+			<value>36503</value>
+			<value>2564</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 16 Dec 2015 20:51:32 +0900 (KST)]]></value>
+		</row>
+		<row>
+			<value>36505</value>
+			<value>2564</value>
+			<value>5</value>
+			<value><![CDATA[wdo@hedwig.org]]></value>
+		</row>
+		<row>
+			<value>36506</value>
+			<value>2564</value>
+			<value>8</value>
+			<value><![CDATA[<2030396361.12.1450266692817.JavaMail.wdo@VAIOWDO>]]></value>
+		</row>
+		<row>
+			<value>36544</value>
+			<value>2568</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 16 Dec 2015 21:00:11 +0900 (KST)]]></value>
+		</row>
+		<row>
+			<value>36546</value>
+			<value>2568</value>
+			<value>5</value>
+			<value><![CDATA[wdo@hedwig.org, hyunjung@hedwig.org, jelee@hedwig.org]]></value>
+		</row>
+		<row>
+			<value>36547</value>
+			<value>2568</value>
+			<value>6</value>
+			<value><![CDATA[jihye@hedwig.org, mijung@hedwig.org]]></value>
+		</row>
+		<row>
+			<value>36548</value>
+			<value>2568</value>
+			<value>8</value>
+			<value><![CDATA[<38583712.20.1450267211260.JavaMail.wdo@VAIOWDO>]]></value>
+		</row>
+		<row>
+			<value>36565</value>
+			<value>2570</value>
+			<value>9</value>
+			<value><![CDATA[Wed, 16 Dec 2015 21:07:06 +0900 (KST)]]></value>
+		</row>
+		<row>
+			<value>36567</value>
+			<value>2570</value>
+			<value>5</value>
+			<value><![CDATA[hyunjung@hedwig.org, jelee@hedwig.org, jihye@hedwig.org, mijung@hedwig.org, 	soyoun@hedwig.org, wdo@hedwig.org, youngun@hedwig.org]]></value>
+		</row>
+		<row>
+			<value>36568</value>
+			<value>2570</value>
+			<value>8</value>
+			<value><![CDATA[<1669301576.23.1450267626185.JavaMail.wdo@VAIOWDO>]]></value>
+		</row>
+	</table>
+</dataset>
