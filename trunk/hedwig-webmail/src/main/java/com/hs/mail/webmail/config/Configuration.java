@@ -14,7 +14,7 @@ import com.hs.mail.webmail.dao.PreferencesDAO;
 
 public class Configuration implements InitializingBean, ApplicationContextAware {
 
-	private static Properties properties;
+	private static Properties properties = new Properties();
 
 	private static MessageSourceAccessor messageSourceAccessor;
 	
