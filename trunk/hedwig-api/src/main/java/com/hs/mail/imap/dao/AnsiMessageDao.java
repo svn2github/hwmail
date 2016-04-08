@@ -61,7 +61,9 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 	abstract public void copyMessage(long messageID, long mailboxID);
 	
 	public FetchData getMessageFetchData(long messageID) {
-		String sql = "SELECT * FROM hw_message m, hw_physmessage p WHERE m.messageid = ? AND m.physmessageid = p.physmessageid";
+		String sql = "SELECT m.*, p.rfcsize, p.internaldate "
+				+      "FROM hw_message m, hw_physmessage p "
+				+     "WHERE m.messageid = ? AND m.physmessageid = p.physmessageid";
 		FetchData fd = (FetchData) queryForObject(sql, new Object[] { new Long(
 				messageID) }, fetchDataRowMapper);
 		if (fd != null) {

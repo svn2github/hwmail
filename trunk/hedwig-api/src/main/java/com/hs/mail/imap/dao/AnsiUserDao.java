@@ -72,7 +72,7 @@ abstract class AnsiUserDao extends AbstractDao implements UserDao {
 	}
 
 	public List<Alias> expandAlias(String alias) {
-		String sql = "SELECT a.*, u.userid FROM hw_alias a, hw_user u WHERE a.alias = ? AND a.deliver_to = u.userid";
+		String sql = "SELECT a.*, u.loginid FROM hw_alias a, hw_user u WHERE a.alias = ? AND a.deliver_to = u.userid";
 		return getJdbcTemplate()
 				.query(sql, new Object[] { alias }, aliasMapper);
 	}
