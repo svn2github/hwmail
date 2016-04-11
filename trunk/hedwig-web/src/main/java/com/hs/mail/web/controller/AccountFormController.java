@@ -98,7 +98,7 @@ public class AccountFormController implements Validator {
 		}
 
 		try {
-			doSubmitAction(request, AccountWrapper.createUser(account));
+			doSubmitAction(request, account);
 			return "ok";
 		} catch (DataIntegrityViolationException e) {
 			result.rejectValue("localPart", "address.alreay.exist");
@@ -114,7 +114,7 @@ public class AccountFormController implements Validator {
 	public void deleteAccounts(@PathVariable("domain") String domain,
 			@RequestParam(value = "ID") long[] idarray, WebRequest request) {
 		if (ArrayUtils.isNotEmpty(idarray)) {
-			request.removeAttribute(WebSession.ACCOUNT_COUNT,
+			request.removeAttribute(domain + WebSession.ACCOUNT_COUNT,
 					WebRequest.SCOPE_SESSION);
 			for (long id : idarray) {
 				userManager.deleteUser(id);
@@ -122,11 +122,12 @@ public class AccountFormController implements Validator {
 		}
 	}
 
-	protected void doSubmitAction(WebRequest request, User user)
+	protected void doSubmitAction(WebRequest request, AccountWrapper account)
 			throws DataIntegrityViolationException {
+		User user = AccountWrapper.createUser(account);
 		if (user.getID() == 0) {
-			request.removeAttribute(WebSession.ACCOUNT_COUNT,
-					WebRequest.SCOPE_SESSION);
+			request.removeAttribute(account.getDomain()
+					+ WebSession.ACCOUNT_COUNT, WebRequest.SCOPE_SESSION);
 			userManager.addUser(user);
 		} else {
 			userManager.updateUser(user);

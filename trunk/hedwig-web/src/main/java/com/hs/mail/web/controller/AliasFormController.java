@@ -95,11 +95,11 @@ public class AliasFormController implements Validator {
 		}
 
 		try {
-			doSubmitAction(request, AliasWrapper.createAlias(alias));
+			doSubmitAction(request, alias);
 			return "ok";
 		} catch (DataIntegrityViolationException e) {
-			result.rejectValue("alias", "address.alreay.exist");
-			return "account";
+			result.rejectValue("aliasName", "address.alreay.exist");
+			return "alias";
 		}
 	}
 
@@ -111,7 +111,7 @@ public class AliasFormController implements Validator {
 	public void deleteAliases(@PathVariable("domain") String domain,
 			@RequestParam(value = "ID") long[] idarray, WebRequest request) {
 		if (ArrayUtils.isNotEmpty(idarray)) {
-			request.removeAttribute(WebSession.ALIAS_COUNT,
+			request.removeAttribute(domain + WebSession.ALIAS_COUNT,
 					WebRequest.SCOPE_SESSION);
 			for (long id : idarray) {
 				userManager.deleteAlias(id);
@@ -119,11 +119,12 @@ public class AliasFormController implements Validator {
 		}
 	}
 
-	protected void doSubmitAction(WebRequest request, Alias alias)
+	protected void doSubmitAction(WebRequest request, AliasWrapper wrapper)
 			throws DataIntegrityViolationException {
+		Alias alias = AliasWrapper.createAlias(wrapper);
 		if (alias.getID() == 0) {
-			request.removeAttribute(WebSession.ALIAS_COUNT,
-					WebRequest.SCOPE_SESSION);
+			request.removeAttribute(wrapper.getDomain()
+					+ WebSession.ALIAS_COUNT, WebRequest.SCOPE_SESSION);
 			userManager.addAlias(alias);
 		} else {
 			userManager.updateAlias(alias);
@@ -139,7 +140,7 @@ public class AliasFormController implements Validator {
 	public void validate(Object target, Errors errors) {
 		AliasWrapper alias = (AliasWrapper) target;
 
-		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "alias",
+		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "aliasName",
 				"field.required");
 		if (StringUtils.isBlank(alias.getUserID())) {
 			errors.rejectValue("userID", "field.required");

@@ -17,7 +17,8 @@ public class AliasWrapper {
 	public AliasWrapper(Alias alias) {
 		this.alias = alias;
 		if (alias != null) {
-			
+			setAliasName(alias.getAliasName());
+			setDomain(alias.getDomain());
 		}
 	}
 
