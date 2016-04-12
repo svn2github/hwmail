@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -15,13 +17,37 @@ import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.dao.PreferencesDAO;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaPreferences;
+import com.hs.mail.webmail.model.impl.WmaFetchAccount;
 import com.hs.mail.webmail.util.MD5;
 
 public class SimplePreferencesDAO implements PreferencesDAO {
 
 	@Override
 	public WmaPreferences getPreferences(String identity) throws WmaException {
-		File file = getFile(identity);
+		File file = getFile(identity, MD5.hash(identity));
+		return deserialize(file);
+	}
+
+	@Override
+	public void savePreferences(WmaPreferences prefs) throws WmaException {
+		String identity = prefs.getUserIdentity();
+		File file = getFile(identity, MD5.hash(identity));
+		serialize(prefs, file);
+	}
+
+	public List<WmaFetchAccount> getFetchAccounts(String identity)
+			throws WmaException {
+		File file = getFile(identity, "accounts");
+		return deserialize(file);
+	}
+	
+	public void saveFetchAccounts(String identity,
+			List<WmaFetchAccount> accounts) throws WmaException {
+		File file = getFile(identity, "accounts");
+		serialize((Serializable) accounts, file);
+	}
+	
+	private static <T> T deserialize(File file) throws WmaException {
 		InputStream input = null;
 		try {
 			input = new FileInputStream(file);
@@ -34,15 +60,14 @@ public class SimplePreferencesDAO implements PreferencesDAO {
 			IOUtils.closeQuietly(input);
 		}
 	}
-
-	@Override
-	public void savePreferences(WmaPreferences prefs) throws WmaException {
-		File file = getFile(prefs.getUserIdentity());
+	
+	private static void serialize(final Serializable obj, final File file)
+			throws WmaException {
 		OutputStream output = null;
 		try {
 			FileUtils.forceMkdir(file.getParentFile());
 			output = new FileOutputStream(file);
-			SerializationUtils.serialize(prefs, output);
+			SerializationUtils.serialize(obj, output);
 		} catch (Exception e) {
 			throw new WmaException("wma.prefs.save").setException(e);
 		} finally {
@@ -50,8 +75,8 @@ public class SimplePreferencesDAO implements PreferencesDAO {
 		}
 	}
 	
-	private static File getFile(String identity) {
-		return new File(Configuration.getUserHome(identity), MD5.hash(identity));
+	private static File getFile(String identity, String fname) {
+		return new File(Configuration.getUserHome(identity), fname);
 	}
 
 }

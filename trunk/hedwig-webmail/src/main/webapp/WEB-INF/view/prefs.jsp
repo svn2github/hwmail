@@ -15,6 +15,11 @@
 				<fmt:message key="prefs.filter"/>
 			</a>
 		</li>
+		<li>
+			<a href="#accounts" data-toggle="tab">
+				Accounts
+			</a>
+		</li>
 	</ul>
 	<!-- Tab panes -->
 	<div class="tab-content">
@@ -130,12 +135,35 @@
 		    		</tbody>
 		    	</table>
 	    	</form>
-	    </div><!-- /.tab-pane#filter -->
+	    </div><!-- /.tab-pane#accounts -->
+	    <div class="tab-pane" id="accounts">
+	    	<div class="mb-20">
+	    		<a id="save-accounts" class="btn btn-default btn-sm disabled hidden"><fmt:message key="menu.save"/></a>
+	    		<a id="create-account" class="btn btn-default btn-sm"><fmt:message key="menu.add"/></a>
+	    	</div>
+	    	<form method="post" action="prefs/accounts">
+		    	<table class="table table-hover table-condensed">
+		    		<tbody>
+		    			<tr id="account-command" class="hidden">
+		    				<td><input type="hidden" name="accounts"></td>
+		    				<td></td>
+		    				<td></td>
+		    				<td>
+		    					<a id="update-account" class="btn btn-default btn-xs"><fmt:message key="menu.edit"/></a>
+		    					<a id="delete-account" class="btn btn-default btn-xs"><fmt:message key="menu.delete"/></a>
+		    				</td>
+		    			</tr>
+		    		</tbody>
+		    	</table>
+	    	</form>
+	    </div><!-- /.tab-pane#accounts -->
 	</div>
 </div>
 <script>
 $(function() {
 	console.log('prefs');
+
+	// GENERAL
 
 	$('#prefs-general').on('submit', function(e) {
 		e.preventDefault(); e.stopPropagation();
@@ -147,8 +175,10 @@ $(function() {
 		return false;
 	}).find('textarea[name=signature]').summernote({ height: 110 });
 
+	// FILTER
+
 	$('#settings-tab').on('shown.bs.tab', 'a[href=#filter]', function() {
-		if ($('#save-filter').is(':hidden')) {
+		if ($('#save-filter').is(':hidden')) { // lazy loading - this is the 1st time filter list is displayed
 			$('#save-filter').removeClass('hidden');
 			$.getJSON('prefs/filters', function(data) {
 				if (data) {
@@ -251,6 +281,8 @@ $(function() {
 		if (data.actionparam) delete data.actionparam;
 		return msgs[data.action];
 	}
+
+	// ACCOUNTS
 
 });
 </script>

@@ -346,8 +346,7 @@ $(function() {
   			</c:url>"></a>
   			<!-- Simple splash message -->
   			<div class="splash">
-  				<h1><fmt:message key="main.message.loading"/></h1>
-  				<img src="images/loading-bars.svg" width="64" height="64"/>
+  				<h1><i class="fa fa-spinner fa-spin fa-lg"></i></h1>
   			</div>
         </div><!-- /#main-tab.tab-pane -->
         <div role="tabpanel" class="tab-pane" id="sub-tab">
