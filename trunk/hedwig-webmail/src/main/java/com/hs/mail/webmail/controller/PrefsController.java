@@ -1,5 +1,6 @@
 package com.hs.mail.webmail.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,16 +64,21 @@ public class PrefsController {
 			HttpServletRequest request) throws Exception {
 		WmaSession session = new WmaSession(httpsession);
 		String[] filters = request.getParameterValues("filters");
+		List<WmaFilterItem> items = parseFilters(filters);
+		SieveScriptUtils.writeScript(session.getUserIdentity(), items);
+		return "saved";
+	}
+	
+	private List<WmaFilterItem> parseFilters(String[] filters)
+			throws IOException {
 		List<WmaFilterItem> items = new ArrayList<WmaFilterItem>();
 		ObjectMapper mapper = new ObjectMapper();
 		for (String filter : filters) {
-			// skip template value
-			if (StringUtils.isNotBlank(filter)) {
+			if (StringUtils.isNotBlank(filter)) { // skip template value
 				items.add(mapper.readValue(filter, WmaFilterItem.class));
 			}
 		}
-		SieveScriptUtils.writeScript(session.getUserIdentity(), items);
-		return "saved";
+		return items;
 	}
 	
 }

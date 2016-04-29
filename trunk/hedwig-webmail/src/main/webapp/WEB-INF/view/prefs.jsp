@@ -11,14 +11,10 @@
 			<a href="#general" data-toggle="tab"><fmt:message key="prefs.general"/></a>
 		</li>
 		<li>
-			<a href="#filter" data-toggle="tab">
-				<fmt:message key="prefs.filter"/>
-			</a>
+			<a href="#filter" data-toggle="tab"><fmt:message key="prefs.filter"/></a>
 		</li>
 		<li>
-			<a href="#accounts" data-toggle="tab">
-				Accounts
-			</a>
+			<a href="#account" data-toggle="tab"><fmt:message key="fetch.account"/></a>
 		</li>
 	</ul>
 	<!-- Tab panes -->
@@ -135,27 +131,13 @@
 		    		</tbody>
 		    	</table>
 	    	</form>
-	    </div><!-- /.tab-pane#accounts -->
-	    <div class="tab-pane" id="accounts">
+	    </div><!-- /.tab-pane#filter -->
+	    <div class="tab-pane" id="account">
 	    	<div class="mb-20">
-	    		<a id="save-accounts" class="btn btn-default btn-sm disabled hidden"><fmt:message key="menu.save"/></a>
-	    		<a id="create-account" class="btn btn-default btn-sm"><fmt:message key="menu.add"/></a>
+	    		<a id="create-account" class="btn btn-default btn-sm hidden"><fmt:message key="menu.add"/></a>
 	    	</div>
-	    	<form method="post" action="prefs/accounts">
-		    	<table class="table table-hover table-condensed">
-		    		<tbody>
-		    			<tr id="account-command" class="hidden">
-		    				<td><input type="hidden" name="accounts"></td>
-		    				<td></td>
-		    				<td></td>
-		    				<td>
-		    					<a id="update-account" class="btn btn-default btn-xs"><fmt:message key="menu.edit"/></a>
-		    					<a id="delete-account" class="btn btn-default btn-xs"><fmt:message key="menu.delete"/></a>
-		    				</td>
-		    			</tr>
-		    		</tbody>
-		    	</table>
-	    	</form>
+	    	<div id="accounts">
+	    	</div>
 	    </div><!-- /.tab-pane#accounts -->
 	</div>
 </div>
@@ -245,7 +227,8 @@ $(function() {
 	function setFilter(row, data) {
 		var cond = stringifyIf(data);
 		if (!cond) return false;
-		row.find('td:eq(1)').html(cond);
+//		row.find('td:eq(1)').html(cond);
+		row.find('td:eq(1)').append( $('<a></a>').attr('id', 'update-filter').html(cond) );
 		row.find('td:eq(2)').text(stringifyThen(data));
 		row.find('input[name=filters]').val(JSON.stringify(data));
 		return true;
@@ -283,6 +266,82 @@ $(function() {
 	}
 
 	// ACCOUNTS
+
+	$('#settings-tab').on('shown.bs.tab', 'a[href=#account]', function() {
+		if ($('#create-account').is(':hidden')) { // lazy loading - this is the 1st time filter list is displayed
+			$('#create-account').removeClass('hidden');
+			$('#accounts').load('prefs/accounts', function() {
+				$.getJSON('prefs/accounts/status', function(status) {
+					if (status.uid && status.status >= 0) {
+						$('#accounts')
+							.find('#fetch-account').addClass('disabled').end()
+							.find('input[name=uid][value=' + status.uid + ']')
+								.prev().removeClass('fa-envelope').addClass('fa-spinner fa-spin');
+						setTimeout(poll, 2000);
+					}
+				});
+			});
+		}
+	});
+
+	$('#account').on('click', '#create-account', function() {
+		saveAccount('create');
+	}).on('click', '#update-account', function() {
+		saveAccount( getAccountUID(this) );
+	}).on('click', '#delete-account', function() {
+		$('#accounts').load('prefs/accounts/delete', { uid: getAccountUID(this) } );
+	}).on('click', '#fetch-account', function() {
+		var row = $(this).closest('tr');
+		$.post('prefs/accounts/fetch', { uid: getAccountUID(this) }, function() {
+			$('#accounts').find('#fetch-account').addClass('disabled');
+			row.find('.fa-envelope').removeClass('fa-envelope').addClass('fa-spinner fa-spin');
+			setTimeout(poll, 2000);
+		});
+	});
+
+	function poll() {
+		setTimeout(function() {
+			$.getJSON('prefs/accounts/status', function(status) {
+				if (status.uid && status.status >= 0) { // running
+					console.log('poll ' + status.status)
+					poll();
+				} else {	// completed
+					console.log('poll completed');
+					$('#accounts')
+						.find('.fa-spinner').removeClass('fa-spinner fa-spin').addClass('fa-envelope').end()
+						.find('#fetch-account').removeClass('disabled');
+				}
+			});
+		}, 2000);
+	}
+
+	function getAccountUID(elem) {
+		return $(elem).closest('tr').find('input[name=uid]').val();
+	}
+
+	function saveAccount(uid) {
+		eModal.ajax({
+			url: 'prefs/accounts/' + uid,
+			title: 'Account',
+			size: 'lg',
+			buttons: [
+				{ text: 'Close', style: 'default', close: true },
+				{ text: 'OK', style: 'primary', close: false, click: function() {
+						var $form = $('form[name=fetchForm]');
+						$.post($form.attr('action'), $form.serializeArray())
+							.done(function(data) {
+								if ($(data).is('form')) {
+									$form.closest('.modal-body').html(data);
+								} else {
+									$('#accounts').html(data);
+									eModal.close();
+								}
+							});
+					}
+				}
+			]
+		});
+	}
 
 });
 </script>

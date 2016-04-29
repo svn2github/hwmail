@@ -7,12 +7,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Part;
+import javax.mail.internet.MailDateFormat;
 import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.lang3.StringUtils;
@@ -111,6 +113,37 @@ public class WmaUtils {
 			return getHeader(p, name);
 		} catch (MessagingException e) {
 			return defaultValue;
+		}
+	}
+	
+	public static Date getReceivedDate(Message msg) {
+		try {
+			Date d = msg.getReceivedDate();
+			if (null == d) {
+				String[] s = msg.getHeader("Received");
+				if (null == s) {
+					if ((s = msg.getHeader("Date")) == null) {
+						return new Date();
+					}
+				} else {
+					// RFC 2822 - Internet Message Format
+					// received = "Received:" name-val-list ";" date-time CRLF
+					StringTokenizer st = new StringTokenizer(s[0], "\n");
+					while (st.hasMoreTokens()) {
+						s[0] = st.nextToken();
+					}
+					s[0] = s[0].substring(s[0].indexOf(";") + 1).trim();
+				}
+				MailDateFormat mdf = new MailDateFormat();
+				try {
+					d = mdf.parse(s[0]);
+				} catch (ParseException pex) {
+					return new Date();
+				}
+			}
+			return d;
+		} catch (MessagingException mes) {
+			return new Date();
 		}
 	}
 	

@@ -7,11 +7,14 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.dao.PreferencesDAO;
@@ -41,7 +44,65 @@ public class SimplePreferencesDAO implements PreferencesDAO {
 		return deserialize(file);
 	}
 	
-	public void saveFetchAccounts(String identity,
+	public WmaFetchAccount getFetchAccount(String identity, String uid)
+			throws WmaException {
+		List<WmaFetchAccount> accounts = getFetchAccounts(identity);
+		if (accounts != null) {
+			for (WmaFetchAccount account : accounts) {
+				if (account.getUID().equals(uid)) {
+					return account;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public void deleteFetchAccount(String identity, String uid) throws WmaException {
+		List<WmaFetchAccount> accounts = getFetchAccounts(identity);
+		if (accounts != null) {
+			for (int i = 0; i < accounts.size(); i++) {
+				WmaFetchAccount account = accounts.get(i); 
+				if (account.getUID().equals(uid)) {
+					accounts.remove(i);
+					saveFetchAccounts(identity, accounts);
+				}
+			}
+		}
+	}
+	
+	public void saveFetchAccount(String identity, WmaFetchAccount account)
+			throws WmaException {
+		if (StringUtils.isEmpty(account.getUID())) {
+			createFetchAccount(identity, account);
+		} else {
+			updateFetchAccount(identity, account);
+		}
+	}
+	
+	private void createFetchAccount(String identity, WmaFetchAccount account)
+			throws WmaException {
+		List<WmaFetchAccount> accounts = getFetchAccounts(identity);
+		if (accounts == null) {
+			accounts = new ArrayList<WmaFetchAccount>();
+		}
+		account.setUID(UUID.randomUUID().toString());
+		accounts.add(account);
+		saveFetchAccounts(identity, accounts);
+	}
+
+	private void updateFetchAccount(String identity, WmaFetchAccount account)
+			throws WmaException {
+		List<WmaFetchAccount> accounts = getFetchAccounts(identity);
+		if (accounts != null) {
+			int index = accounts.indexOf(account);
+			if (index != -1) {
+				accounts.set(index, account);
+				saveFetchAccounts(identity, accounts);
+			}
+		}
+	}
+	
+	private void saveFetchAccounts(String identity,
 			List<WmaFetchAccount> accounts) throws WmaException {
 		File file = getFile(identity, "accounts");
 		serialize((Serializable) accounts, file);

@@ -56,6 +56,13 @@ public class WmaSession implements Serializable {
 		return (WmaStore) retrieveBean(WMA_STORE);
 	}
 	
+	public Store getStore() throws WmaException {
+		WmaAuthenticator authenticator = getAuthenticator();
+		Store store = connect(getMailSession(), authenticator.getUserName(),
+				authenticator.getPassword());
+		return store;
+	}
+	
 	public Query getQuery(HttpServletRequest request) throws ServletException {
 		if (request != null) {
 			Query query = QueryBuilder.build(request);

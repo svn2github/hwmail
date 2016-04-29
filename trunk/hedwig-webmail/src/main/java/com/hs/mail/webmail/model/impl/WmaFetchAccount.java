@@ -7,6 +7,8 @@ public class WmaFetchAccount implements Serializable {
 
 	private static final long serialVersionUID = 8658217995708078553L;
 
+	private String uid;
+	
 	private String protocol;
 
 	private String userName;
@@ -29,6 +31,14 @@ public class WmaFetchAccount implements Serializable {
 
 	private int failureCount = 0;
 	
+	public String getUID() {
+		return uid;
+	}
+
+	public void setUID(String uid) {
+		this.uid = uid;
+	}
+
 	public String getProtocol() {
 		return protocol;
 	}
@@ -120,8 +130,7 @@ public class WmaFetchAccount implements Serializable {
 	public boolean equals(Object obj) {
 		if (obj instanceof WmaFetchAccount) {
 			WmaFetchAccount account = (WmaFetchAccount) obj;
-			return userName.equals(account.getUserName())
-					&& serverName.equals(account.getServerName());
+			return uid.equals(account.getUID());
 		} else {
 			return false;
 		}
