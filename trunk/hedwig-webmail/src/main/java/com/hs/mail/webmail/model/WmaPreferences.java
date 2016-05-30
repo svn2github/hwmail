@@ -1,7 +1,6 @@
 package com.hs.mail.webmail.model;
 
 import java.io.Serializable;
-import java.util.Locale;
 
 public interface WmaPreferences extends Serializable {
 
@@ -37,22 +36,6 @@ public interface WmaPreferences extends Serializable {
 	
 	int getPageSize();
 	
-	/**
-	 * Returns the <tt>Locale</tt> associated with this <tt>WmaPreferences</tt>
-	 * .
-	 * 
-	 * @return the associated <tt>Locale</tt>.
-	 */	
-	Locale getLocale();
-
-	  /**
-	 * Sets the <tt>Locale</tt> associated with this <tt>WmaPreferences</tt>.
-	 * 
-	 * @param locale
-	 *            the <tt>Locale</tt> to be set.
-	 */
-	void setLocale(Locale locale);
-
 	/**
 	 * Tests if messages should be quoted automatically when replying.
 	 * 

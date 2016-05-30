@@ -570,14 +570,14 @@ public class WmaComposeMessage implements WmaMessage {
 							StringEscapeUtils.escapeHtml4(msg.getFrom()),
 							WmaUtils.formatDate(msg.getSentDate()),
 							StringEscapeUtils.escapeHtml4(msg.getTo()),
-							StringEscapeUtils.escapeHtml4(msg.getSubject()) },
-					prefs.getLocale());
+							StringEscapeUtils.escapeHtml4(msg.getSubject()) }
+					);
 		} else {
 			quote = Configuration.getMessage(
 					"compose.quote.plain",
 					new Object[] { msg.getFrom(),
 							WmaUtils.formatDate(msg.getSentDate()),
-							msg.getTo(), msg.getSubject() }, prefs.getLocale());
+							msg.getTo(), msg.getSubject() });
 
 		}
 		appendBody(quote);
