@@ -58,6 +58,12 @@ $(function() {
 						</label>
 						<p class="help-block small">(if this is a private computer)</p>
 					</div>
+					<div class="form-group">
+						<select name="language" class="form-control">
+							<option value="en">English</option>
+		                	<option value="ko">Korean</option>
+						</select>
+					</div>
 					<button type="submit" class="btn btn-primary btn-block">Login</button>
 				</form>
 			</div>
