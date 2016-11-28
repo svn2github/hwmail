@@ -56,7 +56,11 @@ public class FetchMailer {
 
 	private Folder mbox;
 	
+	private int fetched = 0;
+	
 	private int fetchSize = 50;
+	
+	private Latest latest;
 	
 	public FetchMailer(WmaFetchAccount account, Folder dest) {
 		this.account = account;
@@ -111,8 +115,9 @@ public class FetchMailer {
 	}
 	
 	public int fetch() throws MessagingException {
+		latest = new Latest();
 		boolean expunge = account.getAutoEmpty();
-		int fetched = 0;
+		fetched = 0;
 		try {
 			connect();
 			if (existNewMessages()) {
@@ -129,7 +134,12 @@ public class FetchMailer {
 					}
 					// Get the remaining messages
 					fetched += appendMessages(begin, count, expunge);
+					// Mark time and UID stamp
+					account.setLastXUID(latest.XUID);
+					account.setLastReceivedDate(latest.date);
 				}
+			} else {
+				log.debug("No new mails!");
 			}
 		} catch (MessagingException e) {
 			throw e;
@@ -160,8 +170,7 @@ public class FetchMailer {
 					// TODO If exception is thrown here, we must recalculate the
 					// XUID and only appended message must be deleted from POP3
 					// server.
-					// FIXME
-					// dest.appendMessages(msgs);
+					dest.appendMessages(msgs);
 					if (log.isDebugEnabled()) {
 						log.debug("{} messages are appended...", msgs.length);
 					}
@@ -208,12 +217,12 @@ public class FetchMailer {
 				if (msgs != null && msgs.length > 0) {
 					try {
 						POP3Folder pf = (POP3Folder) mbox;
-						String XUID = pf.getUID(msgs[msgs.length - 1]);
-						Date date = WmaUtils.getReceivedDate(msgs[msgs.length - 1]);
-						account.setLastXUID(XUID);
-						account.setLastReceivedDate(date);
+						latest.XUID = pf.getUID(msgs[msgs.length - 1]);
+						latest.date = getLastReceivedDate(msgs); 
 					} catch (MessagingException e) {
 						// Ignore this error
+						log.warn(e.getMessage());
+					} catch (Exception e) {
 						log.warn(e.getMessage());
 					}
 				}
@@ -223,6 +232,17 @@ public class FetchMailer {
 			}
 		}
 		return null;
+	}
+	
+	private Date getLastReceivedDate(Message[] msgs) {
+		Date ret = latest.date;
+		for (int i = 0; i < msgs.length; i++) {
+			Date date = WmaUtils.getReceivedDate(msgs[i]);
+			if (date != null && (ret == null || ret.before(date))) {
+				ret = date;
+			}
+		}
+		return ret;
 	}
 	
 	private Message[] getNewMessages(Message[] msgs) {
@@ -254,8 +274,10 @@ public class FetchMailer {
 			}
 		}
 		if (!done) {
+			Date rdate = null;
 			for (int i = 0; i < msgs.length; i++) {
-				if (date.before(WmaUtils.getReceivedDate(msgs[i]))) {
+				rdate = WmaUtils.getReceivedDate(msgs[i]);
+				if (rdate != null && date.before(rdate)) {
 					results.add(msgs[i]);
 				}
 			}
@@ -332,4 +354,9 @@ public class FetchMailer {
 		}
 	}
 
+	class Latest {
+		public Date date = account.getLastReceivedDate();
+		public String XUID = account.getLastXUID();
+	}
+	
 }
