@@ -2,11 +2,9 @@ package com.hs.mail.webmail.sieve;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jsieve.parser.generated.ParseException;
 import org.junit.Test;
 
 public class SieveScriptUtilsTest {

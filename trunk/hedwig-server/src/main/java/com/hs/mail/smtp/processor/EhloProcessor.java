@@ -65,6 +65,8 @@ public class EhloProcessor extends AbstractSmtpProcessor {
 				for (String extension : extensions) {
 					session.writeResponse("250-" + extension);
 				}
+				// Reply code in the last line is followed immediately by <SP>
+				// instead of hyphen.
 				session.writeResponse("250 HELP");
 			}
 		}

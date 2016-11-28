@@ -20,7 +20,7 @@
 					</td>
 					<td>
 						<a id="delete-account" class="btn btn-default btn-xs"><fmt:message key="menu.delete"/></a>
-						<a id="fetch-account" class="btn btn-default btn-xs">fetch</a>
+						<a id="fetch-account" class="btn btn-default btn-xs"><fmt:message key="menu.fetch"/></a>
 					</td>
 				</tr>
 			</c:forEach>
