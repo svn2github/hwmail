@@ -27,6 +27,7 @@ public class DaoFactory {
 
 	private static DaoFactory instance;
 
+	private ACLDao aclDao;
 	private MailboxDao mailboxDao;
 	private MessageDao messageDao;
 	private SearchDao searchDao;
@@ -37,6 +38,10 @@ public class DaoFactory {
 			instance = new DaoFactory();
 		}
 		return instance;
+	}
+	
+	public void setACLDao(ACLDao aclDao) {
+		this.aclDao = aclDao;
 	}
 
 	public void setMailboxDao(MailboxDao mailboxDao) {
@@ -53,6 +58,10 @@ public class DaoFactory {
 
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
+	}
+
+	public static ACLDao getACLDao() {
+		return getInstance().aclDao;
 	}
 
 	public static MailboxDao getMailboxDao() {

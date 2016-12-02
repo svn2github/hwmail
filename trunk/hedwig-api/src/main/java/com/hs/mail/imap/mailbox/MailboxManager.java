@@ -25,6 +25,7 @@ import javax.mail.Flags;
 
 import com.hs.mail.imap.event.EventDispatcher;
 import com.hs.mail.imap.event.EventListener;
+import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.search.SearchKey;
@@ -256,7 +257,10 @@ public interface MailboxManager {
 	 */
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
 
-	public List<Map<String, Object>> getMessageByMessageID(long userId,
-			String messageID);
+	public List<Map<String, Object>> getMessageByMessageID(long userID, String messageID);
+
+	public void setACL(long userID, long mailboxID, EditMode editMode, String rights);
+
+	public MailboxACL getACL(long mailboxID);
 
 }

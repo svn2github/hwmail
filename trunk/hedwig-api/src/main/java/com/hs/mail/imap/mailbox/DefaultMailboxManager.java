@@ -44,12 +44,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.dao.ACLDao;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
 import com.hs.mail.imap.dao.MessageDao;
 import com.hs.mail.imap.dao.SearchDao;
 import com.hs.mail.imap.event.EventDispatcher;
 import com.hs.mail.imap.event.EventListener;
+import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
+import com.hs.mail.imap.mailbox.MailboxACL.MailboxACLEntry;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.PhysMessage;
@@ -573,10 +576,34 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return false;
 	}
 
-	public List<Map<String, Object>> getMessageByMessageID(long userId,
+	public List<Map<String, Object>> getMessageByMessageID(long userID,
 			String messageID) {
 		MessageDao dao = DaoFactory.getMessageDao();
-		return dao.getMessageByMessageID(userId, messageID);
+		return dao.getMessageByMessageID(userID, messageID);
+	}
+
+	public void setACL(long userID, long mailboxID, EditMode editMode,
+			String rights) {
+		ACLDao dao = DaoFactory.getACLDao();
+		if (editMode == EditMode.REPLACE) {
+			dao.setRights(userID, mailboxID, rights);
+		} else {
+			dao.setRights(userID, mailboxID, rights, editMode == EditMode.ADD);
+		}
+	}
+	
+	public MailboxACL getACL(long mailboxID) {
+		ACLDao dao = DaoFactory.getACLDao();
+		MailboxACL acl = dao.getACL(mailboxID);
+		String domain = "@" + Config.getDefaultDomain();
+		for (MailboxACLEntry ace : acl.getEntries()) {
+			String identifier = ace.getIdentifier(); 
+			if (identifier.endsWith(domain)) {
+				ace.setIdentifier(identifier.substring(0, identifier.length()
+						- (domain.length() + 1)));
+			}
+		}
+		return acl;
 	}
 	
 }

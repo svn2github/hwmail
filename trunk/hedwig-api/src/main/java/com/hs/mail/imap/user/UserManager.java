@@ -85,4 +85,6 @@ public interface UserManager {
 	
 	public File getUserHome(MailAddress user);
 
+	public String toAddress(String user);
+	
 }

@@ -317,7 +317,7 @@ public class DefaultUserManager implements UserManager {
 		return null;
 	}
 	
-	private String toAddress(String user) {
+	public String toAddress(String user) {
 		if (user.indexOf('@') != -1)
 			return user;
 		else
