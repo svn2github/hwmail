@@ -12,9 +12,14 @@ import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.responder.ext.ACLResponder;
 import com.hs.mail.imap.message.response.HumanReadableText;
 import com.hs.mail.imap.message.response.ext.ACLResponse;
-import com.hs.mail.imap.processor.AbstractImapProcessor;
 
-public class GetACLProcessor extends AbstractImapProcessor {
+/**
+ * 
+ * @author Wonchul Doh
+ * @since December 2, 2016
+ *
+ */
+public class GetACLProcessor extends AbstractACLProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
@@ -31,7 +36,7 @@ public class GetACLProcessor extends AbstractImapProcessor {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
 			MailboxACL acl = mailboxManager.getACL(mailbox.getMailboxID());
-			acl.setMailbox(mailbox.getName());
+			acl.setMailbox(request.getMailbox());
 			responder.responde(new ACLResponse(acl));
 			responder.okCompleted(request);
 		}

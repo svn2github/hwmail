@@ -8,6 +8,12 @@ import com.hs.mail.imap.message.request.ext.ListRightsRequest;
 import com.hs.mail.imap.parser.Token;
 import com.hs.mail.imap.server.codec.ImapMessage;
 
+/**
+ * 
+ * @author Wonchul Doh
+ * @since December 3, 2016
+ *
+ */
 public class ListRightsRequestBuilder extends ImapRequestBuilder {
 
 	@Override

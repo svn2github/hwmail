@@ -1,6 +1,9 @@
 package com.hs.mail.imap.processor.ext;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -8,10 +11,14 @@ import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.ext.SetACLRequest;
 import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.response.HumanReadableText;
-import com.hs.mail.imap.processor.AbstractImapProcessor;
-import com.hs.mail.imap.user.UserManager;
 
-public class SetACLProcessor extends AbstractImapProcessor {
+/**
+ * 
+ * @author Wonchul Doh
+ * @since December 2, 2016
+ *
+ */
+public class SetACLProcessor extends AbstractACLProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
@@ -37,17 +44,14 @@ public class SetACLProcessor extends AbstractImapProcessor {
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			UserManager manager = getUserManager();
-			String address = manager.toAddress(request.getIdentifier());
-			long userid = manager.getUserID(address);
-			if (userid == 0) {
-				responder.taggedNo(request,
-						"Identifier for " + request.getIdentifier()
-								+ " not found");
-			} else {
-				mailboxManager.setACL(userid, mailbox.getMailboxID(), editMode,
-						rights);
+			try {
+				long userid = getUserID(request.getIdentifier());
+				mailboxManager.setACL(userid, mailbox.getMailboxID(), editMode, rights);
 				responder.okCompleted(request);
+			} catch (AccountNotFoundException e) {
+				responder.taggedNo(request, e.getMessage());
+			} catch (UnsupportedRightException e) {
+				responder.taggedBad(request, e.getMessage());
 			}
 		}
 	}

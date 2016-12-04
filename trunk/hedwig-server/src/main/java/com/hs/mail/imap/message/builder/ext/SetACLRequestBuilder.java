@@ -8,6 +8,12 @@ import com.hs.mail.imap.message.request.ext.SetACLRequest;
 import com.hs.mail.imap.parser.Token;
 import com.hs.mail.imap.server.codec.ImapMessage;
 
+/**
+ * 
+ * @author Wonchul Doh
+ * @since December 2, 2016
+ *
+ */
 public class SetACLRequestBuilder extends ImapRequestBuilder {
 
 	@Override

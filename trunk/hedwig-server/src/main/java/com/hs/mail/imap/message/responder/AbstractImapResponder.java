@@ -91,6 +91,11 @@ public abstract class AbstractImapResponder implements Responder {
 				+ request.getCommand() + " failed. " + text + "\r\n");
 	}
 
+	public ChannelFuture taggedBad(ImapRequest request, String text) {
+		return write(request.getTag() + " BAD " + request.getCommand() 
+				+ ". " + text + "\r\n");
+	}
+
 	public ChannelFuture untaggedOK(String text) {
 		return write("* OK " + text + "\r\n");
 	}

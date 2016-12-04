@@ -8,6 +8,12 @@ import com.hs.mail.imap.message.request.ext.DeleteACLRequest;
 import com.hs.mail.imap.parser.Token;
 import com.hs.mail.imap.server.codec.ImapMessage;
 
+/**
+ * 
+ * @author Wonchul Doh
+ * @since December 2, 2016
+ *
+ */
 public class DeleteACLRequestBuilder extends ImapRequestBuilder {
 
 	@Override

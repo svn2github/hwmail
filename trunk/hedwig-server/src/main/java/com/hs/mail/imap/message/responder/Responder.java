@@ -42,6 +42,8 @@ public interface Responder {
 
 	public ChannelFuture taggedNo(ImapRequest request, String responseCode,
 			String text);
+	
+	public ChannelFuture taggedBad(ImapRequest request, String text);
 
 	public ChannelFuture untaggedOK(String text);
 

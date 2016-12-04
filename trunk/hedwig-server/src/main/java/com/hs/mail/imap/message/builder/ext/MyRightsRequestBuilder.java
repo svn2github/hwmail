@@ -2,22 +2,21 @@ package com.hs.mail.imap.message.builder.ext;
 
 import com.hs.mail.imap.message.builder.ImapRequestBuilder;
 import com.hs.mail.imap.message.request.ImapRequest;
-import com.hs.mail.imap.message.request.ext.GetACLRequest;
+import com.hs.mail.imap.message.request.ext.MyRightsRequest;
 import com.hs.mail.imap.server.codec.ImapMessage;
 
 /**
  * 
  * @author Wonchul Doh
- * @since December 2, 2016
+ * @since December 4, 2016
  *
  */
-public class GetACLRequestBuilder extends ImapRequestBuilder {
+public class MyRightsRequestBuilder extends ImapRequestBuilder {
 
 	@Override
-	public ImapRequest createRequest(String tag, String command,
-			ImapMessage message) {
+	public ImapRequest createRequest(String tag, String command, ImapMessage message) {
 		String mailbox = message.getTokens().remove().value;
-		return new GetACLRequest(tag, command, mailbox);
+		return new MyRightsRequest(tag, command, mailbox);
 	}
 
 }

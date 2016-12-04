@@ -52,7 +52,7 @@ public class LoginProcessor extends AbstractImapProcessor {
 			}
 			responder.okCompleted(request);
 		} catch (LoginException e) {
-			responder.taggedNo(request, "failed. " + e.getMessage());
+			responder.taggedNo(request, e.getMessage());
 		}
 	}
 
