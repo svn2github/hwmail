@@ -23,6 +23,7 @@ import java.util.Map;
 
 import javax.mail.Flags;
 
+import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.event.EventDispatcher;
 import com.hs.mail.imap.event.EventListener;
 import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
@@ -259,7 +260,9 @@ public interface MailboxManager {
 
 	public List<Map<String, Object>> getMessageByMessageID(long userID, String messageID);
 
-	public void setACL(long userID, long mailboxID, EditMode editMode, String rights);
+	public String getRights(long userID, long mailboxID);
+
+	public void setACL(long userID, long mailboxID, EditMode editMode, String rights) throws UnsupportedRightException;
 
 	public MailboxACL getACL(long mailboxID);
 

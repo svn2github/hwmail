@@ -6,6 +6,10 @@ public class MailboxACL {
 	
 	public static final String STD_RIGHTS = "lrswipkxtea";
 
+	public static final String ANYONE = "anyone";
+	
+	public static final long ANYONE_ID = 0;
+	
 	public enum EditMode {
 		REPLACE, ADD, DELETE
 	}

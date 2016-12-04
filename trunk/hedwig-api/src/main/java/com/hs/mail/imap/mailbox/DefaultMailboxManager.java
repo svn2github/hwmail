@@ -44,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.dao.ACLDao;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
@@ -582,8 +583,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getMessageByMessageID(userID, messageID);
 	}
 
-	public void setACL(long userID, long mailboxID, EditMode editMode,
-			String rights) {
+	public String getRights(long userID, long mailboxID) {
+		ACLDao dao = DaoFactory.getACLDao();
+		return dao.getRights(userID, mailboxID);
+	}
+	
+	public void setACL(long userID, long mailboxID, EditMode editMode, String rights) throws UnsupportedRightException {
 		ACLDao dao = DaoFactory.getACLDao();
 		if (editMode == EditMode.REPLACE) {
 			dao.setRights(userID, mailboxID, rights);
