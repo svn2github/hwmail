@@ -44,7 +44,7 @@
 	<bean id="messageSourceAccessor"
 		class="org.springframework.context.support.MessageSourceAccessor">
 		<constructor-arg>
-			<ref local="messageSource" />
+			<ref bean="messageSource" />
 		</constructor-arg>
 	</bean>
 	
