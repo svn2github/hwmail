@@ -75,15 +75,11 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 	}
 	
 	public MailboxACL getACL(long mailboxID) {
-		final String sql = "SELECT u.loginid, a.* FROM hw_acl a, hw_user u WHERE a.mailboxid = ? AND a.userid = u.userid";
-		List<MailboxACLEntry> entries = getJdbcTemplate().query(sql, new Object[] { mailboxID }, aclMapper);
-		String rights = getRights(MailboxACL.ANYONE_ID, mailboxID);
-		if (StringUtils.isNotEmpty(rights)) {
-			MailboxACLEntry entry = new MailboxACLEntry();
-			entry.setIdentifier(MailboxACL.ANYONE);
-			entry.setRights(rights);
-			entries.add(entry);
-		}
+		final String sql = "SELECT 'anyone' as loginid, a.* FROM hw_acl a WHERE a.mailboxid = ? AND a.userid = ?;"
+				+ "UNION SELECT u.loginid, a.* FROM hw_acl a, hw_user u WHERE a.mailboxid = ? AND a.userid = u.userid";
+		List<MailboxACLEntry> entries = getJdbcTemplate().query(sql,
+				new Object[] { mailboxID, MailboxACL.ANYONE_ID, mailboxID },
+				aclMapper);
 		MailboxACL acl = new MailboxACL();
 		acl.setEntries(entries);
 		return acl;
