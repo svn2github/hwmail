@@ -53,13 +53,17 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 			// An empty mailbox name argument is a special request
 			// to return the hierarchy delimiter and the root name of the name
 			// given in the reference.
-			String referenceRoot = "";
+			String referenceRoot;
 			if (referenceName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
 				// A qualified reference name - get the first element.
 				int i = referenceName.indexOf(Mailbox.folderSeparator);
 				if (i != -1) {
 					referenceRoot = referenceName.substring(0, i + 1);
+				} else {
+					referenceRoot = referenceName;
 				}
+			} else {
+				referenceRoot = "";
 			}
 			responder.untagged(request.getCommand() + " (\\Noselect) \""
 					+ Mailbox.folderSeparator + "\" \"" + referenceRoot

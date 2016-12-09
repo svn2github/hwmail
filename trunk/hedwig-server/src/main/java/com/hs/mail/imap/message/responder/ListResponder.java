@@ -47,7 +47,7 @@ public class ListResponder extends DefaultImapResponder {
 		if (mailbox.isNoInferiors()) {
 			message("\\Noinferiors");
 		}
-		if (mailbox.isNoInferiors()) {
+		if (mailbox.isNoSelect()) {
 			message("\\Noselect");
 		}
 		if (mailbox.hasChildren()) {
