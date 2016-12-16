@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.message.search.ComparisonKey;
-import com.hs.mail.imap.message.search.CompositeKey;
 import com.hs.mail.imap.message.search.InternalDateKey;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 

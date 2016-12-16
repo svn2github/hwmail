@@ -20,14 +20,19 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 
+import com.hs.mail.exception.MailboxNotFoundException;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
+import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 import com.hs.mail.imap.message.request.AbstractListRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.ListResponder;
 import com.hs.mail.imap.message.responder.Responder;
+import com.hs.mail.imap.message.response.HumanReadableText;
 import com.hs.mail.imap.message.response.ListResponse;
 
 /**
@@ -40,13 +45,13 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		doProcess(session, (AbstractListRequest) message,
 				(ListResponder) responder);
 	}
 
 	private void doProcess(ImapSession session, AbstractListRequest request,
-			ListResponder responder) {
+			ListResponder responder) throws MailboxNotFoundException {
 		String referenceName = request.getMailbox();
 		String mailboxName = request.getPattern();
 		if (StringUtils.isEmpty(mailboxName)) {
@@ -78,7 +83,8 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 				referenceName = StringUtils.removeEnd(referenceName,
 						Mailbox.folderSeparator);
 			}
-			doList(session, responder, referenceName, mailboxName);
+			MailboxPath path = new MailboxPath(referenceName, mailboxName);
+			doList(session, responder, path);
 		}
 		responder.okCompleted(request);
 	}
@@ -94,21 +100,53 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 	protected abstract Mailbox getMailbox(long ownerID, String mailboxName);
 
 	protected void doList(ImapSession session, ListResponder responder,
-			String referenceName, String mailboxName) {
-		MailboxQuery query = new MailboxQuery(referenceName, mailboxName);
+			MailboxPath path) throws MailboxNotFoundException {
+		MailboxQuery query = new MailboxQuery(path.getFullName());
+		long ownerID = getOwnerID(session, path.getNamespace());
 		if (query.containsWildcard()) {
-			List<Mailbox> mailboxes = listMailbox(session.getUserID(),
-					session.getUserID(), referenceName, query);
+			List<Mailbox> mailboxes = listMailbox(session.getUserID(), ownerID,
+					path.getBaseName(), query);
 			for (Mailbox mailbox : mailboxes) {
 				responder.respond(new ListResponse(mailbox));
 			}
 		} else {
 			// Expression is an absolute mailbox name.
-			Mailbox mailbox = getMailbox(session.getUserID(),
-					query.getExpression());
-			if (mailbox != null) {
-				responder.respond(new ListResponse(mailbox));
-			}
+			Mailbox mailbox = getMailbox(ownerID, path);
+			responder.respond(new ListResponse(mailbox));
+		}
+	}
+	
+	private Mailbox getMailbox(long ownerID, MailboxPath path)
+			throws MailboxNotFoundException {
+		Mailbox mailbox = path.isNamespace() 
+				? getNamespace(ownerID,path.getNamespace()) 
+				: getMailbox(ownerID, path.getFullName());
+		if (mailbox == null) {
+			throw new MailboxNotFoundException(
+					HumanReadableText.MAILBOX_NOT_FOUND, path.getFullName());
+		} else {
+			return mailbox;
+		}
+	}
+	
+	private long getOwnerID(ImapSession session, String namespace) {
+		if (MailboxPath.PERSONAL_NAMESPACE.equals(namespace))
+			return session.getUserID();
+		else
+			return MailboxACL.ANYONE_ID;
+	}
+	
+	private Mailbox getNamespace(long ownerID, String namespace) {
+		// TODO: Read namespaces from configuration file.
+		if ("#public".equals(namespace)) {
+			MailboxManager manager = getMailboxManager();
+			Mailbox mailbox = new Mailbox(namespace);
+			mailbox.setOwnerID(ownerID);
+			mailbox.setNoSelect(true);
+			mailbox.setHasChildren(manager.hasChildren(mailbox));
+			return mailbox;
+		} else {
+			return null;
 		}
 	}
 	

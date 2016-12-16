@@ -34,8 +34,10 @@ public class NamespaceProcessor extends AbstractImapProcessor {
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) throws Exception {
 		NamespaceRequest request = (NamespaceRequest) message;
+		// TODO: Read namespaces from configuration file.
 		responder.untagged(request.getCommand() + " ((\"\" \""
-				+ Mailbox.folderSeparator + "\")) NIL NIL\r\n");
+				+ Mailbox.folderSeparator + "\")) NIL ((\"#public.\" \""
+				+ Mailbox.folderSeparator + "\"))\r\n");
 		responder.okCompleted(request);
 	}
 

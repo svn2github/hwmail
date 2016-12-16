@@ -18,8 +18,6 @@ package com.hs.mail.imap.mailbox;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Expresses select criteria for mailboxes.
  * 
@@ -33,26 +31,20 @@ public class MailboxQuery {
 	private Matcher matcher;
 
 	public MailboxQuery(String referenceName, String mailboxName) {
-		this.expression = getExpression(referenceName, mailboxName,
+		this.expression = MailboxPath.interpret(referenceName, mailboxName,
 				Mailbox.folderSeparator);
 		if (expression.indexOf('*') >= 0 || expression.indexOf('%') >= 0) {
 			this.matcher = createMatcher(expression);
 		}
 	}
 	
-	private static String getExpression(String referenceName,
-			String mailboxName, String sep) {
-		StringBuilder sb = new StringBuilder(referenceName);
-		if (mailboxName.startsWith(sep)) {
-			sb.append(mailboxName.substring(sep.length()));
-		} else if (StringUtils.isEmpty(referenceName)) {
-			sb.append(mailboxName);
-		} else {
-			sb.append(sep).append(mailboxName);
+	public MailboxQuery(String expression) {
+		this.expression = expression;
+		if (expression.indexOf('*') >= 0 || expression.indexOf('%') >= 0) {
+			this.matcher = createMatcher(expression);
 		}
-		return sb.toString();
 	}
-	
+
 	public String getExpression() {
 		return expression;
 	}
