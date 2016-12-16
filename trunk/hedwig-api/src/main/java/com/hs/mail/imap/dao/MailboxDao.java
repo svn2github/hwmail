@@ -48,12 +48,10 @@ public interface MailboxDao {
 	 *            ID of user who owns the mailbox
 	 * @param mailboxName
 	 *            fully qualified name of the parent mailbox
-	 * @param subscribed
-	 *            If true, only subscribed mailboxes are returned
 	 * @return list of child Mailbox objects
 	 */
 	public List<Mailbox> getChildren(long userID, long ownerID,
-			String mailboxName, boolean subscribed);
+			String mailboxName);
 
 	/**
 	 * Get the child mailboxes count.
@@ -184,6 +182,20 @@ public interface MailboxDao {
 	 *            ID of the mailbox
 	 */
 	public void forbidSelectMailbox(long ownerID, long mailboxID);
+	
+	/**
+	 * Get all subscribed mailboxes of named mailbox.
+	 * 
+	 * @param userID
+	 *            ID of user who called this method
+	 * @param ownerID
+	 *            ID of user who owns the mailbox
+	 * @param mailboxName
+	 *            fully qualified name of the parent mailbox
+	 * @return list of subscribed Mailbox objects
+	 */
+	public List<Mailbox> getSubscriptions(long userID, long ownerID,
+			String mailboxName);
 	
 	/**
 	 * Check whether the mailbox is subscribed.

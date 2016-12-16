@@ -123,7 +123,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	public List<Mailbox> getChildren(long userID, long ownerID,
 			String mailboxName, boolean subscribed) {
 		MailboxDao dao = DaoFactory.getMailboxDao();
-		return dao.getChildren(userID, ownerID, mailboxName, subscribed);
+		return subscribed 
+				? dao.getSubscriptions(userID, ownerID, mailboxName)
+				: dao.getChildren(userID, ownerID, mailboxName);
 	}
 	
 	public List<Long> getMailboxIDList(String mailboxName) {
@@ -248,6 +250,12 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		} catch (IOException ex) {
 			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
 		}
+	}
+	
+	public List<Mailbox> getSubscriptions(long userID, long ownerID,
+			String mailboxName) {
+		MailboxDao dao = DaoFactory.getMailboxDao();
+		return dao.getSubscriptions(userID, ownerID, mailboxName);
 	}
 
 	public boolean isSubscribed(long userID, String mailboxName) {

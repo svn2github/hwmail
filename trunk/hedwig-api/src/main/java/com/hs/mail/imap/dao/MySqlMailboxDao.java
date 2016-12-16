@@ -76,7 +76,8 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 	}
 
 	@Override
-	protected List<Mailbox> getChildren(long ownerID, String mailboxName) {
+	public List<Mailbox> getChildren(long userID, long ownerID,
+			String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
 			String sql = "SELECT * FROM hw_mailbox USE INDEX (ix_hw_mailbox_1) WHERE ownerid = ? ORDER BY name";
 			return getJdbcTemplate().query(sql,

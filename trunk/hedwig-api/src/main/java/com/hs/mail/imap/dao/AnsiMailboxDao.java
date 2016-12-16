@@ -44,7 +44,7 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 
 		// If source name has inferior hierarchical names, then the inferior
 		// hierarchical names MUST also be renamed.
-		List<Mailbox> children = getChildren(ownerid, base);
+		List<Mailbox> children = getChildren(ownerid, ownerid, base);
 		for (Mailbox child : children) {
 			doRenameMailbox(child.rename(base, dest));
 		}
@@ -59,17 +59,23 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	
 	abstract protected Mailbox doCreateMailbox(final long ownerID, final String mailboxName);
 
-	public List<Mailbox> getChildren(long userID, long ownerID,
-			String mailboxName, boolean subscribed) {
-		if (subscribed)
-			return getSubscriptions(userID, ownerID, mailboxName);
-		else
-			return getChildren(ownerID, mailboxName);
+	abstract public List<Mailbox> getChildren(long userID, long ownerID, String mailboxName);
+
+	public List<Long> getMailboxIDList(String mailboxName) {
+		if (mailboxName.endsWith("*")) {
+			String sql = "SELECT mailboxid FROM hw_mailbox WHERE name LIKE ?";
+			return getJdbcTemplate().queryForList(
+					sql,
+					new Object[] { new StringBuilder(escape(mailboxName))
+							.append('%').toString() }, Long.class);
+		} else {
+			String sql = "SELECT mailboxid FROM hw_mailbox WHERE name = ?";
+			return getJdbcTemplate().queryForList(sql,
+					new Object[] { mailboxName }, Long.class);
+		}
 	}
 	
-	abstract protected List<Mailbox> getChildren(long ownerID, String mailboxName);
-
-	private List<Mailbox> getSubscriptions(long userID, long ownerID,
+	public List<Mailbox> getSubscriptions(long userID, long ownerID,
 			String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
 			String sql = "SELECT b.* FROM hw_mailbox b, hw_subscription s WHERE s.userid = ? AND b.ownerid = ? AND b.name = s.name ORDER BY b.name";
@@ -86,20 +92,6 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 							new StringBuilder(escape(mailboxName))
 									.append(Mailbox.folderSeparator).append('%')
 									.toString() }, mailboxRowMapper);
-		}
-	}
-
-	public List<Long> getMailboxIDList(String mailboxName) {
-		if (mailboxName.endsWith("*")) {
-			String sql = "SELECT mailboxid FROM hw_mailbox WHERE name LIKE ?";
-			return getJdbcTemplate().queryForList(
-					sql,
-					new Object[] { new StringBuilder(escape(mailboxName))
-							.append('%').toString() }, Long.class);
-		} else {
-			String sql = "SELECT mailboxid FROM hw_mailbox WHERE name = ?";
-			return getJdbcTemplate().queryForList(sql,
-					new Object[] { mailboxName }, Long.class);
 		}
 	}
 
