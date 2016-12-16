@@ -350,6 +350,12 @@ public class WmaFolderImpl implements WmaFolder {
 			throw new WmaException("wma.folder.failedcreation");
 		}
 	}
+	
+	public static WmaFolder createNamespace(Folder ns) {
+		WmaFolderImpl wmafolder = new WmaFolderImpl((IMAPFolder) ns);
+		wmafolder.setType(TYPE_FOLDER);
+		return wmafolder;
+	}
 
 	/*** Helper methods ****************************************************/
 

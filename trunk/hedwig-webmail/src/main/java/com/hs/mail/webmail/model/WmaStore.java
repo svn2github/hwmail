@@ -174,5 +174,9 @@ public interface WmaStore {
 	boolean isSpecialFolder(String fullname);
 
 	public WmaQuota[] getQuota(String root);
+	
+	public WmaFolder[] getSharedNamespaces();
+	
+	public Folder getSharedNamespace(String name) throws WmaException;
 
 }

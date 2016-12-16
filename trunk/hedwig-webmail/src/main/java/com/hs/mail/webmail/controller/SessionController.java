@@ -38,6 +38,7 @@ public class SessionController {
 		model.addAttribute("session", store);
 		model.addAttribute("store", store);
 		model.addAttribute("prefs", prefs);
+		model.addAttribute("namespaces", store.getSharedNamespaces());
 		return "main";
 	}
 	
