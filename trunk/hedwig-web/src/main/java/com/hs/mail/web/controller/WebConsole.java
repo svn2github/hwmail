@@ -121,7 +121,7 @@ public class WebConsole {
 	public ModelAndView namespace(@PathVariable("namespace") String namespace) {
 		String path = ImapConstants.NAMESPACE_PREFIX + namespace;
 		List<Mailbox> folders = mailboxManager.getChildren(0, 0, path, false);
-		ModelAndView mav = new ModelAndView("public-folders");
+		ModelAndView mav = new ModelAndView("publicfolders");
 		mav.addObject("namespace", path);
 		mav.addObject("folders", folders);
 		return mav;

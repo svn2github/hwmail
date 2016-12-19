@@ -32,24 +32,25 @@ public class AccessControlListFormController {
 	@RequestMapping(value = "/settings/namespaces/{namespace}/{mailboxID}/acl", method = RequestMethod.GET)
 	public String showAccessControlListForm(
 			@PathVariable("namespace") String namespace,
-			@PathVariable("id") long mailboxID, Model model) {
+			@PathVariable("mailboxID") long mailboxID, Model model) {
 		MailboxACL acl = mailboxManager.getACL(mailboxID);
 		model.addAttribute("acl", acl);
 		return "acl";
 	}
 	
-	@RequestMapping(value = "/settings/namespaces/{namespace}/{id}/acl", method = RequestMethod.POST)
+	@RequestMapping(value = "/settings/namespaces/{namespace}/{mailboxID}/acl", method = RequestMethod.POST)
 	public String[] saveAccessControlList(
 			@PathVariable("namespace") String namespace,
-			@PathVariable("id") long mailboxID, WebRequest request)
+			@PathVariable("mailboxID") long mailboxID, WebRequest request)
 			throws Exception {
 		List<String> errors = new ArrayList<String>();
 		Iterator<String> it = request.getParameterNames();
 		while (it.hasNext()) {
 			String identifier = it.next();
-			String address = userManager.toAddress(identifier);
-			long userID = userManager.getUserID(address);
-			if (userID != 0) {
+			long userID = MailboxACL.ANYONE.equals(identifier)
+					? MailboxACL.ANYONE_ID
+					: userManager.getUserID(userManager.toAddress(identifier));
+			if (userID != 0 || MailboxACL.ANYONE.equals(identifier)) {
 				mailboxManager.setACL(userID, mailboxID, EditMode.REPLACE,
 						request.getParameter(identifier));
 			} else {
