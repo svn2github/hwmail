@@ -68,6 +68,7 @@ public class Config implements InitializingBean {
 	private static String[] domains;
 	private static String hostName;
 	private static String helloName;
+	private static String[] namespaces;
 	private static InetAddressMatcher authorizedNetworks;
 	private static String postmaster; 
 	private static long maxMessageSize;
@@ -172,6 +173,10 @@ public class Config implements InitializingBean {
 		return helloName;
 	}
 	
+	public static String[] getNamespaces() {
+		return namespaces;
+	}
+	
 	public static InetAddressMatcher getAuthorizedNetworks() {
 		return authorizedNetworks;
 	}
@@ -262,6 +267,7 @@ public class Config implements InitializingBean {
 		for (int i = 0; i < domains.length; i++) {
 			console.info("Handling mail for: {}", domains[i]);
 		}
+		namespaces = StringUtils.split(getProperty("namespaces", null), ",");
 		
 		String networks = getProperty("mynetworks", "0.0.0.0/0.0.0.0");
 		authorizedNetworks = new InetAddressMatcher(networks);
