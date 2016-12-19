@@ -40,6 +40,7 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
+	<bean id="ACLDao"     parent="abstractDao" class="com.hs.mail.imap.dao.AnsiACLDao"/>
 	<bean id="mailboxDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMailboxDao"/>
 	<bean id="messageDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMessageDao"/>
 	<bean id="searchDao"  parent="abstractDao" class="com.hs.mail.imap.dao.OracleSearchDao"/>
@@ -51,10 +52,15 @@
 		<property name="messageDao" ref="messageDao"/>
 		<property name="searchDao"  ref="searchDao"/>
 		<property name="userDao"    ref="userDao"/>
+		<property name="ACLDao"     ref="ACLDao"/>
 	</bean>
 	
 	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
 		<property name="transactionManager" ref="txManager"/>
+	</bean>
+	
+	<bean id="mailboxManager" class="com.hs.mail.imap.mailbox.DefaultMailboxManager">
+		<property name="transactionManager" ref="txManager" />
 	</bean>
 	
 </beans>

@@ -25,6 +25,9 @@ import javax.mail.internet.MailDateFormat;
 import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 
  * @author Won Chul Doh
@@ -79,6 +82,18 @@ public class MailUtils {
 		} catch (Exception e) {
 		}
 		return null;
+	}
+	
+	public static String[] remove(String[] array, String start, String end) {
+		if (ArrayUtils.isEmpty(array)) {
+			return array;
+		}
+		String[] result = new String[array.length];
+		for (int i = 0; i < array.length; i++) {
+			result[i] = StringUtils.removeStart(array[i], start);
+			result[i] = StringUtils.removeEnd(result[i], end);
+		}
+		return result;
 	}
 
 }

@@ -27,9 +27,12 @@ $(function() {
 	$('#tree').fancytree({
 		activate: function(event, data) {
 			var path = data.node.getKeyPath().substring(1);
-			$('#main-contents').load(path, function() {
-				$('#main-form').attr('action', path);
-			});
+			console.log(path);
+			if (!data.node.unselectable) {
+				$('#main-contents').load(path, function() {
+					$('#main-form').attr('action', path);
+				});
+			}
 		}
 	});
 });
@@ -69,6 +72,19 @@ $(function() {
 									</ul>
 								</li>
 							  </c:forEach>
+							</ul>
+						</li>
+						<li id="settings" class="expanded unselectable folder">Settings
+							<ul>
+							  <c:if test="${not empty namespaces}">
+								<li id="namespaces" class="expanded unselectable folder">Namespaces
+									<ul>
+							  		  <c:forEach var="namespace" items="${namespaces}">
+										<li id="<c:out value="${namespace}"/>">#<c:out value="${namespace}"/></li>
+									  </c:forEach>
+									</ul>
+								</li>
+							  </c:if>
 							</ul>
 						</li>
 						<li id="utils" class="expanded unselectable folder">Utilities

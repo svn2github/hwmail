@@ -16,15 +16,22 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.ImapConstants;
+import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.security.login.BasicCallbackHandler;
 import com.hs.mail.web.WebSession;
+import com.hs.mail.web.util.MailUtils;
 import com.hs.mail.web.util.Pager;
 
 @Controller
 public class WebConsole {
+	
+	@Autowired
+	private MailboxManager mailboxManager;
 	
 	@Autowired
 	private UserManager userManager;
@@ -41,7 +48,11 @@ public class WebConsole {
 			lc.login();
 			request.setAttribute(WebSession.LOGIN_CONTEXT, lc, WebRequest.SCOPE_SESSION);
 			List<String> domains = Arrays.asList(Config.getDomains());
-			return new ModelAndView("console", "domains", domains);
+			ModelAndView mav = new ModelAndView("console");
+			mav.addObject("domains", domains);
+			mav.addObject("namespaces",
+					MailUtils.remove(Config.getNamespaces(), ImapConstants.NAMESPACE_PREFIX, Mailbox.folderSeparator));
+			return mav;
 		} catch (LoginException ex) {
 			return new ModelAndView("login", "error", ex);
 		}
@@ -51,8 +62,10 @@ public class WebConsole {
 	public String logout(WebRequest request) {
 		try {
 			LoginContext lc = (LoginContext) request.getAttribute(WebSession.LOGIN_CONTEXT, WebRequest.SCOPE_SESSION);
-			lc.logout();
-			request.removeAttribute(WebSession.LOGIN_CONTEXT, WebRequest.SCOPE_SESSION);
+			if (lc != null) {
+				lc.logout();
+				request.removeAttribute(WebSession.LOGIN_CONTEXT, WebRequest.SCOPE_SESSION);
+			}
 		} catch (LoginException e) {
 		}
 		return "login";
@@ -101,6 +114,16 @@ public class WebConsole {
 		mav.addObject("domain", domain);
 		mav.addObject("aliases", aliases);
 		mav.addObject("pager", pager);
+		return mav;
+	}
+	
+	@RequestMapping(value = "/settings/namespaces/{namespace}")
+	public ModelAndView namespace(@PathVariable("namespace") String namespace) {
+		String path = ImapConstants.NAMESPACE_PREFIX + namespace;
+		List<Mailbox> folders = mailboxManager.getChildren(0, 0, path, false);
+		ModelAndView mav = new ModelAndView("public-folders");
+		mav.addObject("namespace", path);
+		mav.addObject("folders", folders);
 		return mav;
 	}
 

@@ -60,3 +60,14 @@ header {
 .page-tools {
 	margin-top: 20px;
 }
+.form-group .checkbox-inline {
+    margin-left: 10px;
+}
+.form-control.form-table {
+	height: 220px;
+	overflow-y: auto;
+}
+.form-control.form-table tr.selected {
+	background-color: #428bca !important;
+	color: #fff;
+}
