@@ -15,11 +15,14 @@
  */
 package com.hs.mail.imap.processor.ext;
 
+import org.jboss.netty.channel.Channel;
+
+import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.ImapSession;
-import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.ext.NamespaceRequest;
 import com.hs.mail.imap.message.responder.Responder;
+import com.hs.mail.imap.message.responder.ext.NamespaceResponder;
 import com.hs.mail.imap.processor.AbstractImapProcessor;
 
 /**
@@ -30,15 +33,22 @@ import com.hs.mail.imap.processor.AbstractImapProcessor;
  */
 public class NamespaceProcessor extends AbstractImapProcessor {
 
+	private static final String[] PERSONAL_NAMESPACES = { "" };
+	
 	@Override
-	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) throws Exception {
-		NamespaceRequest request = (NamespaceRequest) message;
-		// TODO: Read namespaces from configuration file.
-		responder.untagged(request.getCommand() + " ((\"\" \""
-				+ Mailbox.folderSeparator + "\")) NIL ((\"#public.\" \""
-				+ Mailbox.folderSeparator + "\"))\r\n");
+	protected void doProcess(ImapSession session, ImapRequest message, Responder responder) throws Exception {
+		doProcess(session, (NamespaceRequest) message, (NamespaceResponder) responder);
+	}
+	
+	protected void doProcess(ImapSession session, NamespaceRequest request, NamespaceResponder responder)
+			throws Exception {
+		responder.responde(PERSONAL_NAMESPACES, null, Config.getNamespaces());
 		responder.okCompleted(request);
 	}
-
+	
+	@Override
+	protected Responder createResponder(Channel channel, ImapRequest request) {
+		return new NamespaceResponder(channel, request);
+	}
+	
 }

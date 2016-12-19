@@ -3,6 +3,7 @@ package com.hs.mail.imap.processor.ext;
 import javax.security.auth.login.AccountNotFoundException;
 
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -34,6 +35,8 @@ public class DeleteACLProcessor extends AbstractACLProcessor {
 				responder.okCompleted(request);
 			} catch (AccountNotFoundException e) {
 				responder.taggedNo(request, e.getMessage());
+			} catch (UnsupportedRightException e) {
+				responder.taggedBad(request, e.getMessage());
 			}
 		}
 	}
