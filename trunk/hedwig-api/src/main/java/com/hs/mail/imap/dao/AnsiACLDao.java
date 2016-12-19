@@ -37,11 +37,12 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
-		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID, userID }, aclMapper);
+		MailboxACLEntry entry = queryForObject(sql,
+				new Object[]{mailboxID, userID}, aclMapper);
 		return (entry != null) ? entry.getRights() : null;
 	}
 
-	public void setRights(long userID, long mailboxID, String rights) throws UnsupportedRightException {
+	public void setRights(long userID, long mailboxID, String rights) {
 		if (StringUtils.isEmpty(rights)) {
 			final String sqlDelete = "DELETE FROM hw_acl WHERE userid = ? AND mailboxid = ?";
 			getJdbcTemplate().update(sqlDelete, userID, mailboxID);
@@ -64,7 +65,7 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 	}
 	
 	public void setRights(long userID, long mailboxID, String rights,
-			boolean set) throws UnsupportedRightException {
+			boolean set) {
 		final String sql = "UPDATE hw_acl SET "
 				+ StringUtils.join(buildFlags(rights), "=?,")
 				+ "=? WHERE WHERE userid = ? AND mailboxid = ?";
@@ -75,17 +76,17 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 	}
 	
 	public MailboxACL getACL(long mailboxID) {
-		final String sql = "SELECT 'anyone' as loginid, a.* FROM hw_acl a WHERE a.mailboxid = ? AND a.userid = ?;"
+		final String sql = "SELECT 'anyone' as loginid, a.* FROM hw_acl a WHERE a.mailboxid = ? AND a.userid = ? "
 				+ "UNION SELECT u.loginid, a.* FROM hw_acl a, hw_user u WHERE a.mailboxid = ? AND a.userid = u.userid";
 		List<MailboxACLEntry> entries = getJdbcTemplate().query(sql,
-				new Object[] { mailboxID, MailboxACL.ANYONE_ID, mailboxID },
+				new Object[]{mailboxID, MailboxACL.ANYONE_ID, mailboxID},
 				aclMapper);
 		MailboxACL acl = new MailboxACL();
 		acl.setEntries(entries);
 		return acl;
 	}
 	
-	private static Object[] buildParams(String rights) throws UnsupportedRightException {
+	private static Object[] buildParams(String rights) {
 		Object[] params = new Object[flagArray.length];
 		Arrays.fill(params, 'N');
 		for (int i = 0; i < rights.length(); i++) {
@@ -95,7 +96,7 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		return params;
 	}
 	
-	private static String[] buildFlags(String rights) throws UnsupportedRightException {
+	private static String[] buildFlags(String rights) {
 		String[] array = new String[rights.length()];
 		for (int i = 0; i < rights.length(); i++) {
 			int j = indexOfRight(rights.charAt(i));
@@ -103,15 +104,15 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		}
 		return array;
 	}
-	
-	private static int indexOfRight(char flag) throws UnsupportedRightException {
+
+	private static int indexOfRight(char flag) {
 		int index = MailboxACL.STD_RIGHTS.indexOf(flag);
 		if (index < 0) {
 			throw new UnsupportedRightException(flag);
 		}
 		return index;
 	}
-	
+
 	private static RowMapper<MailboxACLEntry> aclMapper = new RowMapper<MailboxACLEntry>() {
 		public MailboxACLEntry mapRow(ResultSet rs, int rowNum)
 				throws SQLException {

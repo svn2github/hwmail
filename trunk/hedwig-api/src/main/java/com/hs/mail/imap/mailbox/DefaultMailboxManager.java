@@ -28,8 +28,6 @@ import java.util.Set;
 
 import javax.mail.Flags;
 
-import net.sf.ehcache.Ehcache;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -44,7 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
-import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.dao.ACLDao;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.MailboxDao;
@@ -61,6 +58,8 @@ import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
 import com.hs.mail.util.EhCacheWrapper;
+
+import net.sf.ehcache.Ehcache;
 
 /**
  * 
@@ -596,13 +595,26 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getRights(userID, mailboxID);
 	}
 	
-	public void setACL(long userID, long mailboxID, EditMode editMode, String rights) throws UnsupportedRightException {
-		ACLDao dao = DaoFactory.getACLDao();
-		if (editMode == EditMode.REPLACE) {
-			dao.setRights(userID, mailboxID, rights);
-		} else {
-			dao.setRights(userID, mailboxID, rights, editMode == EditMode.ADD);
-		}
+	public void setACL(final long userID, final long mailboxID,
+			final EditMode editMode, final String rights) {
+		final ACLDao dao = DaoFactory.getACLDao();
+		getTransactionTemplate()
+				.execute(new TransactionCallbackWithoutResult() {
+					public void doInTransactionWithoutResult(
+							TransactionStatus status) {
+						try {
+							if (editMode == EditMode.REPLACE) {
+								dao.setRights(userID, mailboxID, rights);
+							} else {
+								dao.setRights(userID, mailboxID, rights,
+										editMode == EditMode.ADD);
+							}
+						} catch (DataAccessException ex) {
+							status.setRollbackOnly();
+							throw ex;
+						}
+					}
+				});
 	}
 	
 	public MailboxACL getACL(long mailboxID) {

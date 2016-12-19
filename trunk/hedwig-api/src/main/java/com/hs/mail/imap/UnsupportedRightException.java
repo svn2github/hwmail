@@ -1,6 +1,8 @@
 package com.hs.mail.imap;
 
-public class UnsupportedRightException extends Exception {
+import org.springframework.dao.DataAccessException;
+
+public class UnsupportedRightException extends DataAccessException {
 
 	private static final long serialVersionUID = 1079894029366919256L;
 
