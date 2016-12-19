@@ -88,10 +88,10 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 	
 	private static Object[] buildParams(String rights) {
 		Object[] params = new Object[flagArray.length];
-		Arrays.fill(params, 'N');
+		Arrays.fill(params, "N");
 		for (int i = 0; i < rights.length(); i++) {
 			int j = indexOfRight(rights.charAt(i));
-			params[j] = 'Y';
+			params[j] = "Y";
 		}
 		return params;
 	}

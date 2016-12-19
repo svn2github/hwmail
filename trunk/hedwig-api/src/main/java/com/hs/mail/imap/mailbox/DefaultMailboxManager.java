@@ -624,8 +624,8 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		for (MailboxACLEntry ace : acl.getEntries()) {
 			String identifier = ace.getIdentifier(); 
 			if (identifier.endsWith(domain)) {
-				ace.setIdentifier(identifier.substring(0, identifier.length()
-						- (domain.length() + 1)));
+				ace.setIdentifier(identifier.substring(0,
+						identifier.length() - domain.length()));
 			}
 		}
 		return acl;
