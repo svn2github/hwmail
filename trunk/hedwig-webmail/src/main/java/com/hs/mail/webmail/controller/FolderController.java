@@ -68,19 +68,6 @@ public class FolderController {
 				recursive, store.getFolderSeparator());
 	}
 	
-	@RequestMapping(value = "/namespace/tree", method = RequestMethod.GET)
-	@ResponseBody
-	public FancytreeNode[] namespacetree(HttpSession httpsession,
-			HttpServletRequest request) throws Exception {
-		WmaSession session = new WmaSession(httpsession);
-		String namespace = RequestUtils.getRequiredParameter(request,
-				"namespace");
-		WmaStore store = session.getWmaStore();
-		Folder folder = store.getSharedNamespace(namespace);
-		return WmaFolderList.createSubfolderList(folder, false,
-				folder.getSeparator());
-	}
-	
 	@RequestMapping(value = "/folder/create")
 	@ResponseBody
 	public FancytreeNode create(HttpSession httpsession, HttpServletRequest request) throws Exception {
