@@ -1,5 +1,6 @@
 package com.hs.mail.web.controller;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.web.model.PublicFolderWrapper;
 
@@ -33,7 +37,7 @@ public class PublicFolderFormController implements Validator {
 	}
 
 	/**
-	 * Show add alias form
+	 * Show add public folder form
 	 */
 	@RequestMapping(value = "/settings/namespaces/{namespace}/add", method = RequestMethod.GET)
 	public String showAddPublicFolderForm(
@@ -44,7 +48,7 @@ public class PublicFolderFormController implements Validator {
 	}
 
 	/**
-	 * Save or update account
+	 * Save public folder
 	 */
 	@RequestMapping(value = "/settings/namespaces/{namespace}", method = RequestMethod.POST)
 	public String savePublicFolder(@PathVariable("namespace") String namespace,
@@ -60,6 +64,22 @@ public class PublicFolderFormController implements Validator {
 		} catch (DataIntegrityViolationException e) {
 			result.rejectValue("name", "address.alreay.exist");
 			return "publicfolder";
+		}
+	}
+	
+	/**
+	 * Delete public folders
+	 */
+	@RequestMapping(value = "/settings/namespaces/{namespace}/delete", method = RequestMethod.POST)
+	@ResponseBody
+	public void deletePublicFolders(
+			@PathVariable("namespace") String namespace,
+			@RequestParam(value = "ID") long[] idarray) {
+		if (ArrayUtils.isNotEmpty(idarray)) {
+			for (long id : idarray) {
+				// TODO: check children exist
+				mailboxManager.deleteMailbox(ImapConstants.ANYONE_ID, id, true);
+			}
 		}
 	}
 

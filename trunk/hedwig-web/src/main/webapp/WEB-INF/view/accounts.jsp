@@ -98,10 +98,13 @@ $(function() {
     });
 
     $('#delete').on('click', function() {
-    	$.post($('#main-form').attr('action') + '/delete',
-    		$('#account-form').serializeArray(), function() {
-    			gotopage($('#page').val());
-    		});
+		var $checked = $('input[name=ID]:checked');
+		if ($checked.length > 0) {
+	    	$.post($('#main-form').attr('action') + '/delete',
+	    		$('#account-form').serializeArray(), function() {
+	    			gotopage($('#page').val());
+	    		});
+    	} else return eModal.alert('Select accounts!');
     });
 
 	$('#fetch').on('click', function() {

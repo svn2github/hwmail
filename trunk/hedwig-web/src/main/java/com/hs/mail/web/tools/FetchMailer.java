@@ -83,7 +83,7 @@ public class FetchMailer {
 	
 	public boolean disconnect(boolean expunge, int[] msgnums) {
 		try {
-			close(expunge, msgnums);
+			close(account.getAutoEmpty(), msgnums);
 			return true;
 		} catch (MessagingException e) {
 			return false;

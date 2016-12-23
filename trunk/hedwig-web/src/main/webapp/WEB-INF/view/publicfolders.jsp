@@ -56,6 +56,16 @@ $(function() {
     	});
     });
 
+	$('#delete').on('click', function() {
+		var $checked = $('input[name=ID]:checked');
+		if ($checked.length > 0) {
+	    	$.post($('#main-form').attr('action') + '/delete',
+	    		$('#public-folder-form').serializeArray(), function(data) {
+	    			$('#main-contents').load($('#main-form').attr('action'));
+	    		});
+    	} else return eModal.alert('Select folders!');
+	});
+
     $('#acl').on('click', function() {
 		var $checked = $('input[name=ID]:checked');
 		if ($checked.length != 1) {

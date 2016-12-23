@@ -16,10 +16,10 @@
 		</thead>
 		<tbody>
 			<c:if test="${not empty acl}">
-				<c:forEach var="ac" items="${acl.entries}">
+				<c:forEach var="ace" items="${acl.entries}">
 					<tr>
-						<td><c:out value="${acl.identifier}"/></td>
-						<td><c:out value="${acl.rights}"/></td>
+						<td><c:out value="${ace.identifier}"/></td>
+						<td><c:out value="${ace.rights}"/></td>
 					</tr>
 				</c:forEach>
 			</c:if>

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.WebRequest;
 
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -47,10 +48,10 @@ public class AccessControlListFormController {
 		Iterator<String> it = request.getParameterNames();
 		while (it.hasNext()) {
 			String identifier = it.next();
-			long userID = MailboxACL.ANYONE.equals(identifier)
-					? MailboxACL.ANYONE_ID
+			long userID = ImapConstants.ANYONE.equals(identifier)
+					? ImapConstants.ANYONE_ID
 					: userManager.getUserID(userManager.toAddress(identifier));
-			if (userID != 0 || MailboxACL.ANYONE.equals(identifier)) {
+			if (userID != 0 || ImapConstants.ANYONE.equals(identifier)) {
 				mailboxManager.setACL(userID, mailboxID, EditMode.REPLACE,
 						request.getParameter(identifier));
 			} else {
