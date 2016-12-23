@@ -105,10 +105,7 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	public void addSubscription(long userID, long mailboxID, String mailboxName) {
 		if (!isSubscribed(userID, mailboxName)) {
 			String sql = "INSERT INTO hw_subscription (userid, mailboxid, name) VALUES(?, ?, ?)";
-			getJdbcTemplate().update(
-					sql,
-					new Object[] { new Long(userID), new Long(mailboxID),
-							mailboxName });
+			getJdbcTemplate().update(sql, userID, mailboxID, mailboxName);
 		} else {
 			// already subscribed to the mailbox, verified after attempt to
 			// subscribe
@@ -117,37 +114,35 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 
 	public void deleteSubscription(long userID, String mailboxName) {
 		String sql = "DELETE FROM hw_subscription WHERE userid = ? AND name = ?";
-		getJdbcTemplate().update(sql,
-				new Object[] { new Long(userID), mailboxName });
+		getJdbcTemplate().update(sql, userID, mailboxName);
 	}
 
 	private int doRenameMailbox(Mailbox mailbox) {
 		String sql = "UPDATE hw_mailbox SET name = ? WHERE mailboxid = ?";
-		return getJdbcTemplate().update(
-				sql,
-				new Object[] { mailbox.getName(),
-						new Long(mailbox.getMailboxID()) });
+		return getJdbcTemplate().update(sql, mailbox.getName(),
+				mailbox.getMailboxID());
 	}
 
 	public List<Long> getDeletedMessageIDList(long mailboxID) {
 		String sql = "SELECT messageid FROM hw_message WHERE mailboxid = ? AND deleted_flag = 'Y'";
-		return getJdbcTemplate().queryForList(sql,
-				new Object[] { new Long(mailboxID) }, Long.class);
+		return getJdbcTemplate().queryForList(sql, Long.class, mailboxID);
 	}
 
 	public void deleteMailboxes(long ownerID) {
 		String sql = "DELETE FROM hw_mailbox WHERE ownerid = ?";
-		getJdbcTemplate().update(sql, new Object[] { new Long(ownerID) });
+		getJdbcTemplate().update(sql, ownerID);
 	}
 	
 	public void deleteMailbox(long ownerID, long mailboxID) {
-		String sql = "DELETE FROM hw_mailbox WHERE mailboxid = ?";
-		getJdbcTemplate().update(sql, new Object[] { new Long(mailboxID) });
+		String[] sqls = { "DELETE FROM hw_subscription WHERE mailboxid = ?",
+				"DELETE FROM hw_acl WHERE mailboxid = ?",
+				"DELETE FROM hw_mailbox WHERE mailboxid = ?" };
+		update(sqls, mailboxID);
 	}
 
 	public void forbidSelectMailbox(long ownerID, long mailboxID) {
 		String sql = "UPDATE hw_mailbox SET noselect_flag = 'Y' WHERE mailboxid = ?";
-		getJdbcTemplate().update(sql, new Object[] { new Long(mailboxID) });
+		getJdbcTemplate().update(sql, mailboxID);
 	}
 
 	public List<PhysMessage> getDanglingMessageIDList(long ownerID) {
@@ -167,7 +162,6 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 						pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
 						return pm;
 					}
-
 				});
 	}
 	
@@ -188,7 +182,6 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 						pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
 						return pm;
 					}
-
 				});
 	}
 

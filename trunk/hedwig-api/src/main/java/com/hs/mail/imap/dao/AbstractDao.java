@@ -109,6 +109,14 @@ abstract class AbstractDao extends JdbcDaoSupport {
 			return 0;
 		}
 	}
+	
+	protected int update(String[] sqls, Object... args) throws DataAccessException {
+		int rows = 0;
+		for (String sql : sqls) {
+			rows += getJdbcTemplate().update(sql, args);
+		}
+		return rows;
+	}
 
 	protected static String escape(String param) {
 		return StringUtils.replace(StringUtils.replace(param, "_", "\\_"), "%",

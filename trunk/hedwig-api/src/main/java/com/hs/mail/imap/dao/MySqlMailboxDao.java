@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.Mailbox;
 
 /**
@@ -49,8 +50,11 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 
 	@Override
 	protected Mailbox doCreateMailbox(final long ownerID, final String mailboxName) {
-		final String sql = "INSERT INTO hw_mailbox (name, ownerid, nextuid, uidvalidity) VALUES(?, ?, ?, ?)";
+		final String sql = "INSERT INTO hw_mailbox (name, ownerid, noselect_flag, nextuid, uidvalidity) VALUES(?, ?, ?, ?)";
 		final long uidValidity = System.currentTimeMillis();
+		final boolean noSelect = mailboxName
+				.startsWith(ImapConstants.NAMESPACE_PREFIX)
+				&& (mailboxName.indexOf(Mailbox.folderSeparator) == -1);
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
@@ -59,8 +63,9 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 						Statement.RETURN_GENERATED_KEYS);
 				pstmt.setString(1, mailboxName);
 				pstmt.setLong(2, ownerID);
-				pstmt.setLong(3, 1);
-				pstmt.setLong(4, uidValidity);
+				pstmt.setString(3, noSelect ? "Y" : "N");
+				pstmt.setLong(4, 1);
+				pstmt.setLong(5, uidValidity);
 				return pstmt;
 			}
 		}, keyHolder);
@@ -69,6 +74,7 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 		mailbox.setMailboxID(keyHolder.getKey().longValue());
 		mailbox.setOwnerID(ownerID);
 		mailbox.setName(mailboxName);
+		mailbox.setNoSelect(noSelect);
 		mailbox.setNextUID(1);
 		mailbox.setUidValidity(uidValidity);
 		

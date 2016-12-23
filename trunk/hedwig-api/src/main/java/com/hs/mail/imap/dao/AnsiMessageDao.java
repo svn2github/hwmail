@@ -79,11 +79,9 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 	}
 	
 	public void deleteMessage(long messageID) {
-		String[] sql = { "DELETE FROM hw_keyword WHERE messageid = ?",
+		String[] sqls = { "DELETE FROM hw_keyword WHERE messageid = ?",
 				"DELETE FROM hw_message WHERE messageid = ?" };
-		Object[] param = new Object[] { new Long(messageID) };
-		getJdbcTemplate().update(sql[0], param); 
-		getJdbcTemplate().update(sql[1], param);
+		update(sqls, messageID);
 	}
 
 	public PhysMessage getDanglingMessageID(long messageID) {

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.UnsupportedRightException;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxACL.MailboxACLEntry;
@@ -37,9 +38,9 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
-		MailboxACLEntry entry = queryForObject(sql,
-				new Object[]{mailboxID, userID}, aclMapper);
-		return (entry != null) ? entry.getRights() : null;
+		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID,
+				userID }, aclMapper);
+		return (entry != null) ? entry.getRights() : "";
 	}
 
 	public void setRights(long userID, long mailboxID, String rights) {
@@ -79,7 +80,7 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		final String sql = "SELECT 'anyone' as loginid, a.* FROM hw_acl a WHERE a.mailboxid = ? AND a.userid = ? "
 				+ "UNION SELECT u.loginid, a.* FROM hw_acl a, hw_user u WHERE a.mailboxid = ? AND a.userid = u.userid";
 		List<MailboxACLEntry> entries = getJdbcTemplate().query(sql,
-				new Object[]{mailboxID, MailboxACL.ANYONE_ID, mailboxID},
+				new Object[]{mailboxID, ImapConstants.ANYONE_ID, mailboxID},
 				aclMapper);
 		MailboxACL acl = new MailboxACL();
 		acl.setEntries(entries);

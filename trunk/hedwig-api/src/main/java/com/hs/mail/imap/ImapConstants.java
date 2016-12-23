@@ -52,4 +52,8 @@ public interface ImapConstants {
 	
 	public static final String RFC822_RETURN_PATH = "Return-Path";
 
+	public static final String ANYONE = "anyone";
+
+	public static final long ANYONE_ID = 0;
+
 }
