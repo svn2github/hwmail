@@ -35,10 +35,20 @@ public class GetACLProcessor extends AbstractACLProcessor {
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			MailboxACL acl = mailboxManager.getACL(mailbox.getMailboxID());
-			acl.setMailbox(request.getMailbox());
-			responder.responde(new ACLResponse(acl));
-			responder.okCompleted(request);
+			String rights = mailboxManager.getRights(session.getUserID(),
+					mailbox.getMailboxID());
+			if (rights.indexOf('l') == -1) {
+				responder.taggedNo(request, 
+						HumanReadableText.MAILBOX_NOT_FOUND);
+			} else if (rights.indexOf('a') == -1) {
+				responder.taggedNo(request,
+						HumanReadableText.INSUFFICIENT_RIGHTS);
+			} else {
+				MailboxACL acl = mailboxManager.getACL(mailbox.getMailboxID());
+				acl.setMailbox(request.getMailbox());
+				responder.responde(new ACLResponse(acl));
+				responder.okCompleted(request);
+			}
 		}
 	}
 

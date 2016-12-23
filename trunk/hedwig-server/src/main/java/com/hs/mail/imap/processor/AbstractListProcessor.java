@@ -17,17 +17,12 @@ package com.hs.mail.imap.processor;
 
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 
-import com.hs.mail.container.config.Config;
-import com.hs.mail.exception.MailboxNotFoundException;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
-import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 import com.hs.mail.imap.message.request.AbstractListRequest;
@@ -52,7 +47,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 	}
 
 	private void doProcess(ImapSession session, AbstractListRequest request,
-			ListResponder responder) throws MailboxNotFoundException {
+			ListResponder responder) {
 		String referenceName = request.getMailbox();
 		String mailboxName = request.getPattern();
 		if (StringUtils.isEmpty(mailboxName)) {
@@ -84,7 +79,8 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 				referenceName = StringUtils.removeEnd(referenceName,
 						Mailbox.folderSeparator);
 			}
-			MailboxPath path = new MailboxPath(referenceName, mailboxName);
+			MailboxPath path = new MailboxPath(session, referenceName,
+					mailboxName);
 			doList(session, responder, path);
 		}
 		responder.okCompleted(request);
@@ -101,61 +97,21 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 	protected abstract Mailbox getMailbox(long ownerID, String mailboxName);
 
 	protected void doList(ImapSession session, ListResponder responder,
-			MailboxPath path) throws MailboxNotFoundException {
+			MailboxPath path) {
 		MailboxQuery query = new MailboxQuery(path.getFullName());
-		long ownerID = getOwnerID(session, path.getNamespace());
 		if (query.containsWildcard()) {
-			List<Mailbox> mailboxes = listMailbox(session.getUserID(), ownerID,
-					path.getBaseName(), query);
+			List<Mailbox> mailboxes = listMailbox(session.getUserID(),
+					path.getUserID(), path.getBaseName(), query);
 			for (Mailbox mailbox : mailboxes) {
 				responder.respond(new ListResponse(mailbox));
 			}
 		} else {
 			// Expression is an absolute mailbox name.
-			Mailbox mailbox = getMailbox(ownerID, path);
+			Mailbox mailbox = getMailbox(path.getUserID(), path.getFullName());
 			if (mailbox != null) {
 				responder.respond(new ListResponse(mailbox));
 			}
 		}
-	}
-	
-	private Mailbox getMailbox(long ownerID, MailboxPath path)
-			throws MailboxNotFoundException {
-		return path.isNamespace() 
-				? getNamespace(ownerID, path.getNamespace()) 
-				: getMailbox(ownerID, path.getFullName());
-	}
-	
-	private long getOwnerID(ImapSession session, String namespace) {
-		if (MailboxPath.PERSONAL_NAMESPACE.equals(namespace))
-			return session.getUserID();
-		else
-			return MailboxACL.ANYONE_ID;
-	}
-	
-	private Mailbox getNamespace(long ownerID, String namespace) {
-		if (isNamespaceContains(namespace)) {
-			MailboxManager manager = getMailboxManager();
-			Mailbox mailbox = new Mailbox(namespace);
-			mailbox.setOwnerID(ownerID);
-			mailbox.setNoSelect(true);
-			mailbox.setHasChildren(manager.hasChildren(mailbox));
-			return mailbox;
-		} else {
-			return null;
-		}
-	}
-
-	private static boolean isNamespaceContains(String namespace) {
-		String[] namespaces = Config.getNamespaces();
-		if (ArrayUtils.isNotEmpty(namespaces)) {
-			for (String ns : namespaces) {
-				if (StringUtils.removeEnd(ns, ImapConstants.NAMESPACE_PREFIX).equals(namespace)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 	
 }

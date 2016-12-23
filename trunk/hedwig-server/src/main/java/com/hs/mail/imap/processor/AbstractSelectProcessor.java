@@ -20,6 +20,7 @@ import org.jboss.netty.channel.Channel;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
 import com.hs.mail.imap.message.request.AbstractMailboxRequest;
@@ -49,9 +50,10 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 
 	private void doProcess(ImapSession session, AbstractMailboxRequest request,
 			SelectResponder responder) {
-		String mailboxName = request.getMailbox();
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
-		Mailbox mailbox = manager.getMailbox(session.getUserID(), mailboxName);
+		Mailbox mailbox = manager.getMailbox(path.getUserID(),
+				path.getFullName());
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else if (mailbox.isNoSelect()) {

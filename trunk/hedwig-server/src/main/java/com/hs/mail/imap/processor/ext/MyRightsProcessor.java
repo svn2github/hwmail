@@ -1,8 +1,10 @@
 package com.hs.mail.imap.processor.ext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.exception.MailboxNotFoundException;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL;
@@ -27,19 +29,25 @@ public class MyRightsProcessor extends AbstractACLProcessor {
 		doProcess(session, (MyRightsRequest) message, (MyRightsResponder) responder);
 	}
 
-	protected void doProcess(ImapSession session, MyRightsRequest request, MyRightsResponder responder)
-			throws Exception {
+	protected void doProcess(ImapSession session, MyRightsRequest request,
+			MyRightsResponder responder) throws Exception {
 		MailboxManager mailboxManager = getMailboxManager();
-		Mailbox mailbox = mailboxManager.getMailbox(session.getUserID(), request.getMailbox());
+		Mailbox mailbox = mailboxManager.getMailbox(session.getUserID(),
+				request.getMailbox());
 		if (mailbox == null) {
-			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
-		} else {
-			String rights = (session.getUserID() == mailbox.getOwnerID())
-					? Config.getProperty(ACL_OWNER_RIGHTS, MailboxACL.STD_RIGHTS)
-					: mailboxManager.getRights(session.getUserID(), mailbox.getMailboxID());
-			responder.reponde(new MyRightsResponse(request.getMailbox(), rights));
-			responder.okCompleted(request);
+			throw new MailboxNotFoundException(
+					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
+		String rights = (session.getUserID() == mailbox.getOwnerID()) 
+				? Config.getProperty(ACL_OWNER_RIGHTS, MailboxACL.STD_RIGHTS)
+				: mailboxManager.getRights(session.getUserID(),
+						mailbox.getMailboxID());
+		if (!StringUtils.containsAny(rights, "lrikxa")) {
+			throw new MailboxNotFoundException(
+					HumanReadableText.MAILBOX_NOT_FOUND);
+		}
+		responder.reponde(new MyRightsResponse(request.getMailbox(), rights));
+		responder.okCompleted(request);
 	}
 	
 	@Override

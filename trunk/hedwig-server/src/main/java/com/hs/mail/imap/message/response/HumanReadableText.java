@@ -31,6 +31,8 @@ public interface HumanReadableText {
 
 	public static final String FAILED_TO_DELETE_INBOX = "Cannot delete special mailbox INBOX.";
 	
+	public static final String INSUFFICIENT_RIGHTS = "Insufficient rights.";
+	
 	public static final String INVADE_STRUCTURE = "New mailbox would invade mailbox structure.";
 
 	public static final String INVALID_COMMAND = "Command not valid in this state.";

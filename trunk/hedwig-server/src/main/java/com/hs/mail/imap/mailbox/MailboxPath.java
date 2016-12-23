@@ -3,6 +3,7 @@ package com.hs.mail.imap.mailbox;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.imap.ImapConstants;
+import com.hs.mail.imap.ImapSession;
 
 /**
  * The path to a mailbox
@@ -13,40 +14,40 @@ import com.hs.mail.imap.ImapConstants;
  */
 public class MailboxPath {
 
-	public static final String PERSONAL_NAMESPACE	= "";
+	public static final String PERSONAL_NAMESPACE = "";
 
 	private String namespace;
-	private String user;
 	private String fullname;
-	private final boolean isNamespace;
+	private long userID;
 	
-	public MailboxPath(String referenceName, String mailboxName) {
-		fullname = interpret(referenceName, mailboxName, Mailbox.folderSeparator);
+	public MailboxPath(ImapSession session, String mailboxName) {
+		fullname = mailboxName;
 		if (fullname.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
 			int namespaceLength = this.fullname.indexOf(Mailbox.folderSeparator);
 			if (namespaceLength > -1) {
 				namespace = fullname.substring(0, namespaceLength);
-				// JavaMail appends separator to namespace when checking
-				// existence of the namespace. (IMAPFolder.exists) 
-				// I don't know why they do that.
-				isNamespace = (fullname.length() == namespaceLength
-						+ Mailbox.folderSeparator.length());
 			} else {
 				namespace = fullname;
-				isNamespace = true;
 			}
+			userID = ImapConstants.ANYONE_ID;
 		} else {
 			namespace = PERSONAL_NAMESPACE;
-			isNamespace = false;
+			userID = session.getUserID();
 		}
+	}
+	
+	public MailboxPath(ImapSession session, String referenceName,
+			String mailboxName) {
+		this(session, interpret(referenceName, mailboxName,
+				Mailbox.folderSeparator));
 	}
 	
 	public String getNamespace() {
 		return namespace;
 	}
 
-	public String getUser() {
-		return user;
+	public long getUserID() {
+		return userID;
 	}
 
 	public String getFullName() {
@@ -57,21 +58,16 @@ public class MailboxPath {
 		return getBaseName(fullname, Mailbox.folderSeparator);
 	}
 	
-	public boolean isNamespace() {
-		return isNamespace;
-	}
-	
 	public static String interpret(String referenceName, String mailboxName,
 			String sep) {
 		StringBuilder sb = new StringBuilder(referenceName);
-		if (StringUtils.isEmpty(referenceName)) {
-			sb.append(mailboxName);
-		} else if (mailboxName.startsWith(sep)) {
-			sb.append(mailboxName);
-		} else {
-			sb.append(sep).append(mailboxName);
+		if (StringUtils.isNotEmpty(referenceName)) {
+			if (!mailboxName.startsWith(sep)) {
+				sb.append(sep);
+			}
 		}
-		return sb.toString();
+
+		return sb.append(StringUtils.removeEnd(mailboxName, sep)).toString();
 	}
 
 	private static String getBaseName(String str, String sep) {

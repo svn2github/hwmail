@@ -7,7 +7,7 @@ package com.hs.mail.exception;
  * @since Dec 15, 2016
  *
  */
-public class MailboxNotFoundException extends Exception {
+public class MailboxNotFoundException extends MailboxException {
 
 	private static final long serialVersionUID = 5671828626135934733L;
 
