@@ -93,11 +93,23 @@ $(function() {
 			url: 'folder/tree?' + $.param({path:$('#personalArchive > a').data('target')})
 		},
 		activate: function(event, data) {
-			$('#side-menu').find('.active').removeClass('active');
-			$(event.delegateTarget).addClass('active');
 			var node = data.node;
 			loadtab('main-tab', node.title, 'folder/messages', $.param({path:node.key}));
 		}
+	});
+	$('#namespaces').fancytree({
+		activate: function(event, data) {
+			var node = data.node;
+			loadtab('main-tab', node.title, 'folder/messages', $.param({path:node.key}));
+		},
+		lazyLoad: function(event, data) {
+			var node = data.node;
+			data.result = $.getJSON('folder/tree?' + $.param({path:node.key,recursive:false}));
+		}
+	});
+	$('.fancytree-container').bind('fancytreebeforeactivate', function(event, data) {
+		$('#side-menu').find('.active').removeClass('active');
+		$(event.delegateTarget).addClass('active');
 	});
 
 	showQuota();
@@ -125,13 +137,13 @@ $(function() {
 				}
 				var tree = $('#tree').fancytree('getTree'),
 					node = tree.getActiveNode();
-				if (!node || $('#personalArchive').hasClass('active')) {
+				if (!node) {
 					path = $('#personalArchive > a').data('target');
 					node = tree.getRootNode();
 				} else {
 					path = node.key;
 				}
-				if (tree.getNodeByKey(path)) {
+				if (tree.getNodeByKey(path + wma_separator + name)) {
 					alert('<fmt:message key="main.folder.alreadyexist"/>');
 					return;
 				}
@@ -302,6 +314,21 @@ $(function() {
             </span></div>
           </div>
         </li>
+        <li role="presentation">
+          <a>
+          	<i class="fa fa-archive"></i> Public Folders
+            <span class="fa arrow" data-toggle="collapse" data-target="#namespace-container"></span>
+          </a>
+          <div class="sub-nav" id="namespace-container">
+            <div id="namespaces">
+              <ul id="namespaces-data">
+<c:forEach var="ns" items="${namespaces}">
+                <li id="${ns.path}" class="folder lazy unselectable">${ns.name}</li>
+</c:forEach>
+              </ul>
+            </div>
+          </div>
+        </li>
       </ul><!-- /#side-menu.nav -->
       <div class="sidebar-quota">
         <div id="quota" class="text-right text-muted">{0} of {1} used</div>
@@ -313,7 +340,7 @@ $(function() {
       </div><!-- /.sidebar-quota -->
       <ul class="nav nav-stacked">
       	<li>
-      		<a id="settings"><i class="fa fa-cogs"></i> <fmt:message key="menu.settings"/></a>
+      	  <a id="settings"><i class="fa fa-cogs"></i> <fmt:message key="menu.settings"/></a>
       	</li>
       </ul>
     </div><!-- /#navigation -->

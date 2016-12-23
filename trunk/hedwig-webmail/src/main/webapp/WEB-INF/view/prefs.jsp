@@ -303,10 +303,8 @@ $(function() {
 		setTimeout(function() {
 			$.getJSON('prefs/accounts/status', function(status) {
 				if (status.uid && status.status >= 0) { // running
-					console.log('poll ' + status.status)
 					poll();
 				} else {	// completed
-					console.log('poll completed');
 					$('#accounts')
 						.find('.fa-spinner').removeClass('fa-spinner fa-spin').addClass('fa-envelope').end()
 						.find('#fetch-account').removeClass('disabled');
