@@ -306,17 +306,6 @@ public class DefaultUserManager implements UserManager {
 		return new File(Config.getDataDirectory(), sb.toString());
 	}
 	
-	public String getUserSieveScript(MailAddress user) {
-		File script = new File(getUserHome(user), "sieve");
-		if (script.exists()) {
-			try {
-				return FileUtils.readFileToString(script);
-			} catch (IOException e) {
-			}
-		}
-		return null;
-	}
-	
 	public String toAddress(String user) {
 		if (user.indexOf('@') != -1)
 			return user;
