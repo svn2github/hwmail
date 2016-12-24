@@ -38,10 +38,16 @@ public class MyRightsProcessor extends AbstractACLProcessor {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
+
 		String rights = (session.getUserID() == mailbox.getOwnerID()) 
 				? Config.getProperty(ACL_OWNER_RIGHTS, MailboxACL.STD_RIGHTS)
 				: mailboxManager.getRights(session.getUserID(),
 						mailbox.getMailboxID());
+		/*
+		 * RFC 4314 section 4.
+		 * MYRIGHTS - any of the following rights is required to perform the
+		 * operations: "l", "r", "i", "k", "x", "a"
+		 */
 		if (!StringUtils.containsAny(rights, "lrikxa")) {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);

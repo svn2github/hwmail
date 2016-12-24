@@ -50,12 +50,25 @@ public abstract class AbstractACLProcessor extends AbstractImapProcessor {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
+
 		String rights = mailboxManager.getRights(session.getUserID(),
 				mailbox.getMailboxID());
+		/*
+		 * RFC 4314 section 6.
+		 * An implementation MUST make sure the ACL commands themselves do
+		 * not give information about mailboxes with appropriately
+		 * restricted ACLs.
+		 */
 		if (rights.indexOf('l') == -1) {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);
-		} else if (rights.indexOf('a') == -1) {
+		} 
+		/*
+		 * RFC 4314 section 4.
+		 * Rights required to perform SETACL/DEETEACL/GETACL/LISTRIGHTS 
+		 * commands.
+		 */
+		else if (rights.indexOf('a') == -1) {
 			throw new MailboxException(HumanReadableText.INSUFFICIENT_RIGHTS);
 		}
 		return mailbox;
