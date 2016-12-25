@@ -45,16 +45,19 @@ abstract class AnsiUserDao extends AbstractDao implements UserDao {
 
 	public int updateUser(User user) {
 		String sql = "UPDATE hw_user SET loginid = ?, passwd = ?, maxmail_size = ?, forward = ? WHERE userid = ?";
-		return getJdbcTemplate().update(
-				sql,
-				new Object[] { user.getUserID(), user.getPassword(),
-						new Long(user.getQuota()), user.getForwardTo(),
-						new Long(user.getID()) });
+		return getJdbcTemplate().update(sql, 
+				user.getUserID(),
+				user.getPassword(), 
+				user.getQuota(), 
+				user.getForwardTo(),
+				user.getID());
 	}
 	
 	public int deleteUser(long id) {
-		String sql = "DELETE FROM hw_user WHERE userid = ?";
-		return getJdbcTemplate().update(sql, new Object[] { new Long(id) });
+		String[] sqls = {"DELETE FROM hw_subscription WHERE userid = ?",
+				"DELETE FROM hw_acl WHERE userid = ?",
+				"DELETE FROM hw_user WHERE userid = ?"};
+		return update(sqls, id);
 	}
 	
 	public Alias getAlias(long id) {

@@ -67,6 +67,19 @@ public interface MailboxManager {
 	 */
 	public boolean mailboxExists(long ownerID, String mailboxName);
 
+	/**
+	 * Get the child mailboxes of the give mailbox.
+	 * 
+	 * @param userID
+	 *            ID of user
+	 * @param ownerID
+	 *            owner of the given mailbox
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox to retrieve children
+	 * @param subscribed
+	 *            true to filter only subscribed mailboxes
+	 * @return the children of the given mailbox
+	 */
 	public List<Mailbox> getChildren(long userID, long ownerID,
 			String mailboxName, boolean subscribed);
 	
@@ -163,17 +176,40 @@ public interface MailboxManager {
 	public void addSubscription(final long userID, final long mailboxID,
 			final String mailboxName);
 	/**
-	 * Unsubscribes the user from the given mailbox.
+	 * Cancel subscription of the given mailbox by the user.
 	 * 
-	 * @param mailboxID
-	 *            ID of the mailbox to unsubscribe
+	 * @param userID
+	 *            ID of the user
+	 * @param mailboxName
+	 *            fully qualified name of the mailbox to cancel subscription
 	 */
 	public void deleteSubscription(final long userID, final String mailboxName);
 
+	/**
+	 * Get the fetch data of message.
+	 * 
+	 * @param uid
+	 *            ID of the message to fetch data
+	 * @return the <code>FetchData</code> of the message
+	 */
 	public FetchData getMessageFetchData(long uid);
 
+	/**
+	 * Returns the <code>Flags</code> object containing the flags of the message
+	 * 
+	 * @param uid
+	 *            UID of the message
+	 * @return <code>Flags</code> object containing the flags of the message
+	 */
 	public Flags getFlags(long uid);
 
+	/**
+	 * Returns all the ID of the messages stored in the given mailbox.
+	 * 
+	 * @param mailboxID
+	 *            ID of the mailbox
+	 * @return all the ID of messages in the given mailbox
+	 */
 	public List<Long> getMessageIDList(long mailboxID);
 
 	/**
@@ -181,9 +217,6 @@ public interface MailboxManager {
 	 */
 	public void addMessage(final long ownerID, final MailMessage message,
 			String mailboxName);
-
-	public void addMessage(final long ownerID, final MailMessage message, 
-			final long mailboxID);
 
 	/**
 	 * Appends a message to this mailbox.
@@ -220,6 +253,12 @@ public interface MailboxManager {
 	 */
 	public void copyMessage(final long uid, final long mailboxID);
 
+	/**
+	 * Clear \Recent flag for the messages in this mailbox.
+	 * 
+	 * @param mailboxID
+	 *            ID of the mailbox to clear \Recent flag
+	 */
 	public void resetRecent(final long mailboxID);
 
 	/**
@@ -234,8 +273,7 @@ public interface MailboxManager {
 	 * @param set
 	 *            true if to set, false to reset
 	 */
-	public void setFlags(final long uid, final Flags flags,
-			final boolean replace, final boolean set);
+	public void setFlags(final long uid, final Flags flags, final boolean replace, final boolean set);
 
 	/**
 	 * Gets the headers of the message.
@@ -257,12 +295,55 @@ public interface MailboxManager {
 	 */
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
 
+	/**
+	 * Get all the messages having the given RFC822 "Message-ID" from the given
+	 * users mailboxes.
+	 * 
+	 * @param userID
+	 *            ID of user
+	 * @param messageID
+	 *            RFC822 Message-ID value
+	 * @return the list of the messages with same Message-ID
+	 */
 	public List<Map<String, Object>> getMessageByMessageID(long userID, String messageID);
 
+	public String getRouteDestination(String routeaddr);
+	
+	public void setRouteAddress(final String routeaddr, final String destination);
+	
+	/**
+	 * Get all the rights allowed to the user for the given mailbox.
+	 * 
+	 * @param userID
+	 *            ID of the user to retrieve the rights
+	 * @param mailboxID
+	 *            ID of the mailbox controlled by the access control list
+	 * @return all the rights allowed to the user
+	 */
 	public String getRights(long userID, long mailboxID);
 
+	/**
+	 * Set the rights to the access control entry of the user for the given
+	 * mailbox.
+	 * 
+	 * @param userID
+	 *            the ID of user of the access control entry
+	 * @param mailboxID
+	 *            ID of the mailbox of access control list
+	 * @param editMode
+	 *            editing mode
+	 * @param rights
+	 *            the rights of the access control entry
+	 */
 	public void setACL(long userID, long mailboxID, EditMode editMode, String rights);
 
+	/**
+	 * Get the access control list entries for the given mailbox
+	 * 
+	 * @param mailboxID
+	 *            the mailbox to retrieve the access control list
+	 * @return access control list of the mailbox
+	 */
 	public MailboxACL getACL(long mailboxID);
 
 }

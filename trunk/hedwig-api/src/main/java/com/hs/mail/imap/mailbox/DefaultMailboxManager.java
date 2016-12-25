@@ -331,7 +331,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		eventDispatcher.added(mailboxID);
 	}
 	
-	public void addMessage(final long ownerID, final MailMessage message, 
+	private void addMessage(final long ownerID, final MailMessage message, 
 			final long mailboxID) {
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {
@@ -468,13 +468,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	/**
-	 * Gets the headers of the message.
-	 * 
-	 * @param physMessageID
-	 *            ID of the physical message
-	 * @return map containing header name and value entries
-	 */
 	public Map<String, String> getHeader(long physMessageID) {
 		MessageDao dao = DaoFactory.getMessageDao();
 		Map<String, String> results = dao.getHeader(physMessageID);
@@ -588,6 +581,28 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			String messageID) {
 		MessageDao dao = DaoFactory.getMessageDao();
 		return dao.getMessageByMessageID(userID, messageID);
+	}
+	
+	public String getRouteDestination(String routeaddr) {
+		ACLDao dao = DaoFactory.getACLDao();
+		return dao.getRouteDestination(routeaddr);
+	}
+	
+	public void setRouteAddress(final String routeaddr,
+			final String destination) {
+		final ACLDao dao = DaoFactory.getACLDao();
+		getTransactionTemplate()
+				.execute(new TransactionCallbackWithoutResult() {
+					protected void doInTransactionWithoutResult(
+							TransactionStatus status) {
+						try {
+							dao.setRouteAddress(routeaddr, destination);
+						} catch (DataAccessException ex) {
+							status.setRollbackOnly();
+							throw ex;
+						}
+					}
+				});
 	}
 
 	public String getRights(long userID, long mailboxID) {

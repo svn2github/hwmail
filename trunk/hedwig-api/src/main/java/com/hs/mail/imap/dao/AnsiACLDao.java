@@ -1,3 +1,18 @@
+/*
+ * Copyright 2010 the original author or authors.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.imap.dao;
 
 import java.sql.ResultSet;
@@ -35,6 +50,19 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		"expunge_flag",
 		"admin_flag" 
 	};
+	
+	public String getRouteDestination(String routeaddr) {
+		final String sql = "SELECT destination FROM hw_routeaddr WHERE address = ?";
+		return queryForObject(sql, String.class, routeaddr);
+	}
+	
+	public void setRouteAddress(String routeaddr, String destination) {
+		String sql = "UPDATE hw_routeaddr SET address = ? WHERE destination = ?";
+		if (getJdbcTemplate().update(sql, routeaddr, destination) == 0) {
+			sql = "INSERT INTO hw_routeaddr (address, destination) VALUES(?, ?)";
+			getJdbcTemplate().update(sql, routeaddr, destination);
+		}
+	}
 
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
@@ -45,22 +73,20 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 
 	public void setRights(long userID, long mailboxID, String rights) {
 		if (StringUtils.isEmpty(rights)) {
-			final String sqlDelete = "DELETE FROM hw_acl WHERE userid = ? AND mailboxid = ?";
-			getJdbcTemplate().update(sqlDelete, userID, mailboxID);
+			String sql = "DELETE FROM hw_acl WHERE userid = ? AND mailboxid = ?";
+			getJdbcTemplate().update(sql, userID, mailboxID);
 		} else {
-			final String sqlUpdate = "UPDATE hw_acl SET "
+			String sql = "UPDATE hw_acl SET "
 					+ StringUtils.join(flagArray, "=?,")
 					+ "=? WHERE userid = ? AND mailboxid = ?";
 			Object[] args = buildParams(rights);
-			if (getJdbcTemplate().update(sqlUpdate,
+			if (getJdbcTemplate().update(sql,
 					ArrayUtils.addAll(args, userID, mailboxID)) == 0) {
-				final String sqlInsert = "INSERT INTO hw_acl (userid,mailboxid,"
+				sql = "INSERT INTO hw_acl (userid,mailboxid,"
 						+ StringUtils.join(flagArray, ",")
 						+ ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-				getJdbcTemplate().update(
-						sqlInsert,
-						ArrayUtils.addAll(new Object[] { userID, mailboxID },
-								args));
+				getJdbcTemplate().update(sql, ArrayUtils
+						.addAll(new Object[]{userID, mailboxID}, args));
 			}
 		}
 	}
