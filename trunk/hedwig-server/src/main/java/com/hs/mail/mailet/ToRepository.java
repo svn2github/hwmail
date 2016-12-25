@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.mail.MessagingException;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.field.AbstractField;
 import org.apache.james.mime4j.message.Header;
@@ -82,9 +83,13 @@ public class ToRepository extends AbstractMailet {
 			for (Recipient rcpt : recipients) {
 				try {
 					if (rcpt.getID() != -1) {
-						if (!Sieve.runSieve(context, rcpt, message)) {
+						String destination = rcpt.getDestination();
+						if (destination != null
+								|| !Sieve.runSieve(context, rcpt, message)) {
 							context.storeMail(rcpt.getID(),
-									ImapConstants.INBOX_NAME, message);
+									StringUtils.defaultString(destination,
+											ImapConstants.INBOX_NAME),
+									message);
 						}
 					}
 				} catch (Exception e) {

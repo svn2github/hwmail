@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.smtp.message.Recipient;
@@ -44,6 +45,15 @@ import com.hs.mail.smtp.message.SmtpMessage;
 public class AliasingForwarding extends AbstractMailet {
 	
 	static Logger logger = LoggerFactory.getLogger(AliasingForwarding.class);
+
+	private boolean enableRouting = false; 
+	
+	@Override
+	public void init(MailetContext context) {
+		super.init(context);
+		this.enableRouting = Config.getBooleanProperty("smtp_enable_routing",
+				false);
+	}
 
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
 		return CollectionUtils.isNotEmpty(recipients);
@@ -88,24 +98,37 @@ public class AliasingForwarding extends AbstractMailet {
 			} else {
 				// Try to find aliases
 				List<Alias> expanded = getUserManager().expandAlias(rcpt.getMailbox());
-				it.remove();
 				if (CollectionUtils.isNotEmpty(expanded)) {
+					it.remove();
 					for (Alias alias : expanded) {
 						newRecipients.add(new Recipient((Long) alias
 								.getDeliverTo(), (String) alias.getUserID(),
 								false));
 					}
 				} else {
-					String errorMessage = new StringBuffer(64)
-							.append(rcpt.getMailbox())
-							.append("\r\n")
-							.append("The mailbox specified in the address does not exist.")
-							.toString();
-					logger.error("Permanent exception delivering mail ({}): {}\r\n", 
-							message.getName(),
-							errorMessage);
-					errors.add(rcpt);
-					message.appendErrorMessage(errorMessage);
+					String destination = null;
+					if (enableRouting) {
+						destination = getMailboxManager()
+								.getRouteDestination(rcpt.getMailbox());
+					}
+					if (destination != null) {
+						// Route incoming message to this submission address to
+						// the destination public folder.
+						rcpt.setID(ImapConstants.ANYONE_ID);
+						rcpt.setDestination(destination);
+					} else {
+						it.remove();
+						String errorMessage = new StringBuffer(64)
+								.append(rcpt.getMailbox())
+								.append("\r\n")
+								.append("The mailbox specified in the address does not exist.")
+								.toString();
+						logger.error("Permanent exception delivering mail ({}): {}\r\n", 
+								message.getName(),
+								errorMessage);
+						errors.add(rcpt);
+						message.appendErrorMessage(errorMessage);
+					}
 				}
 			}
 		}

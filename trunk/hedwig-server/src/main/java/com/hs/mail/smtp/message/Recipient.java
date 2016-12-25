@@ -29,6 +29,8 @@ public class Recipient extends MailAddress {
 
 	private long id = -1;
 	
+	private String destination = null;
+	
 	public Recipient(String address) throws SmtpException {
 		super(address);
 	}
@@ -51,6 +53,14 @@ public class Recipient extends MailAddress {
 		return id;
 	}
 	
+	public String getDestination() {
+		return destination;
+		}
+
+	public void setDestination(String destination) {
+		this.destination = destination;
+	}
+
 	public String toString() {
 		return "(" + id + ") \"" + getMailbox() + "\"";
 	}
