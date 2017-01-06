@@ -19,12 +19,11 @@
 CREATE SEQUENCE sq_hw_alias INCREMENT BY 1 START WITH 1;
 CREATE TABLE hw_alias (
   aliasid number NOT NULL,
-  alias varchar(255) NOT NULL,
-  deliver_to number NOT NULL
+  alias varchar(100) NOT NULL,
+  deliver_to varchar(100) NOT NULL
 );
 CREATE UNIQUE INDEX pk_hw_alias ON hw_alias (aliasid);
-CREATE INDEX ix_hw_alias_1 ON hw_alias (deliver_to);
-CREATE INDEX ix_hw_alias_2 ON hw_alias (alias ASC);
+CREATE UNIQUE INDEX ux_hw_alias_1 ON hw_alias (alias ASC, deliver_to);
 ALTER TABLE hw_alias ADD CONSTRAINT pk_hw_alias PRIMARY KEY (aliasid);
 
 

@@ -29,12 +29,11 @@ DROP TABLE IF EXISTS `hw_alias` ;
 CREATE  TABLE IF NOT EXISTS `hw_alias` (
   `aliasid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `alias` VARCHAR(100) NOT NULL ,
-  `deliver_to` BIGINT UNSIGNED NOT NULL ,
+  `deliver_to` VARCHAR(100) NOT NULL ,
   PRIMARY KEY (`aliasid`) )
 ENGINE = InnoDB;
 
-CREATE INDEX `ix_hw_alias_1` ON `hw_alias` (`deliver_to`) ;
-CREATE INDEX `ix_hw_alias_2` ON `hw_alias` (`alias` ASC) ;
+CREATE UNIQUE INDEX `ux_hw_alias_1` ON `hw_alias` (`alias` ASC, `deliver_to`) ;
 
 -- -----------------------------------------------------
 -- Table `hw_user`
