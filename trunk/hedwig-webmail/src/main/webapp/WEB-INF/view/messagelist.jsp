@@ -44,6 +44,9 @@
 <c:if test="${path == prefs.sentMailArchive}">
 		<a id="revoke" class="btn btn-default btn-sm"><fmt:message key="menu.revoke"/></a>
 </c:if>
+<c:if test="${path == 'INBOX'}">
+	<a id="upload" class="btn btn-default btn-sm">Upload EML...</a>
+</c:if>
 <c:if test="${path != prefs.draftFolder}">
 		<div class="btn-group">
 			<a id="move" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><fmt:message key="menu.move"/> <span class="caret"></span></a>
@@ -130,6 +133,10 @@
 <div class="text-center">
 	<ul class="pagination" id="pagination"></ul>
 </div>
+<form id="eml" action="message/upload" method="post" enctype="multipart/form-data" class="hidden">
+	<input type="hidden" id="path" name="path" value="<c:out value='${path}'/>" />
+	<input type="file" name="eml" />
+</form>
 <script>
 $(function() {
 	console.log('messagelist');
@@ -286,6 +293,8 @@ $(function() {
 	    showRecipients(checked.val(), function() {
 	    	revoke();
     	});
+	}).on('click', '#upload', function() {
+		$('#eml :file').trigger('click');
 	}).on('click', 'td.star', function() {
 		var uid = $(this).closest('tr').find('input[name=uids]').val();
 			star = $(this).find('.fa'),
@@ -299,6 +308,9 @@ $(function() {
 		if ($('#order').val() == order) $('#asc').val($('#asc').val() != 'true');
 		else $('#order').val(id.substring(n + 1));
 		refresh();
+	});
+	$('#eml').on('change', ':file', function(event) {
+		//$(event.delegateTarget).submit();
 	});
 
 	$('#move').parent().on('show.bs.dropdown', function(event) {
