@@ -54,20 +54,12 @@ public class AliasWrapper {
 		alias.setAlias(address);
 	}
 
-	public long getDeliverTo() {
+	public String getDeliverTo() {
 		return alias.getDeliverTo();
 	}
 
-	public void setDeliverTo(long deliverTo) {
+	public void setDeliverTo(String deliverTo) {
 		alias.setDeliverTo(deliverTo);
-	}
-
-	public String getUserID() {
-		return alias.getUserID();
-	}
-
-	public void setUserID(String userID) {
-		alias.setUserID(userID);
 	}
 
 	public static Alias createAlias(AliasWrapper wrapper) {

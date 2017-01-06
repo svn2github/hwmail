@@ -11,20 +11,21 @@
 	<form:hidden path="ID" />
 	
 	<spring:bind path="aliasName">
-		<div class="form-group">
-			<label class="col-sm-2 control-label"><fmt:message key="alias.alias"/></label>
-			<div class="col-sm-10">
+		<div class="form-group ${status.error ? 'has-error' : ''}">
+			<label class="col-sm-3 control-label"><fmt:message key="alias.alias"/></label>
+			<div class="col-sm-9">
 				<form:input path="aliasName" showPassword="true" class="form-control" placeholder="Alias" />
+				<form:errors path="aliasName" class="control-label" />
 			</div>
 		</div>
 	</spring:bind>
 
-	<spring:bind path="userID">
+	<spring:bind path="deliverTo">
 		<div class="form-group ${status.error ? 'has-error' : ''}">
-			<label class="col-sm-2 control-label"><fmt:message key="alias.redirect.to"/></label>
-			<div class="col-sm-10">
-				<form:input path="userID" class="form-control" placeholder="Forward" />
-				<form:errors path="userID" class="control-label" />
+			<label class="col-sm-3 control-label"><fmt:message key="alias.redirect.to"/></label>
+			<div class="col-sm-9">
+				<form:input path="deliverTo" class="form-control" placeholder="Redirect to" />
+				<form:errors path="deliverTo" class="control-label" />
 			</div>
 		</div>
 	</spring:bind>

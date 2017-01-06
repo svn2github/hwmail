@@ -142,14 +142,12 @@ public class AliasFormController implements Validator {
 
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "aliasName",
 				"field.required");
-		if (StringUtils.isBlank(alias.getUserID())) {
-			errors.rejectValue("userID", "field.required");
+		if (StringUtils.isBlank(alias.getDeliverTo())) {
+			errors.rejectValue("deliverTo", "field.required");
 		} else {
-			User deliverTo = userManager.getUserByAddress(alias.getUserID());
+			User deliverTo = userManager.getUserByAddress(alias.getDeliverTo());
 			if (deliverTo == null) {
-				errors.rejectValue("userID", "not.exist.address");
-			} else {
-				alias.setDeliverTo(deliverTo.getID());
+				errors.rejectValue("deliverTo", "not.exist.address");
 			}
 		}
 	}

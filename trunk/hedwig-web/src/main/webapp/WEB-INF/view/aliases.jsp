@@ -35,9 +35,9 @@
 			  <c:if test="${not empty aliases}">
 			   <c:forEach var="alias" items="${aliases}">
 				<tr>
-					<td><input type="checkbox" name="IDs" value="<c:out value='${alias.ID}'/>"/></td>
+					<td><input type="checkbox" name="ID" value="<c:out value='${alias.ID}'/>"/></td>
 					<td><a href="#"><c:out value="${alias.alias}"/></a></td>
-					<td><c:out value="${alias.userID}"/></td>
+					<td><c:out value="${alias.deliverTo}"/></td>
 					<td>&nbsp;</td>
 				</tr>
 			   </c:forEach>
@@ -61,6 +61,43 @@ $(function() {
     	items_per_page: <c:out value="${pager.pageSize}" />,
         current_page: $('#page').val(),
         callback: gotopage
+    });
+    
+    var buttons = [
+       			{ text: 'Close', style: 'default', close: true },
+       			{ text: 'OK', style: 'primary', close: false, click: saveOrUpdateAlias }
+           ];
+    
+    function saveOrUpdateAlias() {
+    	$('.modal-body').load($('#main-form').attr('action'),
+    		$('form[name=userForm]').serializeArray());
+    }
+    
+    $('#alias-table').on('click', 'a', function() {
+    	var uid = $(this).parents('tr:first').find('input[name=ID]').val();
+    	eModal.ajax({
+    		url: $('#main-form').attr('action') + '/' + uid + '/update',
+    		title: 'Update Alias',
+    		buttons: buttons
+    	});
+    });
+    
+    $('#create').on('click', function() {
+    	eModal.ajax({
+    		url: $('#main-form').attr('action') + '/add',
+    		title: 'Add Aliases',
+    		buttons: buttons
+    	});
+    });
+    
+    $('#delete').on('click', function() {
+		var $checked = $('input[name=ID]:checked');
+		if ($checked.length > 0) {
+	    	$.post($('#main-form').attr('action') + '/delete',
+	    		$('#alias-form').serializeArray(), function() {
+	    			gotopage($('#page').val());
+	    		});
+    	} else return eModal.alert('Select aliases!');
     });
 });
 </script>
