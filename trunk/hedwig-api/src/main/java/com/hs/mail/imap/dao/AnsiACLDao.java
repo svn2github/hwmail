@@ -51,19 +51,6 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		"admin_flag" 
 	};
 	
-	public String getRouteDestination(String routeaddr) {
-		final String sql = "SELECT destination FROM hw_routeaddr WHERE address = ?";
-		return queryForObject(sql, String.class, routeaddr);
-	}
-	
-	public void setRouteAddress(String routeaddr, String destination) {
-		String sql = "UPDATE hw_routeaddr SET address = ? WHERE destination = ?";
-		if (getJdbcTemplate().update(sql, routeaddr, destination) == 0) {
-			sql = "INSERT INTO hw_routeaddr (address, destination) VALUES(?, ?)";
-			getJdbcTemplate().update(sql, routeaddr, destination);
-		}
-	}
-
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
 		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID,

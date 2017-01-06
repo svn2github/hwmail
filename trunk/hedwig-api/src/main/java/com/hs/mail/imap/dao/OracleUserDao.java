@@ -51,7 +51,7 @@ public class OracleUserDao extends AnsiUserDao {
 
 	public List<Alias> getAliasList(String domain, int page, int pageSize) {
 		int offset = (page - 1) * pageSize;
-		String sql = "SELECT * FROM (SELECT a.*, u.loginid, ROW_NUMBER() OVER( ORDER BY a.alias ) rn FROM hw_alias a, hw_user u WHERE a.alias LIKE ? AND a.deliver_to = u.userid) WHERE rn BETWEEN ? AND ?";
+		String sql = "SELECT * FROM (SELECT a.*, ROW_NUMBER() OVER( ORDER BY alias ) rn FROM hw_alias a WHERE a.alias LIKE ?) WHERE rn BETWEEN ? AND ?";
 		return getJdbcTemplate().query(sql,
 				new Object[] {
 						new StringBuilder("%@").append(escape(domain)).toString(), 
@@ -65,9 +65,10 @@ public class OracleUserDao extends AnsiUserDao {
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement pstmt = con.prepareStatement(sql, new String[] { "aliasid" });
+				PreparedStatement pstmt = con.prepareStatement(sql,
+						new String[] { "aliasid" });
 				pstmt.setString(1, alias.getAlias());
-				pstmt.setLong(2, alias.getDeliverTo());
+				pstmt.setString(2, alias.getDeliverTo());
 				return pstmt;
 			}
 		}, keyHolder);

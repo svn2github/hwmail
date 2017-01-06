@@ -57,6 +57,8 @@ public class SmtpException extends RuntimeException {
 	
 	public static final String AUTH_FAILED = "535 5.7.0 Authentication failed";
 
+	public static final String NO_SUCH_USER = "550 5.1.1 No such user here";
+	
 	public static final String RELAY_DENIED = "550 5.7.1 Relaying denied";
 
 	public static final String NO_VALID_RECIPIENTS = "554 5.5.0 No valid recipients";

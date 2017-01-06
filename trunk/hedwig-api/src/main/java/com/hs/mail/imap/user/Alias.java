@@ -35,14 +35,9 @@ public class Alias {
 	private String alias;
 
 	/**
-	 * The ID of local user to which mail should be delivered.
-	 */
-	private long deliverTo;
-
-	/**
 	 * Local address to which mail should be delivered.
 	 */
-	private String userID;
+	private String deliverTo;
 
 	public Alias() {
 		super();
@@ -64,20 +59,12 @@ public class Alias {
 		this.alias = alias;
 	}
 
-	public long getDeliverTo() {
+	public String getDeliverTo() {
 		return deliverTo;
 	}
 
-	public void setDeliverTo(long deliverTo) {
+	public void setDeliverTo(String deliverTo) {
 		this.deliverTo = deliverTo;
-	}
-
-	public String getUserID() {
-		return userID;
-	}
-
-	public void setUserID(String userID) {
-		this.userID = userID;
 	}
 
 	public String getAliasName() {

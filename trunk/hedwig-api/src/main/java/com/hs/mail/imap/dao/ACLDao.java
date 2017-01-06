@@ -10,10 +10,6 @@ import com.hs.mail.imap.mailbox.MailboxACL;
  */
 public interface ACLDao {
 	
-	public String getRouteDestination(String routeaddr);
-	
-	public void setRouteAddress(String routeaddr, String destination);
-
 	public String getRights(long userID, long mailboxID);
 
 	public void setRights(long userID, long mailboxID, String rights);

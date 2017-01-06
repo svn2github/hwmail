@@ -68,7 +68,7 @@ public class MySqlUserDao extends AnsiUserDao {
 
 	public List<Alias> getAliasList(String domain, int page, int pageSize) {
 		int offset = (page - 1) * pageSize;
-		String sql = "SELECT a.*, u.loginid FROM hw_alias a, hw_user u WHERE a.alias LIKE ? AND a.deliver_to = u.userid ORDER BY a.alias LIMIT ?, ?";
+		String sql = "SELECT * FROM hw_alias WHERE alias LIKE ? ORDER BY alias LIMIT ?, ?";
 		return getJdbcTemplate().query(sql,
 				new Object[] {
 						new StringBuilder("%@").append(escape(domain)).toString(), 
@@ -85,7 +85,7 @@ public class MySqlUserDao extends AnsiUserDao {
 				PreparedStatement pstmt = con.prepareStatement(sql,
 						Statement.RETURN_GENERATED_KEYS);
 				pstmt.setString(1, alias.getAlias());
-				pstmt.setLong(2, alias.getDeliverTo());
+				pstmt.setString(2, alias.getDeliverTo());
 				return pstmt;
 			}
 		}, keyHolder);

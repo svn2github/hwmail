@@ -583,28 +583,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getMessageByMessageID(userID, messageID);
 	}
 	
-	public String getRouteDestination(String routeaddr) {
-		ACLDao dao = DaoFactory.getACLDao();
-		return dao.getRouteDestination(routeaddr);
-	}
-	
-	public void setRouteAddress(final String routeaddr,
-			final String destination) {
-		final ACLDao dao = DaoFactory.getACLDao();
-		getTransactionTemplate()
-				.execute(new TransactionCallbackWithoutResult() {
-					protected void doInTransactionWithoutResult(
-							TransactionStatus status) {
-						try {
-							dao.setRouteAddress(routeaddr, destination);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-
 	public String getRights(long userID, long mailboxID) {
 		ACLDao dao = DaoFactory.getACLDao();
 		return dao.getRights(userID, mailboxID);

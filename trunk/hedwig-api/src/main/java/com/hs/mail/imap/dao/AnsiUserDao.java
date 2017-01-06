@@ -61,33 +61,29 @@ abstract class AnsiUserDao extends AbstractDao implements UserDao {
 	}
 	
 	public Alias getAlias(long id) {
-		String sql = "SELECT a.*, u.loginid FROM hw_alias a, hw_user u WHERE a.aliasid = ? AND a.deliver_to = u.userid";
-		return queryForObject(sql, new Object[] { new Long(id) },
-				aliasMapper);
+		String sql = "SELECT * FROM hw_alias WHERE aliasid = ?";
+		return queryForObject(sql, new Object[] { new Long(id) }, aliasMapper);
 	}
 	
 	public int getAliasCount(String domain) {
-		String sql = "SELECT COUNT(*) FROM hw_alias a, hw_user u WHERE a.alias LIKE ? AND a.deliver_to = u.userid";
-		return queryForInt(
-				sql,
+		String sql = "SELECT COUNT(*) FROM hw_alias WHERE alias LIKE ?";
+		return queryForInt(sql,
 				new Object[] { new StringBuilder("%@").append(escape(domain))
 						.toString() });
 	}
 
 	public List<Alias> expandAlias(String alias) {
-		String sql = "SELECT a.*, u.loginid FROM hw_alias a, hw_user u WHERE a.alias = ? AND a.deliver_to = u.userid";
+		String sql = "SELECT * FROM hw_alias WHERE alias = ?";
 		return getJdbcTemplate()
 				.query(sql, new Object[] { alias }, aliasMapper);
 	}
 	
 	public int updateAlias(Alias alias) {
 		String sql = "UPDATE hw_alias SET alias = ?, deliver_to = ? WHERE aliasid = ?";
-		return getJdbcTemplate()
-				.update(
-						sql,
-						new Object[] { alias.getAlias(),
-								new Long(alias.getDeliverTo()),
-								new Long(alias.getID()) });
+		return getJdbcTemplate().update(
+				sql,
+				new Object[] { alias.getAlias(), alias.getDeliverTo(),
+						alias.getID() });
 	}
 	
 	public int deleteAlias(long id) {
@@ -139,8 +135,7 @@ abstract class AnsiUserDao extends AbstractDao implements UserDao {
 			Alias alias = new Alias();
 			alias.setID(rs.getLong("aliasid"));
 			alias.setAlias(rs.getString("alias"));
-			alias.setDeliverTo(rs.getLong("deliver_to"));
-			alias.setUserID(rs.getString("loginid"));
+			alias.setDeliverTo(rs.getString("deliver_to"));
 			return alias;
 		}
 	};

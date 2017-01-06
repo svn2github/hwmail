@@ -56,12 +56,16 @@ public class InetAddressMatcher {
 	}
 	
 	public boolean matches(InetAddress address) {
-		int ipaddr = toByte(address.getHostAddress());
-		for (int i = 0; i < addresses.size(); i++) {
-			int nm = netmasks.get(i);
-			if ((ipaddr & nm) == (addresses.get(i) & nm)) {
-				return true;
+		try {
+			int ipaddr = toByte(address.getHostAddress());
+			for (int i = 0; i < addresses.size(); i++) {
+				int nm = netmasks.get(i);
+				if ((ipaddr & nm) == (addresses.get(i) & nm)) {
+					return true;
+				}
 			}
+		} catch (Exception ex) {
+			// IGNORE
 		}
 		return false;
 	}

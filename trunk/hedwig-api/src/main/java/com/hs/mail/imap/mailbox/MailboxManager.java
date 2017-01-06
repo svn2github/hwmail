@@ -307,10 +307,6 @@ public interface MailboxManager {
 	 */
 	public List<Map<String, Object>> getMessageByMessageID(long userID, String messageID);
 
-	public String getRouteDestination(String routeaddr);
-	
-	public void setRouteAddress(final String routeaddr, final String destination);
-	
 	/**
 	 * Get all the rights allowed to the user for the given mailbox.
 	 * 
