@@ -61,7 +61,7 @@ public class SmtpProcessorFactory {
 		processorMap
 				.put("quit", new com.hs.mail.smtp.processor.QuitProcessor());
 		processorMap
-				.put("rcpt", new com.hs.mail.smtp.processor.RcptProcessor());
+				.put("rcpt", new com.hs.mail.smtp.processor.fastfail.ValidRcptProcessor());
 		processorMap
 				.put("rset", new com.hs.mail.smtp.processor.RsetProcessor());
 		processorMap

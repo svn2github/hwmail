@@ -63,9 +63,16 @@ public class DataProcessor extends AbstractSmtpProcessor {
 		long maxMessageSize = Config.getMaxMessageSize();
 		InputStream msgIn = null;
 		try {
-			String received = new StringBuilder().append("Received: from ").append(session.getClientDomain()).append(" (").append(session.getRemoteHost()).append(" [").append(session.getRemoteIP()).append("])\r\n")
-					.append("\tby ").append(Config.getHelloName()).append(" with ").append(session.getProtocol()).append(" id ").append(session.getSessionID()).append(";\r\n")
-					.append("\t").append(message.getDate()).append("\r\n").toString();
+			String received = new StringBuilder()
+					.append("Received: from ")
+					.append(session.getClientDomain()).append(" (")
+					.append(session.getRemoteHost()).append(" [")
+					.append(session.getRemoteIP()).append("])\r\n\tby ")
+					.append(Config.getHelloName()).append(" with ")
+					.append(session.getProtocol()).append(" id ")
+					.append(session.getSessionID()).append(";\r\n\t")
+					.append(message.getDate()).append("\r\n")
+					.toString();
 			msgIn = new PushbackInputStream(trans.getInputStream(),
 					received.length());
 			((PushbackInputStream) msgIn).unread(received.getBytes("ASCII"));

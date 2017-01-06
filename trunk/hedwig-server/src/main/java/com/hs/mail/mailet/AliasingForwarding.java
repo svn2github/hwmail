@@ -55,6 +55,12 @@ public class AliasingForwarding extends AbstractMailet {
 		List<Recipient> errors = new ArrayList<Recipient>();
 		for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {
 			Recipient rcpt = it.next();
+			
+			if (rcpt.getID() != -1) {
+				// Destination is already resolved.
+				continue;
+			}
+			
 			User user = getUserManager().getUserByAddress(rcpt.getMailbox());
 			if (user != null) {
 				if (StringUtils.isNotEmpty(user.getForwardTo())) {
@@ -91,9 +97,12 @@ public class AliasingForwarding extends AbstractMailet {
 				it.remove();
 				if (CollectionUtils.isNotEmpty(expanded)) {
 					for (Alias alias : expanded) {
-						newRecipients.add(new Recipient((Long) alias
-								.getDeliverTo(), (String) alias.getUserID(),
-								false));
+						User aliased = getUserManager().getUserByAddress(
+								alias.getDeliverTo());
+						if (aliased != null) {
+							newRecipients.add(new Recipient(aliased.getID(),
+									aliased.getUserID(), false));
+						}
 					}
 				} else {
 					String errorMessage = new StringBuffer(64)

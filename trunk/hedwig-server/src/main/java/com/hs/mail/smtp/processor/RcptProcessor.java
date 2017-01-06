@@ -73,9 +73,14 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 				throw new SmtpException(SmtpException.RELAY_DENIED);
 			}
 		}
-		message.addRecipient(recipient);
-		session.writeResponse("250 2.1.5 Recipient <" + recipient.getMailbox()
-					+ "> OK");
+		
+		doRcpt(session, message, recipient);
+
+		session.writeResponse("250 2.1.5 Recipient <" + to + "> OK");
 	}
 
+	protected void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
+		message.addRecipient(rcpt);
+	}
+	
 }
