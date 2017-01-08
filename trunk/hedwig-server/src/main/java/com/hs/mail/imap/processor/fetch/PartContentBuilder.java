@@ -104,7 +104,6 @@ public class PartContentBuilder {
 				.next()) {
 			if (state == MimeTokenStream.T_START_MULTIPART) {
 				ignore();
-				break;
 			} else if (state == MimeTokenStream.T_END_OF_STREAM) {
 				throw new MimeException("Premature end of stream");
 			}
