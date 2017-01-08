@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.hs.mail.webmail.WmaSession;
 import com.hs.mail.webmail.exception.WmaException;
@@ -154,6 +156,25 @@ public class MessageController {
 		model.addAttribute("path", path);
 		model.addAttribute("recipients", recipients);
 		return "recipients";
+	}
+	
+	@RequestMapping(value = "/message/upload", method = RequestMethod.POST)
+	@ResponseBody
+	public boolean upload(HttpSession httpsession, HttpServletRequest request)
+			throws Exception {
+		WmaSession session = new WmaSession(httpsession);
+		String path = RequestUtils.getRequiredParameter(request, "path");
+		MultipartHttpServletRequest multi = (MultipartHttpServletRequest) request;
+		MultipartFile mf = multi.getFile("file");
+		if (mf != null) {
+			if ("message/rfc822".equals(mf.getContentType())) {
+				WmaStore store = session.getWmaStore();
+				WmaFolder folder = store.getWmaFolder(path);
+				folder.appendMessage(mf.getInputStream());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@SuppressWarnings("rawtypes")

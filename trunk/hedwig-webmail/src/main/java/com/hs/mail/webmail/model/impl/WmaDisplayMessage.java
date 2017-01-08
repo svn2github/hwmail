@@ -170,17 +170,23 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 				if (wpart != null) {
 					return wpart;
 				}
-			} else if (cid != null) {
-				String header = WmaUtils.getHeader((Part) part, "Content-ID", null);
-				if (header != null
-						&& cid.equals(StringUtils.strip(header, "<>"))) {
-					// we found the part!
-					return WmaMessagePartImpl
-							.createWmaMessagePart(part, number);
+			} else {
+				if (cid != null) {
+					String header = WmaUtils.getHeader((Part) part,
+							"Content-ID", null);
+					if (header != null
+							&& cid.equals(StringUtils.strip(header, "<>"))) {
+						// we found the part!
+						return WmaMessagePartImpl.createWmaMessagePart(part,
+								number);
+					}
+				} else {
+					if (number == current.value++) {
+						// we found the part!
+						return WmaMessagePartImpl.createWmaMessagePart(part,
+								number);
+					}
 				}
-			} else if (number == current.value++) {
-				// we found the part!
-				return WmaMessagePartImpl.createWmaMessagePart(part, number);
 			}
 		}
 		return null;

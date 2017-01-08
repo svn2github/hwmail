@@ -41,9 +41,12 @@ public class WmaTransportImpl implements WmaTransport {
 		}
 	}
 
-	public void close() throws MessagingException {
+	public void close() {
 		if (transport != null) {
-			transport.close();
+			try {
+				transport.close();
+			} catch (MessagingException e) {
+			}
 		}
 	}
 

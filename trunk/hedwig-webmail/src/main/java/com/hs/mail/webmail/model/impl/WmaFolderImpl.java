@@ -1,11 +1,16 @@
 package com.hs.mail.webmail.model.impl;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Part;
+import javax.mail.Session;
 import javax.mail.internet.ContentType;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -213,6 +218,24 @@ public class WmaFolderImpl implements WmaFolder {
 			folder.close(move);
 		} catch (MessagingException mex) {
 			throw new WmaException("wma.folder.movemessage.failed")
+					.setException(mex);
+		} finally {
+			// close the folder
+			shutdownFolder(folder);
+		}
+	}
+	
+	public void appendMessage(InputStream source) throws WmaException {
+		try {
+			Properties props = System.getProperties();
+			props.put("mail.host", "smtp.dummydomain.com");
+			props.put("mail.transport.protocol", "smtp");
+
+			Session mailSession = Session.getDefaultInstance(props, null);
+			MimeMessage message = new MimeMessage(mailSession, source);
+			folder.appendMessages(new Message[]{message});
+		} catch (MessagingException mex) {
+			throw new WmaException("wma.folder.appendmessage.failed")
 					.setException(mex);
 		} finally {
 			// close the folder

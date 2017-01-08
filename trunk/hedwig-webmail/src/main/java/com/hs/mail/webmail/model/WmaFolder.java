@@ -1,5 +1,7 @@
 package com.hs.mail.webmail.model;
 
+import java.io.InputStream;
+
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
@@ -117,6 +119,8 @@ public interface WmaFolder {
 	void moveMessages(WmaStore wstore, long[] uids, String destfolder)
 			throws WmaException;
 
+	void appendMessage(InputStream source) throws WmaException;
+	
 	void setFlagMessages(long[] uids, Flags flags, boolean set)
 			throws WmaException;
 	
