@@ -73,6 +73,9 @@ public class Config implements InitializingBean {
 	private static String postmaster; 
 	private static long maxMessageSize;
 	private static int maxRcpt;
+	private static int smtpdSoftErrorLimit;
+	private static int smtpdHardErrorLimit;
+	private static int smtpdErrorSleepTime;
 	private static boolean saslAuthEnabled;
 	private static SSLContext context;
 	private static boolean initData = true;
@@ -193,6 +196,18 @@ public class Config implements InitializingBean {
 		return maxRcpt;
 	}
 	
+	public static int getSmtpdSoftErrorLimit() {
+		return smtpdSoftErrorLimit;
+	}
+
+	public static int getSmtpdHardErrorLimit() {
+		return smtpdHardErrorLimit;
+	}
+
+	public static int getSmtpdErrorSleepTime() {
+		return smtpdErrorSleepTime;
+	}
+
 	public static boolean isSaslAuthEnabled() {
 		return saslAuthEnabled;
 	}
@@ -241,6 +256,9 @@ public class Config implements InitializingBean {
 		console.info("Authentication scheme is {}",
 				((authScheme != null) ? authScheme : "not specified"));
 		
+		/**
+		 * IMAP related parameters
+		 */
 		String fields = getProperty("default_cache_fields", DEF_CACHE_FIELDS);
 		defaultCacheFields = buildDefaultCacheFields(StringUtils.split(fields, ','));
 		
@@ -269,9 +287,16 @@ public class Config implements InitializingBean {
 		}
 		namespaces = StringUtils.split(getProperty("namespaces", null), ",");
 		
+		/*
+		 * SMTP related parameters
+		 */
 		String networks = getProperty("mynetworks", "0.0.0.0/0.0.0.0");
 		authorizedNetworks = new InetAddressMatcher(networks);
 		console.info("SMTP relaying is allowded to: {}", networks);
+		
+		smtpdSoftErrorLimit = (int) getNumberProperty("smtpd_soft_error_limit", 10);
+		smtpdHardErrorLimit = (int) getNumberProperty("smtpd_hard_error_limit", 20);
+		smtpdErrorSleepTime = (int) getNumberProperty("smtpd_error_sleep_time", 1);
 		
 		helloName = getProperty("smtp_helo_name", hostName);
 		
