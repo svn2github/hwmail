@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Random;
 
+import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.SmtpMessage;
@@ -42,6 +43,7 @@ public class SmtpSession {
 	private String protocol;
 	private String smtpID;
 	private long authID = -1;
+	private int errorCount = 0;
 	private boolean debug = false;
 	private PrintStream out;	// debug output stream 
 	private SmtpMessage message;
@@ -52,19 +54,17 @@ public class SmtpSession {
 		this.smtpID = random.nextInt(1024) + "";
 	}
 	
-	public void setDebug(boolean debug) {
+	public void setDebug(boolean debug, PrintStream out) {
 		this.debug = debug;
+		if (debug) {
+			this.out = (out != null) ? out : System.out;
+		}
 	}
 	
-	public synchronized void setDebugOut(PrintStream out) {
-		this.out = out;
-	}
-	
-	public synchronized PrintStream getDebugOut() {
-		if (out == null)
-			return System.out;
-		else
-			return out;
+	public void debug(String line) {
+		if (debug) {
+			out.println(line);
+		}
 	}
 
     public TcpTransport getTransport() {
@@ -111,6 +111,11 @@ public class SmtpSession {
 		this.authID = authID;
 	}
 
+	public int incErrorCount() {
+		errorCount++;
+		return errorCount;
+	}
+
 	public SmtpMessage getMessage() {
 		return message;
 	}
@@ -124,9 +129,18 @@ public class SmtpSession {
 	}
 	
 	public void writeResponse(String response) {
+		if (errorCount >= Config.getSmtpdSoftErrorLimit()) {
+			// Slow down clients that make errors. Sleep-on-anything slows down
+			// clients that make an excessive number of errors within a session.
+			try {
+				Thread.sleep(Config.getSmtpdErrorSleepTime() * 1000);
+			} catch (InterruptedException e) {
+				// IGNORE
+			}
+		}
+
 		transport.println(response);
-		if (debug)
-			getDebugOut().println(response);
+		debug(response);
 	}
 	
 }

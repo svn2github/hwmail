@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.ComponentManager;
+import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.smtp.SmtpException;
@@ -41,7 +42,12 @@ public abstract class AbstractSmtpProcessor implements SmtpProcessor {
 		try {
 			doProcess(session, trans, st);
 		} catch (SmtpException ex) {
-			session.writeResponse(ex.getMessage());
+			if (session.incErrorCount() >= Config.getSmtpdHardErrorLimit()) {
+				session.writeResponse(SmtpException.TOO_MANY_ERRORS);
+				trans.endSession();
+			} else {
+				session.writeResponse(ex.getMessage());
+			}
 		}
 	}
 	

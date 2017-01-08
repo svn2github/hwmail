@@ -53,10 +53,7 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 		TcpTransport trans = new TcpTransport();
 		trans.setChannel(new TcpSocketChannel(soc));
 		SmtpSession session = new SmtpSession(trans);
-		session.setDebug(debug);
-		if (debug && out != null) {
-			session.setDebugOut(out);
-		}
+		session.setDebug(debug, out);
 
 		String greetings = new StringBuilder()
 				.append("220 ")
@@ -68,8 +65,7 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 		while (!trans.isSessionEnded()) {
 			String line = trans.readLine();
 			if (line != null) {
-				if (debug)
-					session.getDebugOut().println(line);
+				session.debug(line);
 				StringTokenizer st = new StringTokenizer(line);
 				if (!st.hasMoreTokens()) {
 					break;
