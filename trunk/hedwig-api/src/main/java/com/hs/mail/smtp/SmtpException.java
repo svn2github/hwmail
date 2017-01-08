@@ -25,6 +25,8 @@ public class SmtpException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	
+	public static final String TOO_MANY_ERRORS = "421 4.7.0 Too many errors";
+	
 	public static final String RECIPIENTS_COUNT_LIMIT = "452 4.5.3 Maximum recipients reached";
 
 	public static final String DOMAIN_NAME_LENGTH_LIMIT = "501 5.5.0 Domain name length exceeds fixed limit";
