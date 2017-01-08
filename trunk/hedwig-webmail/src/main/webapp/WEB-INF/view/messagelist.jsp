@@ -133,9 +133,9 @@
 <div class="text-center">
 	<ul class="pagination" id="pagination"></ul>
 </div>
-<form id="eml" action="message/upload" method="post" enctype="multipart/form-data" class="hidden">
-	<input type="hidden" id="path" name="path" value="<c:out value='${path}'/>" />
-	<input type="file" name="eml" />
+<form id="upload-form" action="message/upload" method="post" enctype="multipart/form-data" class="hidden">
+	<input type="hidden" name="path" value="<c:out value='${path}'/>" />
+	<input type="file" name="file" />
 </form>
 <script>
 $(function() {
@@ -294,7 +294,7 @@ $(function() {
 	    	revoke();
     	});
 	}).on('click', '#upload', function() {
-		$('#eml :file').trigger('click');
+		$('#upload-form :file').trigger('click');
 	}).on('click', 'td.star', function() {
 		var uid = $(this).closest('tr').find('input[name=uids]').val();
 			star = $(this).find('.fa'),
@@ -309,8 +309,19 @@ $(function() {
 		else $('#order').val(id.substring(n + 1));
 		refresh();
 	});
-	$('#eml').on('change', ':file', function(event) {
-		//$(event.delegateTarget).submit();
+	$('#upload-form').on('change', ':file', function(event) {
+		$.ajax({
+			url: 'message/upload',
+			data: new FormData($(event.delegateTarget)[0]),
+			contentType: false,
+			processData: false,
+			cache: false,
+			type: 'POST',
+			success: function(data) {
+				console.log(data);
+			}
+		});
+		return false;
 	});
 
 	$('#move').parent().on('show.bs.dropdown', function(event) {

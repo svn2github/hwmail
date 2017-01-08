@@ -81,13 +81,6 @@ function showQuota() {
 	});
 }
 $(function() {
-	$('#side-menu').on('click', 'a[data-target]', function(event) {
-		var tree = $('#tree').fancytree('getTree'),
-			node = tree.getActiveNode();
-		if (node) {
-			node.setActive(false), node.setFocus(false);
-		}
-	});
 	$('#tree').fancytree({
 		source: {
 			url: 'folder/tree?' + $.param({path:$('#personalArchive > a').data('target')})
@@ -107,9 +100,19 @@ $(function() {
 			data.result = $.getJSON('folder/tree?' + $.param({path:node.key,recursive:false}));
 		}
 	});
-	$('.fancytree-container').bind('fancytreebeforeactivate', function(event, data) {
-		$('#side-menu').find('.active').removeClass('active');
-		$(event.delegateTarget).addClass('active');
+	$('#tree,#namespaces').bind('fancytreeblurtree', function(event, data) {
+		var tree = $(event.delegateTarget).fancytree('getTree'),
+		    node = tree.getActiveNode();
+		if (node) {
+			node.setActive(false), node.setFocus(false);
+		}
+	}).bind('fancytreefocustree', function(event, data) {
+		if (!data.node.unselectable) {
+			$('#side-menu').find('.active').removeClass('active');
+			$(event.delegateTarget).addClass('active');
+		}
+	}).bind('fancytreebeforeactivate', function(event, data) {
+		return !data.node.unselectable;
 	});
 
 	showQuota();
@@ -316,7 +319,7 @@ $(function() {
         </li>
         <li role="presentation">
           <a>
-          	<i class="fa fa-archive"></i> Public Folders
+          	<i class="fa fa-share-alt-square"></i> <fmt:message key='prefs.publicfolder'/>
             <span class="fa arrow" data-toggle="collapse" data-target="#namespace-container"></span>
           </a>
           <div class="sub-nav" id="namespace-container">

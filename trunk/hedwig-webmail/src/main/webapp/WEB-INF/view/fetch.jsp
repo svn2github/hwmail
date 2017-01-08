@@ -22,6 +22,8 @@
 	</spring:hasBindErrors>
 
 	<form:hidden path="UID" />
+	<form:hidden path="lastXUID" />
+	<form:hidden path="lastReceivedDate" />
 
 	<div class="form-group">
 		<label class="col-sm-3 control-label"><fmt:message key="fetch.account.protocol"/></label>
