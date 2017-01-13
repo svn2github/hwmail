@@ -112,7 +112,7 @@ public class FetchRequestBuilder extends AbstractUidRequestBuilder {
 	
 	private void parsePartial(LinkedList<Token> tokens, BodyFetchItem item) {
 		Token token = tokens.peek();
-		if ("<".equals(token.value)) {
+		if (token != null && "<".equals(token.value)) {
 			tokens.remove(); // consume '<'
 			item.setFirstOctet(Long.parseLong((token = tokens.remove()).value));
 			token = tokens.remove(); // consume '.'
