@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.smtp.message.Recipient;
@@ -97,11 +98,19 @@ public class AliasingForwarding extends AbstractMailet {
 				it.remove();
 				if (CollectionUtils.isNotEmpty(expanded)) {
 					for (Alias alias : expanded) {
-						User aliased = getUserManager().getUserByAddress(
-								alias.getDeliverTo());
-						if (aliased != null) {
-							newRecipients.add(new Recipient(aliased.getID(),
-									aliased.getUserID(), false));
+						if (alias.getDeliverTo().startsWith(ImapConstants.NAMESPACE_PREFIX)) {
+							// Aliased mailbox is a public folder.
+							Recipient pf = new Recipient(ImapConstants.ANYONE_ID, 
+									rcpt.getMailbox(), false);
+							pf.setDestination(alias.getDeliverTo());
+							newRecipients.add(pf);
+						} else {
+							User aliased = getUserManager().getUserByAddress(
+									alias.getDeliverTo());
+							if (aliased != null) {
+								newRecipients.add(new Recipient(aliased.getID(),
+										aliased.getUserID(), false));
+							}
 						}
 					}
 				} else {
