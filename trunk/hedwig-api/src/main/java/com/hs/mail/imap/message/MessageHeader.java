@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.MimeIOException;
+import org.apache.james.mime4j.codec.DecoderUtil;
 import org.apache.james.mime4j.field.AbstractField;
 import org.apache.james.mime4j.field.AddressListField;
 import org.apache.james.mime4j.field.DateTimeField;
@@ -82,10 +83,13 @@ public class MessageHeader {
 	}
 
 	public List<String> getValues(String fieldName) {
-		List<UnstructuredField> fields = obtainFields(fieldName);
+		List<AbstractField> fields = obtainFields(fieldName);
 		List<String> results = new ArrayList<String>(fields.size());
-		for (UnstructuredField field : fields) {
-			results.add(field.getValue());
+		for (AbstractField field : fields) {
+			if (field instanceof UnstructuredField)
+				results.add(((UnstructuredField) field).getValue());
+			else
+				results.add(DecoderUtil.decodeEncodedWords(field.getBody()));
 		}
 		return results;
 	}

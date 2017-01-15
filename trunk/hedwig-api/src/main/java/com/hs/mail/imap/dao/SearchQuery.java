@@ -54,7 +54,26 @@ abstract class SearchQuery {
 		return sql.toString();
 	}
 	
-	String condition(List<SearchKey> keys, boolean and) {
+	String toQuery(long mailboxID, String headername, boolean emptyValue) {
+		if (emptyValue) {
+			return String
+					.format("SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
+							mailboxID, headername);
+		} else {
+			return String
+					.format("SELECT m.messageid, v.headervalue FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
+							mailboxID, headername);
+		}
+	}
+
+	String toQuery(long mailboxID, KeywordKey key) {
+		return String
+				.format(
+						"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = %d AND m.messageid = k.messageid AND k.keyword = '%s'",
+						mailboxID, key.getPattern());
+	}
+
+	private String condition(List<SearchKey> keys, boolean and) {
 		String[] array = new String[keys.size()];
 		String s = null;
 		int i = 0;
@@ -74,25 +93,6 @@ abstract class SearchQuery {
 					.append(StringUtils.join(array, " OR ", 0, i))
 					.append(")")
 					.toString();
-	}
-
-	String toQuery(long mailboxID, String headername, boolean emptyValue) {
-		if (emptyValue) {
-			return String
-					.format("SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
-							mailboxID, headername);
-		} else {
-			return String
-					.format("SELECT m.messageid, v.headervalue FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
-							mailboxID, headername);
-		}
-	}
-
-	String toQuery(long mailboxID, KeywordKey key) {
-		return String
-				.format(
-						"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = %d AND m.messageid = k.messageid AND k.keyword = '%s'",
-						mailboxID, key.getPattern());
 	}
 
 	private String toQuery(SearchKey key) {
