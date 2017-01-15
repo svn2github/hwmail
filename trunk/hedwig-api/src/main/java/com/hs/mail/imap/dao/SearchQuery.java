@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,51 +35,77 @@ import com.hs.mail.imap.message.search.StringKey;
 import com.hs.mail.imap.message.search.SubjectKey;
 
 /**
+ * Helper class which builds a search query.
  * 
  * @author Won Chul Doh
  * @since Apr 8, 2010
  *
  */
 abstract class SearchQuery {
-	
-	String toQuery(long mailboxID, CompositeKey key, boolean and) {
+
+	/**
+	 * An individual query which contains SQL and its parameters   
+	 *
+	 * @since Jan 17, 2017
+	 */
+	public class Query {
+	/** SQL query to execute */
+	public String sql;
+	/** arguments to bind to the query */
+	public Object[] args;
+
+	/**
+	 * Construct a Query object with the given SQL, and arguments.
+	 * 
+	 * @param sql
+	 *            the SQL query
+	 * @param args
+	 *            the binding arguments
+	 */
+	public Query(String sql, Object[] args) {
+		this.sql = sql;
+		this.args = args;
+	}
+	}	
+
+	Query toQuery(long mailboxID, CompositeKey key, boolean and) {
 		StringBuilder sql = new StringBuilder(
-				"SELECT messageid FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ")
-				.append(mailboxID).append(
-						" AND m.physmessageid = p.physmessageid");
+				"SELECT messageid FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ? AND m.physmessageid = p.physmessageid");
 		List<SearchKey> keys = key.getSearchKeys();
-		String c = condition(keys, and);
+		List<Object> args = new ArrayList<Object>();
+		args.add(mailboxID);
+		String c = condition(args, keys, and);
 		if (c != null) {
 			sql.append(" AND ").append(c);
 		}
-		return sql.toString();
+		return new Query(sql.toString(), args.toArray());
 	}
 	
-	String toQuery(long mailboxID, String headername, boolean emptyValue) {
+	Query toQuery(long mailboxID, String headername, boolean emptyValue) {
 		if (emptyValue) {
-			return String
-					.format("SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
-							mailboxID, headername);
+			return new Query(
+					"SELECT messageid FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = ? AND headername = ?",
+					new Object[]{mailboxID, headername});
 		} else {
-			return String
-					.format("SELECT m.messageid, v.headervalue FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = %d AND headername = '%s'",
-							mailboxID, headername);
+			return new Query(
+					"SELECT m.messageid, v.headervalue FROM hw_message m JOIN hw_physmessage p ON m.physmessageid = p.physmessageid JOIN hw_headervalue v ON v.physmessageid = p.physmessageid JOIN hw_headername n ON v.headernameid = n.headernameid WHERE mailboxid = ? AND headername = ?",
+					new Object[]{mailboxID, headername});
 		}
 	}
 
-	String toQuery(long mailboxID, KeywordKey key) {
-		return String
-				.format(
-						"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = %d AND m.messageid = k.messageid AND k.keyword = '%s'",
-						mailboxID, key.getPattern());
+	Query toQuery(long mailboxID, KeywordKey key) {
+		return new Query(
+				"SELECT m.messageid FROM hw_message m, hw_keyword k WHERE m.mailboxid = ? AND m.messageid = k.messageid AND k.keyword = ?",
+				new Object[]{mailboxID, key.getPattern()});
 	}
 
-	private String condition(List<SearchKey> keys, boolean and) {
+	private String condition(List<Object> args, List<SearchKey> keys,
+			boolean and) {
 		String[] array = new String[keys.size()];
 		String s = null;
 		int i = 0;
 		for (SearchKey k : keys) {
-			if ((s = toQuery(k)) != null) {
+			if ((s = toQuery(args, k)) != null) {
 				array[i++] = s;
 			}
 		}
@@ -95,45 +122,45 @@ abstract class SearchQuery {
 					.toString();
 	}
 
-	private String toQuery(SearchKey key) {
+	private String toQuery(List<Object> args, SearchKey key) {
 		if (key instanceof FlagKey) {
-			return flagQuery((FlagKey) key);
+			return flagQuery(args, (FlagKey) key);
 		} else if (key instanceof FromStringKey) {
-			return stringQuery("fromaddr", (FromStringKey) key);
+			return stringQuery(args, "fromaddr", (FromStringKey) key);
 		} else if (key instanceof InternalDateKey) {
-			return dateQuery("internaldate", (InternalDateKey) key);
+			return dateQuery(args, "internaldate", (InternalDateKey) key);
 		} else if (key instanceof SentDateKey) {
-			return dateQuery("sentdate", (SentDateKey) key);
+			return dateQuery(args, "sentdate", (SentDateKey) key);
 		} else if (key instanceof SizeKey) {
-			return numberQuery("rfcsize", (SizeKey) key);
+			return numberQuery(args, "rfcsize", (SizeKey) key);
 		} else if (key instanceof SubjectKey) {
-			return stringQuery("subject", ((SubjectKey) key));
+			return stringQuery(args, "subject", ((SubjectKey) key));
 		} else { // AllKey
 			return null;
 		}
 	}
 
-	private String flagQuery(FlagKey key) {
+	private String flagQuery(List<Object> args, FlagKey key) {
 		String s = FlagUtils.getFlagColumnName(key.getFlag());
 		if (StringUtils.isNotEmpty(s)) {
-			String v = key.isSet() ? "Y" : "N";
-			return new StringBuilder(s).append("='").append(v).append("'")
-					.toString();
+			args.add(key.isSet() ? "Y" : "N");
+			return new StringBuilder(s).append("= ?").toString();
 		} else {
 			return null;
 		}
 	}
 	
-	private String stringQuery(String field, StringKey key) {
-		return String.format("%s LIKE '%%%s%%'", field, key.getPattern());
+	private String stringQuery(List<Object> args, String field, StringKey key) {
+		args.add("%" + key.getPattern() + "%");
+		return String.format("%s LIKE ?", field, key.getPattern());
 	}
 	
-	private String numberQuery(String field, IntegerComparisonKey key) {
-		return String.format("%s %s %d", field, getOp(key.getComparison()), key
-				.getNumber());
+	private String numberQuery(List<Object> args, String field, IntegerComparisonKey key) {
+		args.add(key.getNumber());
+		return String.format("%s %s ?", field, getOp(key.getComparison()));
 	}
 
-	abstract protected String dateQuery(String field, DateKey key);
+	abstract protected String dateQuery(List<Object> args, String field, DateKey key);
 	
 	protected String getOp(int comparison) {
 		switch (comparison) {

@@ -1,5 +1,7 @@
 package com.hs.mail.imap.dao;
 
+import java.util.List;
+
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.hs.mail.imap.message.search.DateKey;
@@ -19,10 +21,9 @@ public class MySqlSearchDao extends AnsiSearchDao {
 
 	static SearchQuery sq = new SearchQuery() {
 
-		protected String dateQuery(String field, DateKey key) {
-			return String.format("DATE(%s) %s DATE('%s')", field, getOp(key
-					.getComparison()), DateFormatUtils.ISO_DATE_FORMAT.format(key
-					.getDate()));
+		protected String dateQuery(List<Object> args, String field, DateKey key) {
+			args.add(DateFormatUtils.ISO_DATE_FORMAT.format(key.getDate()));
+			return String.format("DATE(%s) %s DATE(?)", field, getOp(key.getComparison()));
 		}
 
 	};

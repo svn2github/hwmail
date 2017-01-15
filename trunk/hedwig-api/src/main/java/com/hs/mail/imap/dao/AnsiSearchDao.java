@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.codec.DecoderUtil;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import com.hs.mail.imap.dao.SearchQuery.Query;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
 import com.hs.mail.imap.message.SequenceRange;
 import com.hs.mail.imap.message.search.AllKey;
@@ -126,12 +127,12 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	private List<Long> query(UidToMsnMapper map, long mailboxID, String name,
 			final String pattern) {
 		if (StringUtils.isEmpty(pattern)) {
-			String sql = getSearchQuery().toQuery(mailboxID, name, true);
-			return getJdbcTemplate().queryForList(sql, Long.class);
+			Query query = getSearchQuery().toQuery(mailboxID, name, true);
+			return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 		} else {
-			String sql = getSearchQuery().toQuery(mailboxID, name, false);
+			Query query = getSearchQuery().toQuery(mailboxID, name, false);
 			final List<Long> results = new ArrayList<Long>();
-			getJdbcTemplate().query(sql, new RowCallbackHandler() {
+			getJdbcTemplate().query(query.sql, query.args, new RowCallbackHandler() {
 				public void processRow(ResultSet rs) throws SQLException {
 					// Stored header values are not decoded.
 					String value = DecoderUtil.decodeEncodedWords(rs
@@ -168,19 +169,19 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	}
 	
 	private List<Long> query(UidToMsnMapper map, long mailboxID, KeywordKey key) {
-		String sql = getSearchQuery().toQuery(mailboxID, key);
+		Query query = getSearchQuery().toQuery(mailboxID, key);
 		if (key.getTestSet()) {
-			return getJdbcTemplate().queryForList(sql, Long.class);
+			return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 		} else {
 			return ListUtils.subtract(map.getUIDList(), getJdbcTemplate()
-					.queryForList(sql, Long.class));
+					.queryForList(query.sql, query.args, Long.class));
 		}
 	}
 
 	private List<Long> query(UidToMsnMapper map, long mailboxID,
 			CompositeKey key, boolean and) {
-		String sql = getSearchQuery().toQuery(mailboxID, key, and);
-		return getJdbcTemplate().queryForList(sql, Long.class);
+		Query query = getSearchQuery().toQuery(mailboxID, key, and);
+		return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 	}
 	
 	private List<Long> conjunctionQuery(UidToMsnMapper map, long mailboxID,
