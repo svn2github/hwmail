@@ -135,10 +135,12 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 			getJdbcTemplate().query(query.sql, query.args, new RowCallbackHandler() {
 				public void processRow(ResultSet rs) throws SQLException {
 					// Stored header values are not decoded.
-					String value = DecoderUtil.decodeEncodedWords(rs
-							.getString(2));
-					if (StringUtils.contains(value, pattern)) {
-						results.add(rs.getLong(1));
+					String tmp = rs.getString(2);
+					if (tmp != null) {
+						String value = DecoderUtil.decodeEncodedWords(tmp);
+						if (StringUtils.contains(value, pattern)) {
+							results.add(rs.getLong(1));
+						}
 					}
 				}
 			});
