@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import com.hs.mail.exception.LookupException;
+import com.hs.mail.smtp.processor.fastfail.ValidRcptProcessor;
 
 /**
  * 
@@ -29,11 +30,6 @@ import com.hs.mail.exception.LookupException;
 public class SmtpProcessorFactory {
 	
 	public static SmtpProcessor createSmtpProcessor(String command) {
-		SmtpProcessor processor = lookup(command);
-		return processor;
-	}
-
-	private static SmtpProcessor lookup(String command) {
 		SmtpProcessor processor = processorMap.get(command.toLowerCase());
 		if (null == processor)
 			throw new LookupException("Class for '" + command + "' not found.");
@@ -42,30 +38,18 @@ public class SmtpProcessorFactory {
 
 	static private Map<String, SmtpProcessor> processorMap = new Hashtable<String, SmtpProcessor>();
 	static {
-		processorMap
-				.put("auth", new com.hs.mail.smtp.processor.AuthProcessor());
-		processorMap
-				.put("data", new com.hs.mail.smtp.processor.DataProcessor());
-		processorMap
-				.put("ehlo", new com.hs.mail.smtp.processor.EhloProcessor());
-		processorMap
-				.put("expn", new com.hs.mail.smtp.processor.ExpnProcessor());
-		processorMap
-				.put("helo", new com.hs.mail.smtp.processor.HeloProcessor());
-		processorMap
-				.put("help", new com.hs.mail.smtp.processor.HelpProcessor());
-		processorMap
-				.put("mail", new com.hs.mail.smtp.processor.MailProcessor());
-		processorMap
-				.put("noop", new com.hs.mail.smtp.processor.NoopProcessor());
-		processorMap
-				.put("quit", new com.hs.mail.smtp.processor.QuitProcessor());
-		processorMap
-				.put("rcpt", new com.hs.mail.smtp.processor.fastfail.ValidRcptProcessor());
-		processorMap
-				.put("rset", new com.hs.mail.smtp.processor.RsetProcessor());
-		processorMap
-				.put("vrfy", new com.hs.mail.smtp.processor.VrfyProcessor());
+		processorMap.put("auth", new AuthProcessor());
+		processorMap.put("data", new DataProcessor());
+		processorMap.put("ehlo", new EhloProcessor());
+		processorMap.put("expn", new ExpnProcessor());
+		processorMap.put("helo", new HeloProcessor());
+		processorMap.put("help", new HelpProcessor());
+		processorMap.put("mail", new MailProcessor());
+		processorMap.put("noop", new NoopProcessor());
+		processorMap.put("quit", new QuitProcessor());
+		processorMap.put("rcpt", new ValidRcptProcessor());
+		processorMap.put("rset", new RsetProcessor());
+		processorMap.put("vrfy", new VrfyProcessor());
 	}
 
 }
