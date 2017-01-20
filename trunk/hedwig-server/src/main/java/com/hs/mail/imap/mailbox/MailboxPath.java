@@ -74,9 +74,10 @@ public class MailboxPath {
 		String ret = str;
 		while (StringUtils.containsAny(ret, "*%")) {
 			int pos = ret.lastIndexOf(sep);
-			if (pos > -1) {
-				ret = ret.substring(0, pos);
+			if (pos == -1) {
+				return "";
 			}
+			ret = ret.substring(0, pos);
 		}
 		return ret;
 	}
