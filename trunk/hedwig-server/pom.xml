@@ -109,6 +109,13 @@
 		</dependency>
 
 		<!-- Test -->
+		<!-- https://mvnrepository.com/artifact/org.apache.james.jspf/apache-jspf-resolver -->
+		<dependency>
+		    <groupId>org.apache.james.jspf</groupId>
+		    <artifactId>apache-jspf-resolver</artifactId>
+		    <version>0.9.8</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
