@@ -28,44 +28,20 @@ import com.hs.mail.imap.user.User;
  * @since Mar 17, 2010
  *
  */
-public interface UserDao {
-
-	public User getUser(long id);
+public interface UserDao extends DaoSupport {
 
 	public long getUserID(String address);
 	
 	public User getUserByAddress(String address);
 	
-	public int getUserCount(String domain);
-	
-	public List<User> getUserList(String domain, int page, int pageSize);
-	
-	public long addUser(User user);
-	
-	public int updateUser(User user);
-	
-	public int deleteUser(long id);
-	
-	public Alias getAlias(long id);
-	
-	public int getAliasCount(String domain);
-
-	public List<Alias> getAliasList(String domain, int page, int pageSize);
-	
 	public List<Alias> expandAlias(String alias);
-
-	public long addAlias(Alias alias);
-	
-	public int updateAlias(Alias alias);
-
-	public int deleteAlias(long id);
 
 	public long getQuotaLimit(long ownerID);
 	
-	public long getQuotaUsage(long ownerID, long mailboxID);
-
 	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot);
 
 	public void setQuota(long ownerID, Quota quota);
+
+	public long getQuotaUsage(long ownerID, long mailboxID);
 
 }

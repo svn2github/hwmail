@@ -16,7 +16,6 @@
 package com.hs.mail.imap.user;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import javax.mail.Quota;
@@ -26,24 +25,15 @@ import javax.security.auth.login.CredentialException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.dao.DaoFactory;
-import com.hs.mail.imap.dao.MailboxDao;
-import com.hs.mail.imap.dao.MessageDao;
-import com.hs.mail.imap.dao.UserDao;
-import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.security.login.BasicCallbackHandler;
 import com.hs.mail.smtp.message.MailAddress;
 
@@ -55,8 +45,6 @@ import com.hs.mail.smtp.message.MailAddress;
  */
 public class DefaultUserManager implements UserManager {
 
-	private static Logger logger = LoggerFactory.getLogger(UserManager.class);
-	
 	private TransactionTemplate transactionTemplate;
 	
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
@@ -102,10 +90,6 @@ public class DefaultUserManager implements UserManager {
 		return user.getID();
 	}
 	
-	public User getUser(long id) {
-		return DaoFactory.getUserDao().getUser(id);
-	}
-
 	public long getUserID(String address) {
 		return DaoFactory.getUserDao().getUserID(address);
 	}
@@ -114,161 +98,10 @@ public class DefaultUserManager implements UserManager {
 		return DaoFactory.getUserDao().getUserByAddress(address);
 	}
 
-	public int getUserCount(String domain) {
-		return DaoFactory.getUserDao().getUserCount(domain);
-	}
-	
-	public List<User> getUserList(String domain, int page, int pageSize) {
-		return DaoFactory.getUserDao().getUserList(domain, page, pageSize);
-	}
-	
-	public long addUser(final User user) {
-		return getTransactionTemplate().execute(
-				new TransactionCallback<Long>() {
-					public Long doInTransaction(TransactionStatus status) {
-						try {
-							return DaoFactory.getUserDao().addUser(user);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public int updateUser(final User user) {
-		return getTransactionTemplate().execute(
-				new TransactionCallback<Integer>() {
-					public Integer doInTransaction(TransactionStatus status) {
-						try {
-							return DaoFactory.getUserDao().updateUser(user);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public void deleteUser(final long id) {
-		getTransactionTemplate().execute(
-				new TransactionCallbackWithoutResult() {
-					public void doInTransactionWithoutResult(
-							TransactionStatus status) {
-						try {
-							UserDao dao = DaoFactory.getUserDao();
-							dao.deleteUser(id);
-							emptyMailboxes(id);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public void emptyUser(final long id) {
-		getTransactionTemplate().execute(
-				new TransactionCallbackWithoutResult() {
-					public void doInTransactionWithoutResult(
-							TransactionStatus status) {
-						try {
-							emptyMailboxes(id);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	private void emptyMailboxes(long ownerID) {
-		MailboxDao dao = DaoFactory.getMailboxDao();
-		List<PhysMessage> danglings = dao.getDanglingMessageIDList(ownerID);
-		dao.deleteMessages(ownerID);
-		dao.deleteMailboxes(ownerID);
-		if (CollectionUtils.isNotEmpty(danglings)) {
-			for (PhysMessage pm : danglings) {
-				deletePhysicalMessage(pm);
-			}
-		}
-	}
-	
-	private void deletePhysicalMessage(PhysMessage pm) {
-		MessageDao dao = DaoFactory.getMessageDao();
-		dao.deletePhysicalMessage(pm.getPhysMessageID());
-		try {
-			File file = Config.getDataFile(pm.getInternalDate(), pm.getPhysMessageID());
-			FileUtils.forceDelete(file);
-		} catch (IOException ex) {
-			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
-		}
-	}
-	
-	public Alias getAlias(long id) {
-		return DaoFactory.getUserDao().getAlias(id); 
-	}
-	
-	public int getAliasCount(String domain) {
-		return DaoFactory.getUserDao().getAliasCount(domain);
-	}
-	
-	public List<Alias> getAliasList(String domain, int page, int pageSize) {
-		return DaoFactory.getUserDao().getAliasList(domain, page, pageSize);
-	}
-	
 	public List<Alias> expandAlias(String alias) {
 		return DaoFactory.getUserDao().expandAlias(alias);
 	}
 	
-	public long addAlias(final Alias alias) {
-		return getTransactionTemplate().execute(
-				new TransactionCallback<Long>() {
-					public Long doInTransaction(TransactionStatus status) {
-						try {
-							return DaoFactory.getUserDao().addAlias(alias);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public int updateAlias(final Alias alias) {
-		return getTransactionTemplate().execute(
-				new TransactionCallback<Integer>() {
-					public Integer doInTransaction(TransactionStatus status) {
-						try {
-							return DaoFactory.getUserDao().updateAlias(alias);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public void deleteAlias(final long id) {
-		getTransactionTemplate().execute(
-				new TransactionCallbackWithoutResult() {
-					public void doInTransactionWithoutResult(
-							TransactionStatus status) {
-						try {
-							UserDao dao = DaoFactory.getUserDao();
-							dao.deleteAlias(id);
-						} catch (DataAccessException ex) {
-							status.setRollbackOnly();
-							throw ex;
-						}
-					}
-				});
-	}
-	
-	public long getQuotaUsage(long ownerID) {
-		return DaoFactory.getUserDao().getQuotaUsage(ownerID, 0);
-	}
-
 	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot) {
 		Quota quota = DaoFactory.getUserDao().getQuota(ownerID, mailboxID,
 				quotaRoot);

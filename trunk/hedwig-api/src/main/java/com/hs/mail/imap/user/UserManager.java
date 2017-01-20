@@ -45,40 +45,12 @@ public interface UserManager {
 	 */
 	public long login(String username, String password) throws LoginException;
 	
-	public User getUser(long id);
-
 	public long getUserID(String address);
 	
 	public User getUserByAddress(String address);
 
-	public int getUserCount(String domain);
-	
-	public List<User> getUserList(String domain, int page, int pageSize);
-	
-	public long addUser(final User user);
-	
-	public int updateUser(final User user);
-	
-	public void deleteUser(final long id);
-	
-	public void emptyUser(final long id);
-	
-	public Alias getAlias(long id);
-	
-	public int getAliasCount(String domain);
-	
-	public List<Alias> getAliasList(String domain, int page, int pageSize);
-	
 	public List<Alias> expandAlias(String alias);
 	
-	public long addAlias(final Alias alias);
-	
-	public int updateAlias(final Alias alias);
-	
-	public void deleteAlias(final long id);
-	
-	public long getQuotaUsage(long ownerID);
-
 	public Quota getQuota(long ownerID, long mailboxID, String quotaRoot);
 
 	public void setQuota(final long ownerID, final Quota quota);

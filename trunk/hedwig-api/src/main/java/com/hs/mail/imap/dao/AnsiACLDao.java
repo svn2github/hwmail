@@ -35,7 +35,7 @@ import com.hs.mail.imap.mailbox.MailboxACL.MailboxACLEntry;
  * @since December 2, 2016
  *
  */
-public class AnsiACLDao extends AbstractDao implements ACLDao {
+abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 	
 	private static final String[] flagArray = { 
 		"lookup_flag", 
@@ -50,7 +50,7 @@ public class AnsiACLDao extends AbstractDao implements ACLDao {
 		"expunge_flag",
 		"admin_flag" 
 	};
-	
+
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
 		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID,

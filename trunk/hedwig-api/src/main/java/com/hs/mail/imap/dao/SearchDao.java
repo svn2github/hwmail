@@ -27,7 +27,7 @@ import com.hs.mail.imap.message.search.SortKey;
  * @since Apr 5, 2010
  *
  */
-public interface SearchDao {
+public interface SearchDao extends DaoSupport {
 
 	public List<Long> query(UidToMsnMapper map, long mailboxid, SearchKey key);
 

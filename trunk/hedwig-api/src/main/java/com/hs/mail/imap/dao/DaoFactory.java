@@ -15,6 +15,10 @@
  */
 package com.hs.mail.imap.dao;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.BeanCreationException;
+
 /**
  * Static factory to conceal the automatic choice of the data access object
  * implementation class.
@@ -25,59 +29,59 @@ package com.hs.mail.imap.dao;
  */
 public class DaoFactory {
 
-	private static DaoFactory instance;
+	protected static DaoFactory instance   = null;
 
-	private ACLDao aclDao;
-	private MailboxDao mailboxDao;
-	private MessageDao messageDao;
-	private SearchDao searchDao;
-	private UserDao userDao;
+	protected static ACLDao     aclDao     = null;
+	protected static MailboxDao mailboxDao = null;
+	protected static MessageDao	messageDao = null;
+	protected static SearchDao  searchDao  = null;
+	protected static UserDao    userDao    = null;
 
-	public static DaoFactory getInstance() {
+	public static DaoFactory getInstance(String databaseType,
+			DataSource dataSource) {
 		if (null == instance) {
-			instance = new DaoFactory();
+			instance = newInstance(databaseType);
+			setDataSource(dataSource);
 		}
 		return instance;
 	}
 	
-	public void setACLDao(ACLDao aclDao) {
-		this.aclDao = aclDao;
-	}
-
-	public void setMailboxDao(MailboxDao mailboxDao) {
-		this.mailboxDao = mailboxDao;
-	}
-
-	public void setMessageDao(MessageDao messageDao) {
-		this.messageDao = messageDao;
-	}
-	
-	public void setSearchDao(SearchDao searchDao) {
-		this.searchDao = searchDao;
-	}
-
-	public void setUserDao(UserDao userDao) {
-		this.userDao = userDao;
-	}
-
 	public static ACLDao getACLDao() {
-		return getInstance().aclDao;
+		return aclDao;
 	}
 
 	public static MailboxDao getMailboxDao() {
-		return getInstance().mailboxDao;
+		return mailboxDao;
 	}
 
 	public static MessageDao getMessageDao() {
-		return getInstance().messageDao;
+		return messageDao;
 	}
 
 	public static SearchDao getSearchDao() {
-		return getInstance().searchDao;
+		return searchDao;
 	}
 
 	public static UserDao getUserDao() {
-		return getInstance().userDao;
+		return userDao;
 	}
 
+	private static DaoFactory newInstance(String databaseType) {
+		if ("Oracle".equalsIgnoreCase(databaseType)) {
+			return new OracleDaoFactory();
+		} else if ("MySQL".equalsIgnoreCase(databaseType)) {
+			return new MySqlDaoFactory();
+		} else {
+			throw new BeanCreationException("Database type " + databaseType + " is not supported.");
+		}
+	}
+
+	private static void setDataSource(DataSource dataSource) {
+		aclDao.setDataSource(dataSource);
+		mailboxDao.setDataSource(dataSource);
+		messageDao.setDataSource(dataSource);
+		searchDao.setDataSource(dataSource);
+		userDao.setDataSource(dataSource);
+	}
+	
 }

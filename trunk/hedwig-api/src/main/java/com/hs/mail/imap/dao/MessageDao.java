@@ -31,7 +31,7 @@ import com.hs.mail.imap.message.PhysMessage;
  * @since Mar 8, 2010
  *
  */
-public interface MessageDao {
+public interface MessageDao extends DaoSupport {
 
 	public List<Long> getMessageIDList(long mailboxID);
 
