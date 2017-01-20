@@ -28,6 +28,8 @@ import com.hs.mail.smtp.SmtpSession;
  */
 public interface SmtpProcessor {
 
+	public void configure();
+	
 	public void process(SmtpSession session, TcpTransport trans, StringTokenizer st);
 
 }

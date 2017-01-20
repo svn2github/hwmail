@@ -37,6 +37,8 @@ public abstract class AbstractSmtpProcessor implements SmtpProcessor {
 
 	protected static Logger logger = LoggerFactory.getLogger(AbstractSmtpProcessor.class);
 	
+	public void configure() {}
+	
 	public void process(SmtpSession session, TcpTransport trans,
 			StringTokenizer st) {
 		try {

@@ -8,6 +8,7 @@ import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.DefaultServer;
 import com.hs.mail.container.server.socket.DefaultServerSocketFactory;
 import com.hs.mail.container.server.socket.TLSServerSocketFactory;
+import com.hs.mail.smtp.processor.SmtpProcessorFactory;
 import com.hs.mail.util.RollingPrintStream;
 
 /**
@@ -50,6 +51,8 @@ public class SmtpServer extends DefaultServer implements InitializingBean {
 				: new DefaultServerSocketFactory();
 		
 		super.configure();
+		// Configure command processors
+		SmtpProcessorFactory.configure();
 		
 		// Start the server
 		start();

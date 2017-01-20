@@ -15,7 +15,11 @@
  */
 package com.hs.mail.smtp.processor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
@@ -23,6 +27,8 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
+import com.hs.mail.smtp.processor.hook.RcptHook;
+import com.hs.mail.smtp.processor.hook.ValidRcptHook;
 
 /**
  * Handler for RCPT command. Read recipient. Does some recipient verification.
@@ -32,6 +38,22 @@ import com.hs.mail.smtp.message.SmtpMessage;
  * 
  */
 public class RcptProcessor extends AbstractSmtpProcessor {
+
+	private List<RcptHook> hooks = null;
+
+	@Override
+	public void configure() {
+		String restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
+		if (StringUtils.isNotBlank(restrictions)) {
+			String[] restrictionArray = StringUtils.split(restrictions);
+			hooks = new ArrayList<RcptHook>(restrictionArray.length);
+			for (String restriction : restrictionArray) {
+				if ("reject_unlisted_recipient".equals(restriction)) {
+					hooks.add(new ValidRcptHook());
+				}
+			}
+		}
+	}
 
 	@Override
 	protected void doProcess(SmtpSession session, TcpTransport trans,
@@ -74,13 +96,19 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 			}
 		}
 		
+		// Reject if invalid recipient
 		doRcpt(session, message, recipient);
 
+		message.addRecipient(recipient);
 		session.writeResponse("250 2.1.5 Recipient <" + to + "> OK");
 	}
 
-	protected void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
-		message.addRecipient(rcpt);
+	void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
+		if (hooks != null) {
+			for (RcptHook hook : hooks) {
+				hook.doRcpt(session, message, rcpt);
+			}
+		}
 	}
 	
 }

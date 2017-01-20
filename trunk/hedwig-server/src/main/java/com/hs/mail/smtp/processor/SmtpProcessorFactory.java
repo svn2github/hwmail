@@ -19,7 +19,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import com.hs.mail.exception.LookupException;
-import com.hs.mail.smtp.processor.fastfail.ValidRcptProcessor;
 
 /**
  * 
@@ -28,6 +27,12 @@ import com.hs.mail.smtp.processor.fastfail.ValidRcptProcessor;
  * 
  */
 public class SmtpProcessorFactory {
+	
+	public static void configure() {
+		for (SmtpProcessor processor : processorMap.values()) {
+			processor.configure();
+		}
+	}
 	
 	public static SmtpProcessor createSmtpProcessor(String command) {
 		SmtpProcessor processor = processorMap.get(command.toLowerCase());
@@ -47,7 +52,7 @@ public class SmtpProcessorFactory {
 		processorMap.put("mail", new MailProcessor());
 		processorMap.put("noop", new NoopProcessor());
 		processorMap.put("quit", new QuitProcessor());
-		processorMap.put("rcpt", new ValidRcptProcessor());
+		processorMap.put("rcpt", new RcptProcessor());
 		processorMap.put("rset", new RsetProcessor());
 		processorMap.put("vrfy", new VrfyProcessor());
 	}
