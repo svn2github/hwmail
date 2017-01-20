@@ -176,11 +176,3 @@ CREATE TABLE hw_keyword (
   keyword varchar(255) NOT NULL 
 );
 CREATE INDEX ix_hw_keyword_1 ON hw_keyword (messageid);
-
---
--- Table `hw_routeaddr`
-CREATE TABLE hw_routeaddr (
-  address varchar(100) NOT NULL,
-  destination varchar(255) NOT NULL 
-);
-CREATE UNIQUE INDEX pk_hw_routeaddr ON hw_routeaddr (address, destination);
