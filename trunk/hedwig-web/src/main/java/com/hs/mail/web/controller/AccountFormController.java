@@ -39,9 +39,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
 import com.hs.mail.imap.user.User;
-import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.web.WebSession;
 import com.hs.mail.web.model.AccountWrapper;
+import com.hs.mail.web.service.HwUserManager;
 import com.hs.mail.web.util.MailUtils;
 
 /**
@@ -54,7 +54,7 @@ import com.hs.mail.web.util.MailUtils;
 public class AccountFormController implements Validator {
 
 	@Autowired
-	private UserManager userManager;
+	private HwUserManager userManager;
 
 	// Set a form validator
 	@InitBinder

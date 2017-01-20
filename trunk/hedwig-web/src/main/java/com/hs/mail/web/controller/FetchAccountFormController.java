@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.hs.mail.imap.user.User;
-import com.hs.mail.imap.user.UserManager;
+import com.hs.mail.web.service.HwUserManager;
 import com.hs.mail.web.tools.FetchAccount;
 import com.hs.mail.web.tools.FetchMailer;
 
@@ -28,7 +28,7 @@ import com.hs.mail.web.tools.FetchMailer;
 public class FetchAccountFormController implements Validator {
 
 	@Autowired
-	private UserManager userManager;
+	private HwUserManager userManager;
 
 	// Set a form validator
 	@InitBinder

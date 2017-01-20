@@ -38,9 +38,9 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
-import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.web.WebSession;
 import com.hs.mail.web.model.AliasWrapper;
+import com.hs.mail.web.service.HwUserManager;
 
 /**
  * 
@@ -52,7 +52,7 @@ import com.hs.mail.web.model.AliasWrapper;
 public class AliasFormController implements Validator {
 
 	@Autowired
-	private UserManager userManager;
+	private HwUserManager userManager;
 
 	// Set a form validator
 	@InitBinder

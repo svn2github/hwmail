@@ -36,26 +36,13 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
-    <bean id="abstractDao" abstract="true" class="com.hs.mail.imap.dao.AbstractDao">
-		<property name="dataSource" ref="dataSource"/>
-	</bean>
-	
-	<bean id="ACLDao"     parent="abstractDao" class="com.hs.mail.imap.dao.AnsiACLDao"/>
-	<bean id="mailboxDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMailboxDao"/>
-	<bean id="messageDao" parent="abstractDao" class="com.hs.mail.imap.dao.OracleMessageDao"/>
-	<bean id="searchDao"  parent="abstractDao" class="com.hs.mail.imap.dao.OracleSearchDao"/>
-	<bean id="userDao"    parent="abstractDao" class="com.hs.mail.imap.dao.OracleUserDao"/>
-
-	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
+	<bean id="daoFactory" class="com.hs.mail.imap.dao.HwDaoFactory"
 		factory-method="getInstance">
-		<property name="mailboxDao" ref="mailboxDao"/>
-		<property name="messageDao" ref="messageDao"/>
-		<property name="searchDao"  ref="searchDao"/>
-		<property name="userDao"    ref="userDao"/>
-		<property name="ACLDao"     ref="ACLDao"/>
+		<constructor-arg index="0" value="${jdbc.type}"/>
+		<constructor-arg index="1" ref="dataSource"/>
 	</bean>
 	
-	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
+	<bean id="userManager" class="com.hs.mail.web.service.HwUserManager">
 		<property name="transactionManager" ref="txManager"/>
 	</bean>
 	

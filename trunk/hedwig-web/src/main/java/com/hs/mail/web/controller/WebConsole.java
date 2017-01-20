@@ -21,9 +21,9 @@ import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
-import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.security.login.BasicCallbackHandler;
 import com.hs.mail.web.WebSession;
+import com.hs.mail.web.service.HwUserManager;
 import com.hs.mail.web.util.MailUtils;
 import com.hs.mail.web.util.Pager;
 
@@ -34,7 +34,7 @@ public class WebConsole {
 	private MailboxManager mailboxManager;
 	
 	@Autowired
-	private UserManager userManager;
+	private HwUserManager userManager;
 
 	@RequestMapping("/login")
 	public ModelAndView login(

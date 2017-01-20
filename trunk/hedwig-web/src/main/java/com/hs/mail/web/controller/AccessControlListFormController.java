@@ -16,7 +16,7 @@ import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.mailbox.MailboxManager;
-import com.hs.mail.imap.user.UserManager;
+import com.hs.mail.web.service.HwUserManager;
 
 @Controller
 public class AccessControlListFormController {
@@ -25,7 +25,7 @@ public class AccessControlListFormController {
 	private MailboxManager mailboxManager;
 	
 	@Autowired
-	private UserManager userManager;
+	private HwUserManager userManager;
 
 	/**
 	 * Show access control list form
