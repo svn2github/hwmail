@@ -20,9 +20,12 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.StringTokenizer;
 
+import org.apache.commons.io.IOUtils;
+
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.io.CharTerminatedInputStream;
+import com.hs.mail.io.DotStuffingInputStream;
 import com.hs.mail.io.MessageSizeException;
 import com.hs.mail.io.SizeLimitedInputStream;
 import com.hs.mail.smtp.SmtpException;
@@ -81,8 +84,9 @@ public class DataProcessor extends AbstractSmtpProcessor {
 				// SizeLimitedInputStream
 				msgIn = new SizeLimitedInputStream(msgIn, maxMessageSize);
 			}
-			message.setContent(new CharTerminatedInputStream(msgIn,
-					DATA_TERMINATOR));
+			msgIn = new CharTerminatedInputStream(msgIn, DATA_TERMINATOR);
+            // Removes the dot stuffing
+			message.setContent(new DotStuffingInputStream(msgIn));
 			message.store();
 			// Place the mail on the spool for processing
 			message.createTrigger();
@@ -114,6 +118,8 @@ public class DataProcessor extends AbstractSmtpProcessor {
 				throw new SmtpException("451 4.0.0 Error processing message: "
 						+ e.getMessage());
 			}
+		} finally {
+			IOUtils.closeQuietly(msgIn);
 		}
 	}
 	
