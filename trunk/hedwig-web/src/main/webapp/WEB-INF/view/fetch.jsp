@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
@@ -20,7 +19,7 @@
 	<form:hidden path="userID" />
 	
 	<div class="form-group">
-		<label class="col-sm-3 control-label"><fmt:message key="fetch.account.protocol"/></label>
+		<label class="col-sm-3 control-label">Protocol</label>
 		<div class="col-sm-9">
 				<form:select path="protocol" class="form-control">
 					<form:option value="pop3" label="POP3"/>
@@ -30,12 +29,12 @@
 
 	<spring:bind path="serverName">
 		<div class="form-group ${status.error ? 'has-error' : ''}">
-			<label class="col-sm-3 control-label"><fmt:message key="fetch.account.server.addr"/></label>
+			<label class="col-sm-3 control-label">Server address</label>
 			<div class="col-sm-5">
 				<form:input path="serverName" class="form-control" placeholder="Server" />
 				<form:errors path="serverName" class="control-label" />
 			</div>
-			<label class="col-sm-2 control-label"><fmt:message key="fetch.account.port"/></label>
+			<label class="col-sm-2 control-label">Port</label>
 			<div class="col-sm-2">
 				<form:input path="port" class="form-control" placeholder="Port" />
 			</div>
@@ -44,7 +43,7 @@
 
 	<spring:bind path="userName">
 		<div class="form-group ${status.error ? 'has-error' : ''}">
-			<label class="col-sm-3 control-label"><fmt:message key="fetch.account.username"/></label>
+			<label class="col-sm-3 control-label">User name</label>
 			<div class="col-sm-9">
 				<form:input path="userName" class="form-control" placeholder="ID" />
 				<form:errors path="userName" class="control-label" />
@@ -54,7 +53,7 @@
 
 	<spring:bind path="password">
 		<div class="form-group ${status.error ? 'has-error' : ''}">
-			<label class="col-sm-3 control-label"><fmt:message key="fetch.account.password"/></label>
+			<label class="col-sm-3 control-label">Password</label>
 			<div class="col-sm-9">
 				<form:password path="password" showPassword="true" class="form-control" placeholder="Password" />
 				<form:errors path="password" class="control-label" />
@@ -66,10 +65,10 @@
 		<label class="col-sm-3 control-label" />
 		<div class="col-sm-9">
 			<label class="checkbox-inline">
-				<form:checkbox path="useSSL" /> <fmt:message key="fetch.account.usessl"/>
+				<form:checkbox path="useSSL" /> Use SSL
 			</label>
 			<label class="checkbox-inline">
-				<form:checkbox path="autoEmpty" /> <fmt:message key="fetch.account.autoempty"/>
+				<form:checkbox path="autoEmpty" /> Delete messages immediately
 			</label>
 		</div>
 	</div>

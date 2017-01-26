@@ -1,12 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="wrapper-content">
 	<div class="page-header">
-		<h2><fmt:message key="message.list.accounts"/> <small>${domain}</small></h2>
+		<h2>Accounts <small>${domain}</small></h2>
 		<div class="page-tools">
 			<form class="pull-right page-search">
 				<div class="input-group">
@@ -16,10 +15,10 @@
 	            	</div>
 				</div>
 			</form>
-			<button id="create" class="btn btn-default btn-sm"><fmt:message key="menu.new"/></button>
-			<button id="delete" class="btn btn-default btn-sm"><fmt:message key="menu.delete"/></button>
-			<button id="import" class="btn btn-default btn-sm"><fmt:message key="menu.import"/></button>
-			<button id="fetch" class="btn btn-default btn-sm"><fmt:message key="menu.fetch"/></button>
+			<button id="create" class="btn btn-default btn-sm">New</button>
+			<button id="delete" class="btn btn-default btn-sm">Delete</button>
+			<button id="import" class="btn btn-default btn-sm">Import</button>
+			<button id="fetch" class="btn btn-default btn-sm">Fetch</button>
 		</div>
 	</div>
 	<form id="account-form">
@@ -28,8 +27,8 @@
 			<thead>
 				<tr>
 					<th><input type="checkbox"/></th>
-					<th><fmt:message key="account.address"/></th>
-					<th><fmt:message key="account.quota"/></th>
+					<th>Address</th>
+					<th>Quota</th>
 					<th>&nbsp;</th>
 				</tr>
 			</thead>
@@ -114,7 +113,7 @@ $(function() {
 		}
 		eModal.ajax({
 			url: $('#main-form').attr('action') + '/' + $checked.val() + '/fetch',
-			title: '<fmt:message key="fetch.account"/>',
+			title: 'Fetch Account',
 			buttons: [
 				{ text: 'Close', style: 'default', close: true },
 				{ text: 'OK', style: 'primary', close: false, click: fetchAccount }

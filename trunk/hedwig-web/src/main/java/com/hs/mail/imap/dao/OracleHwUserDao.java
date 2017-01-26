@@ -9,8 +9,11 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.hs.mail.imap.ImapConstants;
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
+import com.hs.mail.web.model.PublicFolder;
 
 public class OracleHwUserDao extends AnsiHwUserDao {
 
@@ -69,6 +72,26 @@ public class OracleHwUserDao extends AnsiHwUserDao {
 		long id = keyHolder.getKey().longValue();
 		alias.setID(id);
 		return id;
+	}
+	
+	public PublicFolder getPublicFolder(String namespace, long mailboxID) {
+		final String sql = "SELECT mailboxid,name,nvl(aliasid,0) aliasid,alias FROM hw_mailbox m LEFT OUTER JOIN hw_alias a ON m.name=a.deliver_to WHERE m.mailboxid = ?";
+		final String prefix = new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+				.append(escape(namespace)).append(Mailbox.folderSeparator)
+				.toString();
+		return getJdbcTemplate().queryForObject(sql,
+				new Object[] { mailboxID },
+				new PublicFolderRowMapper(namespace, prefix));
+	}
+
+	public List<PublicFolder> getPublicFolders(long ownerid, final String namespace) {
+		final String sql = "SELECT mailboxid,name,nvl(aliasid,0) aliasid,alias FROM hw_mailbox m LEFT OUTER JOIN hw_alias a ON m.name=a.deliver_to WHERE m.ownerid = ? AND m.name LIKE ?";
+		final String prefix = new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+				.append(escape(namespace)).append(Mailbox.folderSeparator)
+				.toString();
+		return getJdbcTemplate().query(sql,
+				new Object[] { ownerid, new StringBuilder(prefix).append('%').toString() },
+				new PublicFolderRowMapper(namespace, prefix));
 	}
 	
 }

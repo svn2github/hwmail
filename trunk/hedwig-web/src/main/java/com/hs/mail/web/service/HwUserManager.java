@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -19,11 +20,13 @@ import org.springframework.util.Assert;
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.HwDaoFactory;
+import com.hs.mail.imap.dao.HwUserDao;
 import com.hs.mail.imap.dao.MailboxDao;
 import com.hs.mail.imap.dao.MessageDao;
 import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
+import com.hs.mail.web.model.PublicFolder;
 
 public class HwUserManager {
 
@@ -210,5 +213,65 @@ public class HwUserManager {
 							.append(Config.getDefaultDomain())
 							.toString();
 	}
+	
+	public void createPublicFolder(final PublicFolder folder) {
+		getTransactionTemplate().execute(
+				new TransactionCallbackWithoutResult() {
+					protected void doInTransactionWithoutResult(
+							TransactionStatus status) {
+						try {
+							MailboxDao dao = HwDaoFactory.getMailboxDao();
+							dao.createMailbox(0, folder.getFullName());
+							setSubmissionAddr(folder);
+						} catch (DataAccessException ex) {
+							status.setRollbackOnly();
+							throw ex;
+						}
+					}
+				});
+	}
+	
+	public void updatePublicFolder(final PublicFolder folder) {
+		final PublicFolder org = getPublicFolder(folder.getNamespace(), folder.getMailboxID());
+		if (!folder.equals(org)) {
+			getTransactionTemplate().execute(
+					new TransactionCallbackWithoutResult() {
+						protected void doInTransactionWithoutResult(
+								TransactionStatus status) {
+							try {
+								if (!StringUtils.equals(org.getName(), folder.getName())) {
+									MailboxDao dao = HwDaoFactory.getMailboxDao();
+									dao.renameMailbox(org.getMailbox(), folder.getFullName());
+								}
+								setSubmissionAddr(folder);
+							} catch (DataAccessException ex) {
+								status.setRollbackOnly();
+								throw ex;
+							}
+						}
+					});
+		}
+	}
+	
+	public PublicFolder getPublicFolder(String namespace, long mailboxID) {
+		return HwDaoFactory.getHwUserDao().getPublicFolder(namespace, mailboxID);
+	}
 
+	public List<PublicFolder> getPublicFolders(long ownerid, String namespace) {
+		return HwDaoFactory.getHwUserDao().getPublicFolders(ownerid, namespace);
+	}
+
+	private void setSubmissionAddr(final PublicFolder folder) {
+		HwUserDao dao = HwDaoFactory.getHwUserDao();
+		if (folder.getAliasID() != 0) {
+			dao.deleteAlias(folder.getAliasID());
+		}
+		if (StringUtils.isNotBlank(folder.getSubmissionAddress())) {
+			Alias alias = new Alias();
+			alias.setAlias(folder.getSubmissionAddress());
+			alias.setDeliverTo(folder.getFullName());
+			dao.addAlias(alias);
+		}
+	}
+	
 }

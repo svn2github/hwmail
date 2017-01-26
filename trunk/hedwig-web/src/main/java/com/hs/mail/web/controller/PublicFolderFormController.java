@@ -22,13 +22,17 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.MailboxManager;
-import com.hs.mail.web.model.PublicFolderWrapper;
+import com.hs.mail.web.model.PublicFolder;
+import com.hs.mail.web.service.HwUserManager;
 
 @Controller
 public class PublicFolderFormController implements Validator {
 
 	@Autowired
 	private MailboxManager mailboxManager;
+
+	@Autowired
+	private HwUserManager userManager;
 	
 	// Set a form validator
 	@InitBinder
@@ -42,7 +46,19 @@ public class PublicFolderFormController implements Validator {
 	@RequestMapping(value = "/settings/namespaces/{namespace}/add", method = RequestMethod.GET)
 	public String showAddPublicFolderForm(
 			@PathVariable("namespace") String namespace, Model model) {
-		PublicFolderWrapper pf = new PublicFolderWrapper(namespace);
+		PublicFolder pf = new PublicFolder(namespace);
+		model.addAttribute("userForm", pf);
+		return "publicfolder";
+	}
+	
+	/**
+	 * Show update public folder form
+	 */
+	@RequestMapping(value = "/settings/namespaces/{namespace}/{id}/update", method = RequestMethod.GET)
+	public String showUpdatePublicFolderForm(
+			@PathVariable("namespace") String namespace,
+			@PathVariable("id") long id, Model model) {
+		PublicFolder pf = userManager.getPublicFolder(namespace, id);
 		model.addAttribute("userForm", pf);
 		return "publicfolder";
 	}
@@ -51,8 +67,9 @@ public class PublicFolderFormController implements Validator {
 	 * Save public folder
 	 */
 	@RequestMapping(value = "/settings/namespaces/{namespace}", method = RequestMethod.POST)
-	public String savePublicFolder(@PathVariable("namespace") String namespace,
-			@ModelAttribute("userForm") @Validated PublicFolderWrapper pf,
+	public String saveOrUpdatePublicFolder(
+			@PathVariable("namespace") String namespace,
+			@ModelAttribute("userForm") @Validated PublicFolder pf,
 			BindingResult result, WebRequest request) {
 		if (result.hasErrors()) {
 			return "publicfolder";
@@ -83,15 +100,18 @@ public class PublicFolderFormController implements Validator {
 		}
 	}
 
-	protected void doSubmitAction(WebRequest request, PublicFolderWrapper pf)
+	protected void doSubmitAction(WebRequest request, PublicFolder pf)
 			throws DataIntegrityViolationException {
-		String mailboxName = pf.getFullName();
-		mailboxManager.createMailbox(0, mailboxName);
+		if (pf.getMailboxID() == 0) {
+			userManager.createPublicFolder(pf);
+		} else {
+			userManager.updatePublicFolder(pf);
+		}
 	}
 
 	@Override
 	public boolean supports(Class<?> clazz) {
-		return PublicFolderWrapper.class.equals(clazz);
+		return PublicFolder.class.equals(clazz);
 	}
 
 	@Override
@@ -99,5 +119,5 @@ public class PublicFolderFormController implements Validator {
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name",
 				"field.required");
 	}
-
+	
 }

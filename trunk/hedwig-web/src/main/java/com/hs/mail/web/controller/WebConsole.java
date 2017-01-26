@@ -23,6 +23,7 @@ import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.security.login.BasicCallbackHandler;
 import com.hs.mail.web.WebSession;
+import com.hs.mail.web.model.PublicFolder;
 import com.hs.mail.web.service.HwUserManager;
 import com.hs.mail.web.util.MailUtils;
 import com.hs.mail.web.util.Pager;
@@ -119,10 +120,9 @@ public class WebConsole {
 	
 	@RequestMapping(value = "/settings/namespaces/{namespace}")
 	public ModelAndView namespace(@PathVariable("namespace") String namespace) {
-		String path = ImapConstants.NAMESPACE_PREFIX + namespace;
-		List<Mailbox> folders = mailboxManager.getChildren(0, 0, path, false);
+		List<PublicFolder> folders = userManager.getPublicFolders(0, namespace);
 		ModelAndView mav = new ModelAndView("publicfolders");
-		mav.addObject("namespace", path);
+		mav.addObject("namespace", namespace);
 		mav.addObject("folders", folders);
 		return mav;
 	}

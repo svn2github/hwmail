@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
+import com.hs.mail.web.model.PublicFolder;
 
 public interface HwUserDao extends DaoSupport {
 
@@ -30,5 +31,9 @@ public interface HwUserDao extends DaoSupport {
 	public int updateAlias(Alias alias);
 
 	public int deleteAlias(long id);
+
+	public PublicFolder getPublicFolder(String namespace, long mailboxID);
+	
+	public List<PublicFolder> getPublicFolders(long ownerid, final String namespace);
 
 }

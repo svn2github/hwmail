@@ -1,7 +1,13 @@
 package com.hs.mail.imap.dao;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.jdbc.core.RowMapper;
+
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
+import com.hs.mail.web.model.PublicFolder;
 
 abstract class AnsiHwUserDao extends AbstractDao implements HwUserDao {
 
@@ -62,4 +68,28 @@ abstract class AnsiHwUserDao extends AbstractDao implements HwUserDao {
 		return getJdbcTemplate().update(sql, new Object[] { new Long(id) });
 	}
 
+	class PublicFolderRowMapper implements RowMapper<PublicFolder> {
+
+		private String namespace;
+		private String prefix;
+
+		public PublicFolderRowMapper(String namespace, String prefix) {
+			this.namespace = namespace;
+			this.prefix = prefix;
+		}
+
+		@Override
+		public PublicFolder mapRow(ResultSet rs, int rowNum)
+				throws SQLException {
+			PublicFolder pf = new PublicFolder();
+			pf.setNamespace(namespace);
+			pf.setMailboxID(rs.getLong("mailboxid"));
+			pf.setName(rs.getString("name").substring(prefix.length()));
+			pf.setAliasID(rs.getLong("aliasid"));
+			pf.setSubmissionAddress(rs.getString("alias"));
+			return pf;
+		}
+
+	}
+	
 }
