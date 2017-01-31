@@ -18,6 +18,7 @@ package com.hs.mail.smtp.processor;
 import java.util.StringTokenizer;
 
 import com.hs.mail.container.server.socket.TcpTransport;
+import com.hs.mail.exception.ConfigException;
 import com.hs.mail.smtp.SmtpSession;
 
 /**
@@ -28,7 +29,7 @@ import com.hs.mail.smtp.SmtpSession;
  */
 public interface SmtpProcessor {
 
-	public void configure();
+	public void configure() throws ConfigException;
 	
 	public void process(SmtpSession session, TcpTransport trans, StringTokenizer st);
 

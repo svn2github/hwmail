@@ -18,6 +18,7 @@ package com.hs.mail.smtp.processor;
 import java.util.Hashtable;
 import java.util.Map;
 
+import com.hs.mail.exception.ConfigException;
 import com.hs.mail.exception.LookupException;
 
 /**
@@ -28,7 +29,7 @@ import com.hs.mail.exception.LookupException;
  */
 public class SmtpProcessorFactory {
 	
-	public static void configure() {
+	public static void configure() throws ConfigException {
 		for (SmtpProcessor processor : processorMap.values()) {
 			processor.configure();
 		}

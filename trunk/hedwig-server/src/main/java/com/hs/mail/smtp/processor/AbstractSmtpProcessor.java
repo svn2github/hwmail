@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
+import com.hs.mail.exception.ConfigException;
 import com.hs.mail.imap.user.UserManager;
 import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
@@ -37,7 +38,7 @@ public abstract class AbstractSmtpProcessor implements SmtpProcessor {
 
 	protected static Logger logger = LoggerFactory.getLogger(AbstractSmtpProcessor.class);
 	
-	public void configure() {}
+	public void configure() throws ConfigException {}
 	
 	public void process(SmtpSession session, TcpTransport trans,
 			StringTokenizer st) {

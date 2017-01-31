@@ -19,14 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
+import com.hs.mail.exception.ConfigException;
 import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
+import com.hs.mail.smtp.processor.hook.DNSRBLHook;
 import com.hs.mail.smtp.processor.hook.RcptHook;
 import com.hs.mail.smtp.processor.hook.ValidRcptHook;
 
@@ -42,14 +45,23 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 	private List<RcptHook> hooks = null;
 
 	@Override
-	public void configure() {
-		String restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
+	public void configure() throws ConfigException {
+		String restrictions = Config.getProperty("smtpd_recipient_restrictions",
+				null);
 		if (StringUtils.isNotBlank(restrictions)) {
-			String[] restrictionArray = StringUtils.split(restrictions);
+			String[] restrictionArray = StringUtils.split(restrictions, ",");
 			hooks = new ArrayList<RcptHook>(restrictionArray.length);
 			for (String restriction : restrictionArray) {
-				if ("reject_unlisted_recipient".equals(restriction)) {
-					hooks.add(new ValidRcptHook());
+				String[] tokens = StringUtils.split(restriction);
+				if (ArrayUtils.isNotEmpty(tokens)) {
+					if ("check_recipient_access".equals(tokens[0])) {
+						hooks.add(DNSRBLHook.create(tokens.length > 1
+								? tokens[1]
+								: Config.replaceByProperties("${app.home}/conf/recipient_access")));
+					}
+					if ("reject_unlisted_recipient".equals(tokens[0])) {
+						hooks.add(new ValidRcptHook());
+					}
 				}
 			}
 		}
