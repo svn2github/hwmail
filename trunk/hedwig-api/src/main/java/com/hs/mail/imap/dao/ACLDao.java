@@ -18,4 +18,6 @@ public interface ACLDao extends DaoSupport {
 
 	public MailboxACL getACL(long mailboxID);
 
+	public boolean hasRight(long userID, String mailboxName, char right);
+
 }

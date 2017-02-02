@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -50,7 +51,7 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		"expunge_flag",
 		"admin_flag" 
 	};
-
+	
 	public String getRights(long userID, long mailboxID) {
 		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
 		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID,
@@ -60,7 +61,7 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 
 	public void setRights(long userID, long mailboxID, String rights) {
 		if (StringUtils.isEmpty(rights)) {
-			String sql = "DELETE FROM hw_acl WHERE userid = ? AND mailboxid = ?";
+			final String sql = "DELETE FROM hw_acl WHERE userid = ? AND mailboxid = ?";
 			getJdbcTemplate().update(sql, userID, mailboxID);
 		} else {
 			String sql = "UPDATE hw_acl SET "
@@ -100,6 +101,20 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return acl;
 	}
 	
+	public boolean hasRight(long userID, String mailboxName, char right) {
+		int i = indexOfRight(right);
+		final String sql = "SELECT userid FROM hw_acl WHERE mailboxid = (SELECT mailboxid FROM hw_mailbox WHERE name = ?) AND "
+				+ flagArray[i] + " = 'Y'";
+		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class, mailboxName);
+		if (CollectionUtils.isNotEmpty(list)) {
+			// TODO - Resolve group membership
+			if (list.contains(userID) || list.contains(ImapConstants.ANYONE_ID)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static Object[] buildParams(String rights) {
 		Object[] params = new Object[flagArray.length];
 		Arrays.fill(params, "N");

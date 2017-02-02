@@ -6,6 +6,18 @@ public class MailboxACL {
 	
 	public static final String STD_RIGHTS = "lrswipkxtea";
 
+	public static char l_Lookup_RIGHT         = 'l';
+	public static char r_Read_RIGHT           = 'r';
+	public static char s_WriteSeenFlag_RIGHT  = 's';
+	public static char w_Write_RIGHT          = 'w';
+	public static char i_Insert_RIGHT         = 'i';
+	public static char p_Post_RIGHT           = 'p';
+	public static char k_CreateMailbox_RIGHT  = 'k';
+	public static char x_DeleteMailbox_RIGHT  = 'x';
+	public static char t_DeleteMessages_RIGHT = 't';
+	public static char e_PerformExpunge_RIGHT = 'e';
+	public static char a_Administer_RIGHT     = 'a';
+	
 	public enum EditMode {
 		REPLACE, ADD, DELETE
 	}

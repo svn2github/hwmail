@@ -29,7 +29,7 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
-import com.hs.mail.smtp.processor.hook.DNSRBLHook;
+import com.hs.mail.smtp.processor.hook.RcptAccessHook;
 import com.hs.mail.smtp.processor.hook.RcptHook;
 import com.hs.mail.smtp.processor.hook.ValidRcptHook;
 
@@ -46,8 +46,7 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 
 	@Override
 	public void configure() throws ConfigException {
-		String restrictions = Config.getProperty("smtpd_recipient_restrictions",
-				null);
+		String restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
 		if (StringUtils.isNotBlank(restrictions)) {
 			String[] restrictionArray = StringUtils.split(restrictions, ",");
 			hooks = new ArrayList<RcptHook>(restrictionArray.length);
@@ -55,7 +54,7 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 				String[] tokens = StringUtils.split(restriction);
 				if (ArrayUtils.isNotEmpty(tokens)) {
 					if ("check_recipient_access".equals(tokens[0])) {
-						hooks.add(DNSRBLHook.create(tokens.length > 1
+						hooks.add(new RcptAccessHook(tokens.length > 1
 								? tokens[1]
 								: Config.replaceByProperties("${app.home}/conf/recipient_access")));
 					}

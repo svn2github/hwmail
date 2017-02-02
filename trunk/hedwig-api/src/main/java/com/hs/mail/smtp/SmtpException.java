@@ -64,6 +64,10 @@ public class SmtpException extends RuntimeException {
 	public static final String RELAY_DENIED = "550 5.7.1 Relaying denied";
 
 	public static final String NO_VALID_RECIPIENTS = "554 5.5.0 No valid recipients";
+	
+	public static final String RECIPIENT_REJECTED = "554 5.7.1 Recipient address rejected: Access denied";
+
+	public static final String SENDER_REJECTED = "554 5.7.1 Sender address rejected: Access denied";
 
 	/**
 	 * Constructor for SmtpException.

@@ -342,4 +342,17 @@ public interface MailboxManager {
 	 */
 	public MailboxACL getACL(long mailboxID);
 
+	/**
+	 * Check if given user has right on the mailbox
+	 * 
+	 * @param userID
+	 *            the ID of user to check right
+	 * @param mailboxName
+	 *            name of the mailbox to check right
+	 * @param right
+	 *            the right to check
+	 * @return true if the user has right on the mailbox, otherwise false
+	 */
+	public boolean hasRight(long userID, String mailboxName, char right);
+
 }

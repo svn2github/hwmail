@@ -15,14 +15,22 @@
  */
 package com.hs.mail.smtp.processor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
+import com.hs.mail.exception.ConfigException;
 import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.SmtpMessage;
+import com.hs.mail.smtp.processor.hook.MailAccessHook;
+import com.hs.mail.smtp.processor.hook.MailHook;
 
 /**
  * Handler for MAIL command. Starts a mail transaction to deliver mail as the
@@ -33,6 +41,27 @@ import com.hs.mail.smtp.message.SmtpMessage;
  * 
  */
 public class MailProcessor extends AbstractSmtpProcessor {
+	
+	private List<MailHook> hooks = null;
+
+	@Override
+	public void configure() throws ConfigException {
+		String restrictions = Config.getProperty("smtpd_sender_restrictions", null);
+		if (StringUtils.isNotBlank(restrictions)) {
+			String[] restrictionArray = StringUtils.split(restrictions, ",");
+			hooks = new ArrayList<MailHook>(restrictionArray.length);
+			for (String restriction : restrictionArray) {
+				String[] tokens = StringUtils.split(restriction);
+				if (ArrayUtils.isNotEmpty(tokens)) {
+					if ("check_sender_access".equals(tokens[0])) {
+						hooks.add(new MailAccessHook(tokens.length > 1
+								? tokens[1]
+								: Config.replaceByProperties("${app.home}/conf/sender_access")));
+					}
+				}
+			}
+		}
+	}
 
 	@Override
 	protected void doProcess(SmtpSession session, TcpTransport trans,
@@ -92,7 +121,11 @@ public class MailProcessor extends AbstractSmtpProcessor {
 			from = new MailAddress();
 		} else {
 			from = new MailAddress(sender);
+			
+			// Reject if invalid sender
+			doMailFrom(session, from);
 		}
+		
 		// Initiate a mail transaction
 		session.createSmtpMessage(from);
 		StringBuilder sb = new StringBuilder().append("250 ")
@@ -127,6 +160,14 @@ public class MailProcessor extends AbstractSmtpProcessor {
 					.append(" based on SIZE option.");
 			logger.error(errorBuffer.toString());
 			throw new SmtpException(SmtpException.MESSAGE_SIZE_LIMIT);
+		}
+	}
+
+	private void doMailFrom(SmtpSession session, MailAddress sender) {
+		if (hooks != null) {
+			for (MailHook hook : hooks) {
+				hook.doMail(session, sender);
+			}
 		}
 	}
 	

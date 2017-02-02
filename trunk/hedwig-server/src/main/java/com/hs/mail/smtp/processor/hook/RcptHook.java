@@ -4,8 +4,8 @@ import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
-public abstract class RcptHook extends AbstractHook {
+public interface RcptHook {
 
-	abstract public void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt);
+	void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt);
 	
 }
