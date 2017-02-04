@@ -50,9 +50,9 @@ public class AccessTable {
 						String address = tokens[0];
 						String action = (tokens.length < 2) ? REJECT : tokens[1];
 						if (OK.equalsIgnoreCase(action)) {
-							whitelist.add(address);
+							whitelist.add(address.toLowerCase());
 						} else if (REJECT.equalsIgnoreCase(action)) {
-							blacklist.add(address);
+							blacklist.add(address.toLowerCase());
 						}
 					}
 				}
@@ -66,20 +66,26 @@ public class AccessTable {
 	
 	public boolean isRestricted(MailAddress address) {
 		if (ArrayUtils.isNotEmpty(whitelist)) {
-			if (Arrays.binarySearch(whitelist, address.getMailbox()) >= 0
-					|| Arrays.binarySearch(whitelist, address.getHost()) >= 0
-					|| Arrays.binarySearch(whitelist, address.getUser() + "@") >= 0) {
+			if (Arrays.binarySearch(whitelist,
+					StringUtils.lowerCase(address.getMailbox())) >= 0
+					|| Arrays.binarySearch(whitelist,
+							StringUtils.lowerCase(address.getHost())) >= 0
+					|| Arrays.binarySearch(whitelist,
+							StringUtils.lowerCase(address.getUser()) + "@") >= 0) {
 				return false;
 			}
 		}
 		if (ArrayUtils.isNotEmpty(blacklist)) {
-			if (Arrays.binarySearch(blacklist, address.getMailbox()) >= 0
-					|| Arrays.binarySearch(blacklist, address.getHost()) >= 0
-					|| Arrays.binarySearch(blacklist, address.getUser() + "@") >= 0) {
+			if (Arrays.binarySearch(blacklist,
+					StringUtils.lowerCase(address.getMailbox())) >= 0
+					|| Arrays.binarySearch(blacklist,
+							StringUtils.lowerCase(address.getHost())) >= 0
+					|| Arrays.binarySearch(blacklist,
+							StringUtils.lowerCase(address.getUser()) + "@") >= 0) {
 				return true;
 			}
 		}
 		return false;
 	}
-    
+	
 }
