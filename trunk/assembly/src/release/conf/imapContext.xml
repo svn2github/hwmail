@@ -105,7 +105,7 @@
 	<!-- =================================================================== -->
 	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
 		factory-method="getInstance">
-		<constructor-arg index="0" value="${jdbc.type}"/>
+		<constructor-arg index="0" value="${jdbc.url}"/>
 		<constructor-arg index="1" ref="dataSource"/>
 	</bean>
 
