@@ -29,7 +29,7 @@ public class BodyStructureBuilderTest {
 	
 	@Test
 	public void testBuild() throws IOException, MimeException {
-		Resource normal = new ClassPathResource("/TEST.EML");
+		Resource normal = new ClassPathResource("/simpleMail.eml");
 		MimeDescriptor descriptorNormal = bodyStructureBuilder.build(normal.getInputStream());
 		
 		File zipped = File.createTempFile("hwm", ".zip");

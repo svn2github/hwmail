@@ -1,44 +1,39 @@
 package com.hs.mail.imap.processor.fetch;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.zip.GZIPInputStream;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import java.io.InputStream;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import com.hs.mail.util.FileUtils;
+import com.hs.mail.test.TestUtil;
 
-public class PartContentBuilderTest extends TestCase {
+public class PartContentBuilderTest {
 
-	private PartContentBuilder normalBuilder;
-	private PartContentBuilder zippedBuilder;
+	private static PartContentBuilder partContentBuilder;
 	
-	protected void setUp() throws Exception {
-		super.setUp();
-		normalBuilder = new PartContentBuilder();
-		zippedBuilder = new PartContentBuilder();
-	}
-	
-	public void testBuild() throws Exception {
-		Resource normal = new ClassPathResource("/TEST.EML");
-		normalBuilder.build(normal.getInputStream(), null);
-
-		File zipped = File.createTempFile("hwm", ".zip");
-		FileUtils.compress(normal.getFile(), zipped);
-		zippedBuilder.build(new GZIPInputStream(new FileInputStream(zipped)), null);
-		zipped.delete();
-
-		assertTrue(new EqualsBuilder().append(
-				normalBuilder.getMessageBodyContent(),
-				zippedBuilder.getMessageBodyContent()).isEquals());
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		partContentBuilder = new PartContentBuilder();
 	}
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
+	@Test
+	public void test() throws Exception {
+		String resource = "/nestedMultipart.eml";
+		assertEquals("1.1.1 text/plain",  getMimeBodyContent(resource, new int[]{ 1, 1, 1 }));
+		assertEquals("1.1.2 text/html",   getMimeBodyContent(resource, new int[]{ 1, 1, 2 }));
+		assertEquals("1.2 image/jpeg",    getMimeBodyContent(resource, new int[]{ 1, 2 }));
+		assertEquals("2 application/pdf", getMimeBodyContent(resource, new int[]{ 2 }));
+		assertEquals("3 application/pdf", getMimeBodyContent(resource, new int[]{ 3 }));
+		assertEquals("4 application/vnd", getMimeBodyContent(resource, new int[]{ 4 }));
+	}
+
+	String getMimeBodyContent(String resource, int[] path) throws Exception {
+		InputStream is = TestUtil.readResourceAsStream(resource);
+		partContentBuilder.build(is, path);
+		byte[] bytes = partContentBuilder.getMimeBodyContent();
+		return new String(bytes);
 	}
 
 }
