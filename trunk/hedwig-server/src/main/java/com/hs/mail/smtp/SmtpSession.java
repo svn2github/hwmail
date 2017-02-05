@@ -130,12 +130,15 @@ public class SmtpSession {
 	
 	public void writeResponse(String response) {
 		if (errorCount >= Config.getSmtpdSoftErrorLimit()) {
-			// Slow down clients that make errors. Sleep-on-anything slows down
-			// clients that make an excessive number of errors within a session.
-			try {
-				Thread.sleep(Config.getSmtpdErrorSleepTime() * 1000);
-			} catch (InterruptedException e) {
-				// IGNORE
+			if (Config.getSmtpdErrorSleepTime() > 0) {
+				// Slow down clients that make errors. Sleep-on-anything slows
+				// down clients that make an excessive number of errors within a
+				// session.
+				try {
+					Thread.sleep(Config.getSmtpdErrorSleepTime() * 1000);
+				} catch (InterruptedException e) {
+					// IGNORE
+				}
 			}
 		}
 
