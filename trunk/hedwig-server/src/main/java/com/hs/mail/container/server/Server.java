@@ -15,6 +15,8 @@
  */
 package com.hs.mail.container.server;
 
+import java.io.IOException;
+
 /**
  * 
  * @author Won Chul Doh
@@ -23,7 +25,7 @@ package com.hs.mail.container.server;
  */
 public interface Server {
 
-	public void start();
+	public void start() throws IOException;
 	
 	public void stop();
 

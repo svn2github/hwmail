@@ -182,8 +182,9 @@ public class DefaultServer implements Server {
 		}
 	}
 
-	public void start() {
+	public void start() throws IOException {
 		mainThread = new MainSocketThread();
+		mainThread.open();
 		mainThread.start();
 
 		LoggerFactory.getLogger("console").info("{} started on port {}",
@@ -207,12 +208,6 @@ public class DefaultServer implements Server {
         }
 
 		public void run() {
-			open();
-			
-			if (null == this.serverSocket) {
-				return;
-			}
-			
 			while (this.canContinue) {
 				Socket soc = null;
 				
@@ -264,31 +259,19 @@ public class DefaultServer implements Server {
 			}
 		}
 
-		protected void open() {
+		protected void open() throws IOException {
 			if (null != bindTo) {
 				try {
-					this.serverSocket = serverSocketFactory.createServerSocket(port, backlog, bindTo);
+					this.serverSocket = serverSocketFactory.createServerSocket(
+							port, backlog, bindTo);
 				} catch (IOException e) {
-					try {
-						if (backlog > 0) {
-							this.serverSocket = serverSocketFactory.createServerSocket(port, backlog);
-						} else {
-							this.serverSocket = serverSocketFactory.createServerSocket(port);
-						}
-					} catch (IOException ae) {
-						logger.error("Cannot open server socket ({}, {})", port, backlog, ae);
-					}
+					// We have a second chance.
 				}
-			} else {
-				try {
-					if (backlog > 0) {
-						this.serverSocket = serverSocketFactory.createServerSocket(port, backlog);
-					} else {
-						this.serverSocket = serverSocketFactory.createServerSocket(port);
-					}
-				} catch (IOException e) {
-					logger.error("Cannot open server socket ({}, {})", port, backlog, e);
-				}
+			}
+			if (null == this.serverSocket) {
+				this.serverSocket = (backlog > 0) 
+						? serverSocketFactory.createServerSocket(port, backlog)
+						: serverSocketFactory.createServerSocket(port);
 			}
 		}
 	}
