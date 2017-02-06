@@ -28,21 +28,12 @@
 	</bean>
 	-->
 
-	<!--
 	<bean id="smtp.taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="5" />
   		<property name="maxPoolSize" value="10" />
   		<property name="queueCapacity" value="25" />
 	</bean>
-	-->
 
-	<bean id="smtp.taskExecutor" class="com.hs.mail.container.server.thread.SjtThreadPool">
-		<property name="maxThreads" value="60" />
-		<property name="minThreads" value="30" />
-		<property name="maxIdleTime" value="6000" />
-		<property name="capacity" value="500" />
-	</bean>
-	
 	<!-- =================================================================== -->
 	<!-- MESSAGE SPOOL DEFINITION -->
 	<!-- =================================================================== -->
