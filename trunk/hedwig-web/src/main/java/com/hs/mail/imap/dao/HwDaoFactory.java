@@ -8,11 +8,11 @@ public class HwDaoFactory extends DaoFactory {
 
 	protected static HwUserDao hwUserDao = null;
 	
-	public static DaoFactory getInstance(String databaseType,
+	public static DaoFactory getInstance(String jdbcConnectionUrl,
 			DataSource dataSource) {
 		if (null == instance) {
-			instance = DaoFactory.getInstance(databaseType, dataSource);
-			newInstance(databaseType);
+			instance = DaoFactory.getInstance(jdbcConnectionUrl, dataSource);
+			newInstance(jdbcConnectionUrl);
 			setDataSource(dataSource);
 		}
 		return instance;
@@ -22,13 +22,14 @@ public class HwDaoFactory extends DaoFactory {
 		return hwUserDao;
 	}
 	
-	private static void newInstance(String databaseType) {
-		if ("Oracle".equalsIgnoreCase(databaseType)) {
+	private static void newInstance(String jdbcConnectionUrl) {
+		String databaseType = new PlatformUtils().determineDatabaseType(jdbcConnectionUrl);
+		if (PlatformUtils.ORACLE.equals(databaseType)) {
 			hwUserDao = new OracleHwUserDao();
-		} else if ("MySQL".equalsIgnoreCase(databaseType)) {
+		} else if (PlatformUtils.MYSQL.equals(databaseType)) {
 			hwUserDao = new MySqlHwUserDao();
 		} else {
-			throw new BeanCreationException("Database type " + databaseType + " is not supported.");
+			throw new BeanCreationException("Database for '" + jdbcConnectionUrl + "' is not supported.");
 		}
 	}
 	
