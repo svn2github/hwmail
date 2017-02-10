@@ -14,6 +14,8 @@ import org.apache.log4j.spi.ErrorHandler;
 
 public class RollingPrintStream extends PrintStream {
 
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
 	protected String fileName = null;
 	
 	/**
@@ -40,6 +42,12 @@ public class RollingPrintStream extends PrintStream {
 	        	rollOver();
 	        }
 		}
+	}
+
+	@Override
+	public void println(String x) {
+		print(x);
+		print(LINE_SEPARATOR);
 	}
 
 	@Override
