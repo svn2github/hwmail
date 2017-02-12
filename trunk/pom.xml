@@ -38,7 +38,7 @@
 	</modules>
 
 	<scm>
-		<connection>svn+ssh://wonchul@svn.code.sf.net/p/hwmail/code/trunk</connection>
+		<connection>scm:svn+ssh://wonchul@svn.code.sf.net/p/hwmail/code/trunk</connection>
 	</scm>
 
 	<developers>
@@ -57,6 +57,13 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+	<distributionManagement>
+		<site>
+			<id>${project.artifactId}-site</id>
+			<url>./</url>
+		</site>
+	</distributionManagement>
 
 	<dependencyManagement>
 		<dependencies>
@@ -305,5 +312,15 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.8</version>
+			</plugin>
+		</plugins>
+	</reporting>
 
 </project>
