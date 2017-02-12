@@ -1,8 +1,15 @@
 package com.hs.mail.imap.dao;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 
 /**
  * Utility functions for dealing with database platforms. 
@@ -30,7 +37,8 @@ class PlatformUtils {
 	/**
 	 * Tries to determine the database type for the given connection url. 
 	 */
-	String determineDatabaseType(String jdbcConnectionUrl) {
+	String determineDatabaseType(DataSource dataSource) {
+		String jdbcConnectionUrl = getURL(dataSource);
 		if (jdbcConnectionUrl == null) {
 			return null;
 		}
@@ -43,4 +51,27 @@ class PlatformUtils {
 		return null;
 	}
 
+	String getURL(DataSource dataSource) {
+		if (dataSource instanceof BasicDataSource) {
+			return ((BasicDataSource) dataSource).getUrl();
+		} else {
+			Connection connection = null;
+			try {
+				connection = dataSource.getConnection();
+				DatabaseMetaData metaData = connection.getMetaData();
+				return metaData.getURL();
+			} catch (SQLException e) {
+				return null;
+			} finally {
+				if (connection != null) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						// we ignore this one
+					}
+				}
+			}
+		}
+	}
+	
 }

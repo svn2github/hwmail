@@ -280,7 +280,7 @@ public class Config implements InitializingBean {
 		if (null == domain) {
 			domains = new String[] { StringUtils.substringAfter(hostName, ".") };
 		} else {
-			domains = StringUtils.split(domain, ",");
+			domains = StringUtils.stripAll(StringUtils.split(domain, ","));
 		}
 		for (int i = 0; i < domains.length; i++) {
 			console.info("Handling mail for: {}", domains[i]);

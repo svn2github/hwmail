@@ -37,6 +37,7 @@ public class RollingPrintStream extends PrintStream {
 	public void print(String s) {
 		if (qw != null) {
 			qw.write(s);
+			qw.flush();
 			long size = qw.getCount();
 	        if (size >= maxFileSize) {
 	        	rollOver();

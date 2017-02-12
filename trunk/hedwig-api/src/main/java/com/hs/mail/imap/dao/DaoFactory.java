@@ -37,10 +37,9 @@ public class DaoFactory {
 	protected static SearchDao  searchDao  = null;
 	protected static UserDao    userDao    = null;
 
-	public static DaoFactory getInstance(String jdbcConnectionUrl,
-			DataSource dataSource) {
+	public static DaoFactory getInstance(DataSource dataSource) {
 		if (null == instance) {
-			instance = newInstance(jdbcConnectionUrl);
+			instance = newInstance(dataSource);
 			setDataSource(dataSource);
 		}
 		return instance;
@@ -66,15 +65,15 @@ public class DaoFactory {
 		return userDao;
 	}
 
-	private static DaoFactory newInstance(String jdbcConnectionUrl) {
-		String databaseType = new PlatformUtils().determineDatabaseType(jdbcConnectionUrl);
+	private static DaoFactory newInstance(DataSource dataSource) {
+		String databaseType = new PlatformUtils().determineDatabaseType(dataSource);
 		if (PlatformUtils.ORACLE.equals(databaseType)) {
 			return new OracleDaoFactory();
 		}
 		if (PlatformUtils.MYSQL.equals(databaseType)) {
 			return new MySqlDaoFactory();
 		}
-		throw new BeanCreationException("Database for '" + jdbcConnectionUrl + "' is not supported.");
+		throw new BeanCreationException("daoFactory", "Unsupported database type.");
 	}
 
 	private static void setDataSource(DataSource dataSource) {
