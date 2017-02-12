@@ -24,7 +24,7 @@
 
 	<bean id="serverConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean">
 		<property name="objectName" value="connector:name=rmi"/>
-		<property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:1099/hwconnector"/>
+		<property name="serviceUrl" value="service:jmx:rmi://localhost/jndi/rmi://localhost:1099/hwmail"/>
 	</bean>
 
 </beans>
