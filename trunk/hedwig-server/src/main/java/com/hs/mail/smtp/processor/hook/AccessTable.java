@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -18,19 +19,26 @@ import com.hs.mail.smtp.message.MailAddress;
 
 public class AccessTable {
 	
-	private static final String OK = "OK";
-	private static final String REJECT = "REJECT";
-	
     /**
-     * The lists of rbl servers to be checked to limit spam
+     * The lists of patterns to be checked to limit spam
      */
-    private String[] whitelist;
-    private String[] blacklist;
-	
-	AccessTable(File config) throws IOException {
+    private Access[] accesstable;
+    
+    private Action defaultAction;
+
+    AccessTable(File config) throws IOException {
+    	this(config, Action.REJECT);
+    }
+    
+	AccessTable(File config, Action defaultAction) throws IOException {
+		this.defaultAction = defaultAction;
 		readLines(config);
-		Arrays.sort(whitelist);
-		Arrays.sort(blacklist);
+		Arrays.sort(accesstable, new Comparator<Access>() {
+			@Override
+			public int compare(Access o1, Access o2) {
+				return o1.pattern.compareTo(o2.pattern);
+			}
+		});
 	}
 	
 	private void readLines(File config) throws IOException {
@@ -38,8 +46,7 @@ public class AccessTable {
 		try {
 			InputStream in = new FileInputStream(config);
 			reader = new BufferedReader(new InputStreamReader(in));
-			List<String> whitelist = new ArrayList<String>();
-			List<String> blacklist = new ArrayList<String>();
+			List<Access> accesslist = new ArrayList<Access>();
 			String line;
 			while ((line = reader.readLine()) != null) {
 				String str = line.trim();
@@ -47,45 +54,72 @@ public class AccessTable {
 					char ch = line.charAt(0);
 					if (ch != '#') {
 						String[] tokens = StringUtils.split(line);
-						String address = tokens[0];
-						String action = (tokens.length < 2) ? REJECT : tokens[1];
-						if (OK.equalsIgnoreCase(action)) {
-							whitelist.add(address.toLowerCase());
-						} else if (REJECT.equalsIgnoreCase(action)) {
-							blacklist.add(address.toLowerCase());
-						}
+						String pattern = tokens[0];
+						Action action = (tokens.length < 2)
+								? defaultAction
+								: Action.lookup(tokens[1]);
+						accesslist.add(new Access(pattern.toLowerCase(), action));
 					}
 				}
 			}
-			this.whitelist = whitelist.toArray(new String[whitelist.size()]);
-			this.blacklist = blacklist.toArray(new String[blacklist.size()]);
+			this.accesstable = accesslist.toArray(new Access[accesslist.size()]);
 		} finally {
 			IOUtils.closeQuietly(reader);
 		}
 	}
 	
-	public boolean isRestricted(MailAddress address) {
-		if (ArrayUtils.isNotEmpty(whitelist)) {
-			if (Arrays.binarySearch(whitelist,
-					StringUtils.lowerCase(address.getMailbox())) >= 0
-					|| Arrays.binarySearch(whitelist,
-							StringUtils.lowerCase(address.getHost())) >= 0
-					|| Arrays.binarySearch(whitelist,
-							StringUtils.lowerCase(address.getUser()) + "@") >= 0) {
-				return false;
+	public Action findAction(String... patterns) {
+		for (String pattern : patterns) {
+			int i = binarySearch(pattern);
+			if (i >= 0) {
+				return accesstable[i].action;
 			}
 		}
-		if (ArrayUtils.isNotEmpty(blacklist)) {
-			if (Arrays.binarySearch(blacklist,
-					StringUtils.lowerCase(address.getMailbox())) >= 0
-					|| Arrays.binarySearch(blacklist,
-							StringUtils.lowerCase(address.getHost())) >= 0
-					|| Arrays.binarySearch(blacklist,
-							StringUtils.lowerCase(address.getUser()) + "@") >= 0) {
-				return true;
+		return null;
+	}
+	
+	public Action findAction(MailAddress address) {
+		int i = -1;
+		if (ArrayUtils.isNotEmpty(accesstable)) {
+			if ((i = binarySearch(address.getMailbox())) < 0) {
+				if ((i = binarySearch(address.getHost())) < 0) {
+					i = binarySearch(address.getUser() + "@");
+				}
 			}
 		}
-		return false;
+		return (i >= 0) ? accesstable[i].action : null;
+	}
+
+	private int binarySearch(String pattern) {
+		return Arrays.binarySearch(accesstable, StringUtils.lowerCase(pattern),
+				new Comparator<Object>() {
+					@Override
+					public int compare(Object o1, Object o2) {
+						return ((Access) o1).pattern.compareTo((String) o2);
+					}
+				});
+	}
+	
+	public static enum Action {
+		OK, REJECT, DISCARD, IGNORE;
+		
+		static public Action lookup(String s) {
+			try {
+				return valueOf(s);
+			} catch (IllegalArgumentException e) {
+				return IGNORE;
+			}
+		}
+	}
+	
+	static class Access {
+		String pattern;
+		Action action;
+
+		Access(String pattern, Action action) {
+			this.pattern = pattern;
+			this.action = action;
+		}
 	}
 	
 }

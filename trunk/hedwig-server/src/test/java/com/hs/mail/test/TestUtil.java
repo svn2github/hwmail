@@ -1,6 +1,7 @@
 package com.hs.mail.test;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,4 +22,8 @@ public class TestUtil {
 				TestUtil.class.getResource(resource).openStream());
 	}
 
+	public static File getResourceFile(String resource) {
+		return new File(TestUtil.class.getResource(resource).getPath());
+	}
+	
 }

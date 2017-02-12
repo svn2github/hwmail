@@ -28,7 +28,7 @@ public class RcptAccessHook implements RcptHook {
 	
 	@Override
 	public void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
-		if (access.isRestricted(rcpt)) {
+		if (access.findAction(rcpt) == AccessTable.Action.REJECT) {
 			throw new SmtpException(SmtpException.RECIPIENT_REJECTED);
 		}
 	}

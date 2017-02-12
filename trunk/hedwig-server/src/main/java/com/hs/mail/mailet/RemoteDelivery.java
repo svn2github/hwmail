@@ -40,6 +40,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +74,11 @@ public class RemoteDelivery extends AbstractMailet {
     private int maxRetries = 3; // default number of retries
     private long smtpTimeout = 5000;  //default number of ms to timeout on smtp delivery
     private boolean sendPartial = true; // If false then ANY address errors will cause the transmission to fail
-    private long connectionTimeout = 60000;  // The amount of time JavaMail will wait before giving up on a socket connect()
+    private long connectionTimeout = 5000;  // The amount of time JavaMail will wait before giving up on a socket connect()
     private String gateway = null;	// The server to send all email to
     private String authUser = null; // auth for gateway server
     private String authPass = null; // password for gateway server
+    private String[] discardTargets = null;
 
 	public void setDebug(boolean debug) {
 		this.debug = debug;
@@ -96,6 +98,9 @@ public class RemoteDelivery extends AbstractMailet {
 		}
 		if (this.debug)
 			props.setProperty("mail.debug", "true");
+		
+		smtpTimeout = Config.getNumberProperty("smtp_timeout", smtpTimeout);
+		connectionTimeout = Config.getNumberProperty("smtp_connect_timeout", connectionTimeout);
 		props.setProperty("mail.smtp.timeout", smtpTimeout + "");
         props.setProperty("mail.smtp.connectiontimeout", connectionTimeout + "");
         props.setProperty("mail.smtp.sendpartial", String.valueOf(sendPartial));
@@ -109,6 +114,11 @@ public class RemoteDelivery extends AbstractMailet {
 		this.gateway = Config.getProperty("smtp_gateway", null);
 		this.authUser = Config.getProperty("smtp_gateway_username", null);
 		this.authPass = Config.getProperty("smtp_gateway_password", null);
+		
+		String[] targets = StringUtils.split(Config.getProperty("smtp_discard_target_mx", null), ",");
+		if (ArrayUtils.isNotEmpty(targets)) {
+			this.discardTargets = StringUtils.stripAll(targets);
+		}
 	}
 
 	public boolean accept(Set<Recipient> recipients, SmtpMessage message) {
@@ -225,6 +235,13 @@ public class RemoteDelivery extends AbstractMailet {
 			while (targetServers.hasNext()) {
 				try {
 					outgoingMailServer = targetServers.next();
+					
+					if (!validOutgoing(outgoingMailServer)) {
+						// Discard recipients
+						recipients.clear();
+						return true;
+					}
+					
 					logger.info("Attempting to deliver message to host {} at {} for addresses {}",
 							outgoingMailServer.getHostName(),
 							outgoingMailServer.getHost(),
@@ -363,6 +380,29 @@ public class RemoteDelivery extends AbstractMailet {
 		return failMessage(message, addresses, new MessagingException(
 				"No mail server(s) available at this time."), false);
 	}
+	
+	private boolean validOutgoing(HostAddress outgoingMailServer) {
+		if (discardTargets != null) {
+			for (String target : discardTargets) {
+				if (target.equals(allowIPLiteral(outgoingMailServer.getHostName()))
+						|| target.equals(outgoingMailServer.getHost())) {
+					logger.debug("Discarded message to host {} at {}",
+							outgoingMailServer.getHostName(),
+							outgoingMailServer.getHost());
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static String allowIPLiteral(String host) {
+		if ((host.charAt(host.length() - 1) == '.')) {
+			return host.substring(0, host.length() - 1);
+		}
+		return host;
+	}
+
 	
 	/**
 	 * Build error messages and make sure the error is permanent.

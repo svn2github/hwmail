@@ -31,7 +31,7 @@ public class SmtpServer extends DefaultServer implements InitializingBean {
 	
 	public void afterPropertiesSet() throws Exception {
 		// Configure the server
-		connectionTimeout = (int) Config.getNumberProperty("smtp_timeout", 300000); 
+		connectionTimeout = (int) Config.getNumberProperty("smtpd_timeout", 300000); 
 		connectionHandler = new SmtpConnectionHandler();
 			
 		if (Config.getBooleanProperty("smtp_trace_protocol", false)) {

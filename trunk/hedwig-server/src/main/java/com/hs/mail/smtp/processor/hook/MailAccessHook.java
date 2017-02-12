@@ -27,7 +27,7 @@ public class MailAccessHook implements MailHook {
 
 	@Override
 	public void doMail(SmtpSession session, MailAddress sender) {
-		if (access.isRestricted(sender)) {
+		if (access.findAction(sender) == AccessTable.Action.REJECT) {
 			throw new SmtpException(SmtpException.SENDER_REJECTED);
 		}
 	}

@@ -88,6 +88,7 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 		} else {
 			to = to.substring(3);
 		}
+		// FIXME: RFC5321 - Page 36
 		if ("postmaster".equalsIgnoreCase(to)) {
 			to = Config.getPostmaster();
 		}
@@ -111,7 +112,7 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 		doRcpt(session, message, recipient);
 
 		message.addRecipient(recipient);
-		session.writeResponse("250 2.1.5 Recipient <" + to + "> OK");
+		session.writeResponse("250 2.1.5 Recipient " + to + " OK");
 	}
 
 	void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
