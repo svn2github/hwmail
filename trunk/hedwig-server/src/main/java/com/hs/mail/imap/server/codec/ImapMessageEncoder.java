@@ -21,7 +21,6 @@ import java.nio.charset.Charset;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 /**
@@ -31,7 +30,6 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  * @since Jan 22, 2010
  * 
  */
-@ChannelPipelineCoverage("all")
 public class ImapMessageEncoder extends OneToOneEncoder {
 
     private final Charset charset;

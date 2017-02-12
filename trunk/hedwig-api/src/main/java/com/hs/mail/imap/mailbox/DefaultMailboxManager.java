@@ -250,7 +250,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
 		}
 	}
-	
+
 	public List<Mailbox> getSubscriptions(long userID, long ownerID,
 			String mailboxName) {
 		MailboxDao dao = DaoFactory.getMailboxDao();

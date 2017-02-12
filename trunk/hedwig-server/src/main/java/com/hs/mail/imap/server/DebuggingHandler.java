@@ -21,7 +21,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelDownstreamHandler;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelUpstreamHandler;
 import org.jboss.netty.channel.MessageEvent;
 
@@ -32,7 +31,6 @@ import org.jboss.netty.channel.MessageEvent;
  * @since Jul 7, 2010
  */
 
-@ChannelPipelineCoverage("all")
 public class DebuggingHandler implements ChannelUpstreamHandler,
 		ChannelDownstreamHandler {
 	
