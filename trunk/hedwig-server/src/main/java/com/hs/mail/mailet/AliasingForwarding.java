@@ -64,33 +64,36 @@ public class AliasingForwarding extends AbstractMailet {
 			
 			User user = getUserManager().getUserByAddress(rcpt.getMailbox());
 			if (user != null) {
+				// Deliver to original recipient
+				rcpt.setID(user.getID());
+				
 				if (StringUtils.isNotEmpty(user.getForwardTo())) {
 					// Forwarding takes precedence over local aliases
 					try {
-						// TODO optionally remove the original recipient
-						it.remove();
-						Recipient forwardTo = new Recipient(user.getForwardTo(), false);
-						if (Config.isLocal(forwardTo.getHost())) {
-							long id = getUserManager().getUserID(forwardTo.getMailbox());
-							if (id != 0) {
-								forwardTo.setID(id);
-								newRecipients.add(forwardTo);
-							} else {
-								throw new AddressException(
-										"Forwarding address not found.");
+						String[] forwards = StringUtils.split(user.getForwardTo(), ",");
+						for (String forward : forwards) {
+							if (StringUtils.isNotBlank(forward)) {
+								Recipient forwardTo = new Recipient(forward, false);
+								if (Config.isLocal(forwardTo.getHost())) {
+									long id = getUserManager().getUserID(forwardTo.getMailbox());
+									if (id != 0) {
+										forwardTo.setID(id);
+										newRecipients.add(forwardTo);
+									} else {
+										throw new AddressException("Forwarding address not found.");
+									}
+								} else {
+									message.setNode(SmtpMessage.ALL);
+									message.addRecipient(forwardTo);
+								}
 							}
-						} else {
-							message.setNode(SmtpMessage.ALL);
-							message.addRecipient(forwardTo);
 						}
 					} catch (Exception e) {
 						// Forwarding address is invalid or not found.
-						logger.error("Failed to forwarding {} to {}", rcpt.getMailbox(),
-								user.getForwardTo());
+						logger.error("Failed to forwarding {} to {}",
+								rcpt.getMailbox(), user.getForwardTo());
 						errors.add(rcpt);
 					}
-				} else {
-					rcpt.setID(user.getID());
 				}
 			} else {
 				// Try to find aliases
@@ -100,13 +103,11 @@ public class AliasingForwarding extends AbstractMailet {
 					for (Alias alias : expanded) {
 						if (alias.getDeliverTo().startsWith(ImapConstants.NAMESPACE_PREFIX)) {
 							// Aliased mailbox is a public folder.
-							Recipient pf = new Recipient(ImapConstants.ANYONE_ID, 
-									rcpt.getMailbox(), false);
+							Recipient pf = new Recipient(ImapConstants.ANYONE_ID, rcpt.getMailbox(), false);
 							pf.setDestination(alias.getDeliverTo());
 							newRecipients.add(pf);
 						} else {
-							User aliased = getUserManager().getUserByAddress(
-									alias.getDeliverTo());
+							User aliased = getUserManager().getUserByAddress(alias.getDeliverTo());
 							if (aliased != null) {
 								newRecipients.add(new Recipient(aliased.getID(),
 										aliased.getUserID(), false));

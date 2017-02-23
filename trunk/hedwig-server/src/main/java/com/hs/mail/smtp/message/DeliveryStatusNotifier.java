@@ -63,13 +63,13 @@ public class DeliveryStatusNotifier {
 				.getPostmaster()));
 		InternetAddress[] toAddr = { to.toInternetAddress() };
 		dsn.setRecipients(Message.RecipientType.TO, toAddr);
-		String subject = msg.getHeader("Subject", null);
+		String subject = msg.getSubject();
 		if (subject != null) {
 			if (from != null && !subject.regionMatches(true, 0, "Re: ", 0, 4))
-				dsn.setHeader("Subject", "Re: " + subject);
+				dsn.setSubject("Re: " + subject);
 			else if (from == null
 					&& !subject.regionMatches(true, 0, "[Err] ", 0, 6))
-				dsn.setHeader("Subject", "[Err] " + subject);
+				dsn.setSubject("[Err] " + subject);
 		}
 		dsn.setSentDate(new Date());
 		Multipart mp = new MultipartReport((from != null) ? textMessage
