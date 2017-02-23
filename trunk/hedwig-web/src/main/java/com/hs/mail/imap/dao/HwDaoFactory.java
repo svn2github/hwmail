@@ -27,8 +27,9 @@ public class HwDaoFactory extends DaoFactory {
 			hwUserDao = new OracleHwUserDao();
 		} else if (PlatformUtils.MYSQL.equals(databaseType)) {
 			hwUserDao = new MySqlHwUserDao();
+		} else {
+			throw new BeanCreationException("daoFactory", "Unsupported database type.");
 		}
-		throw new BeanCreationException("daoFactory", "Unsupported database type.");
 	}
 	
 	private static void setDataSource(DataSource dataSource) {
