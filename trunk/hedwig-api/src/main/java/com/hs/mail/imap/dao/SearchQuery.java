@@ -152,7 +152,8 @@ abstract class SearchQuery {
 	
 	private String stringQuery(List<Object> args, String field, StringKey key) {
 		args.add("%" + key.getPattern() + "%");
-		return String.format("%s LIKE ?", field, key.getPattern());
+		return String.format(key.getIgnoreCase() ? "UPPER(%s) LIKE UPPER(?)"
+				: "%s LIKE ?", field, key.getPattern());
 	}
 	
 	private String numberQuery(List<Object> args, String field, IntegerComparisonKey key) {

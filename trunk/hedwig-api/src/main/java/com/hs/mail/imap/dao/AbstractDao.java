@@ -123,17 +123,4 @@ abstract class AbstractDao extends JdbcDaoSupport {
 				"\\%");
 	}
 	
-	protected static String duplicate(String[] fields, Object[] params,
-			int start) {
-		StringBuffer buffer = new StringBuffer("(");
-		for (int i = 0; i < fields.length; i++) {
-			if (i > 0)
-				buffer.append(",");
-			buffer.append("?");
-			params[i + start] = fields[i];
-		}
-		buffer.append(")");
-		return buffer.toString();
-	}
-	
 }

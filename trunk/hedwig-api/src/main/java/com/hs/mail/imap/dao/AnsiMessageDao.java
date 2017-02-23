@@ -17,7 +17,6 @@ package com.hs.mail.imap.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import javax.mail.Flags;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.parser.Field;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -232,30 +232,24 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 	}
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields) {
-		String sql = "SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid AND n.headername IN ";
+		StringBuilder sql = new StringBuilder(256)
+				.append("SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid AND UPPER(n.headername) IN ");
 		Object[] param = new Object[fields.length + 1];
 		param[0] = new Long(physMessageID);
-		sql += duplicate(fields, param, 1);
+		
+		System.arraycopy(fields, 0, param, 1, fields.length);
+		sql.append("(")
+				.append(StringUtils.repeat("UPPER(?)", ",", fields.length))
+				.append(")");
+
 		Map<String, String> results = new HashMap<String, String>();
-		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql, param);
+		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql.toString(), param);
 		while (rs.next()) {
 			results.put(rs.getString(1), rs.getString(2));
 		}
 		return results;
 	}
 	
-	public Map.Entry<Long, String> getHeader(long physMessageID, String field) {
-		String sql = "SELECT headernameid, headervalue FROM hw_headervalue WHERE physmessageid = ? AND headernameid = (SELECT headernameid FROM hw_headername WHERE headername = ?)";
-		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql, new Object[] { physMessageID, field });
-		if (rs.next()) {
-			// FIXME - there exist rows with same physical message id and header name id 
-			return new AbstractMap.SimpleEntry<Long, String>(
-					rs.getLong(1), 
-					rs.getString(2));
-		}
-		return null;
-	}
-
 	public void addHeader(long physMessageID, MessageHeader header) {
 		List<Field> fields = header.getHeader().getFields();
 		if (!CollectionUtils.isEmpty(fields)) {
@@ -287,8 +281,8 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 				+       "AND b.ownerid = ? "
 				+       "AND physmessageid IN (" 
 				+           "SELECT physmessageid FROM hw_headervalue " 
-				+            "WHERE headernameid = ("
-				+                  "SELECT headernameid FROM hw_headername WHERE headername = ?)"
+				+            "WHERE headernameid IN ("
+				+                  "SELECT headernameid FROM hw_headername WHERE UPPER(headername) = UPPER(?))"
 				+              "AND headervalue = ?)";
 		return getJdbcTemplate().queryForList(
 				sql,

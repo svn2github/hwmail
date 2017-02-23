@@ -1,5 +1,6 @@
 package com.hs.mail.imap.dao;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -9,13 +10,11 @@ import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
-
 /**
  * Utility functions for dealing with database platforms. 
  */
 class PlatformUtils {
-
+	
 	static final String MYSQL       = "MySQL";
 	static final String ORACLE      = "Oracle";
 
@@ -52,26 +51,27 @@ class PlatformUtils {
 	}
 
 	String getURL(DataSource dataSource) {
-		if (dataSource instanceof BasicDataSource) {
-			return ((BasicDataSource) dataSource).getUrl();
-		} else {
+		try {
+			Method m = dataSource.getClass().getMethod("getUrl", new Class[] {});
+			return (String) m.invoke(dataSource, new Object[] {});
+		} catch (Exception e) {
 			Connection connection = null;
 			try {
 				connection = dataSource.getConnection();
 				DatabaseMetaData metaData = connection.getMetaData();
 				return metaData.getURL();
-			} catch (SQLException e) {
+			} catch (SQLException se) {
 				return null;
 			} finally {
 				if (connection != null) {
 					try {
 						connection.close();
-					} catch (SQLException e) {
+					} catch (SQLException ignore) {
 						// we ignore this one
 					}
 				}
 			}
 		}
 	}
-	
+
 }

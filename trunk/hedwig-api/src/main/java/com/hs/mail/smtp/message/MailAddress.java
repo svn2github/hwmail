@@ -47,6 +47,7 @@ public class MailAddress implements Serializable, Comparable<Object> {
 	}
 
 	public MailAddress(String address, boolean strict) throws SmtpException {
+		address = address.trim();
 		this.strict = strict;
 		if (strict) {
 			try {

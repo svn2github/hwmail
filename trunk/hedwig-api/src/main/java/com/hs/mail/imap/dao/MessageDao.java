@@ -59,8 +59,6 @@ public interface MessageDao extends DaoSupport {
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
 
-	public Map.Entry<Long, String> getHeader(long physMessageID, String field);
-	
 	public void addHeader(long physMessageID, MessageHeader header);
 
 	public long getHeaderNameID(String headerName);
