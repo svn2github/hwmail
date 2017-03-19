@@ -17,7 +17,7 @@ package com.hs.mail.mailet;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.mail.MessagingException;
@@ -65,13 +65,14 @@ public class ToRepository extends AbstractMailet {
 		try {
 			deliver(recipients, message);
 		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
 		}
 	}
 
-	private void deliver(Collection<Recipient> recipients, SmtpMessage message)
+	private void deliver(Set<Recipient> recipients, SmtpMessage message)
 			throws IOException {
-		String returnPath = (message.getNode() != SmtpMessage.LOCAL) 
-				? "Return-Path: <" + message.getFrom().getMailbox() + ">\r\n" 
+		String returnPath = (message.getNode() != SmtpMessage.LOCAL)
+				? "Return-Path: <" + message.getFrom().getMailbox() + ">\r\n"
 				: null;
 		MailMessage msg = message.getMailMessage();
 		try {
@@ -80,27 +81,31 @@ public class ToRepository extends AbstractMailet {
 				header.setField(AbstractField.parse(returnPath));
 				msg.setSize(msg.getSize() + returnPath.getBytes().length);
 			}
-			for (Recipient rcpt : recipients) {
+			for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {
+				Recipient rcpt = it.next();
+				it.remove();
 				try {
 					if (rcpt.getID() != -1) {
 						String destination = rcpt.getDestination();
 						if (destination != null
 								|| !Sieve.runSieve(context, rcpt, message)) {
-							context.storeMail(rcpt.getID(),
-									StringUtils.defaultString(destination,
-											ImapConstants.INBOX_NAME),
+							context.storeMail(rcpt.getID(), 
+									StringUtils.defaultString(destination, 
+											ImapConstants.INBOX_NAME), 
 									message);
 						}
 					}
 				} catch (Exception e) {
-					StringBuilder errorBuffer = new StringBuilder(256)
-							.append("Error while delivering message to ")
-							.append(rcpt);
-					logger.error(errorBuffer.toString(), e);
-
+					logger.error("{} exception delivering mail ({}): {}", 
+							"Permanent",
+							message.getName(), 
+							e.getMessage().trim());
+		
 					if (!message.isNotificationMessage()) {
-						errorBuffer.append(": ")
-								.append(e.getMessage().trim())
+						StringBuilder errorBuffer = new StringBuilder(256)
+								.append(rcpt.getMailbox())
+								.append("\r\n")
+								.append("Error while storing message.")
 								.append("\r\n");
 						message.appendErrorMessage(errorBuffer.toString());
 					}
@@ -108,24 +113,28 @@ public class ToRepository extends AbstractMailet {
 			}
 		} catch (MimeException e) {
 			// impossible really
+		} finally {
+			saveMessage(returnPath, msg);
 		}
+	}
+
+	private void saveMessage(String returnPath, MailMessage msg)
+			throws IOException {
 		if (msg != null && msg.getPhysMessageID() != 0) {
 			try {
 				if (returnPath != null) {
-					PushbackInputStream is = new PushbackInputStream(msg
-							.getInputStream(), returnPath.length());
+					PushbackInputStream is = new PushbackInputStream(
+							msg.getInputStream(), returnPath.length());
 					is.unread(returnPath.getBytes("ASCII"));
 					msg.save(is);
 				} else {
-					msg.save(true);
+					msg.save(false);
 				}
 				builder.build(msg.getInternalDate(), msg.getPhysMessageID());
-			} catch (IOException e) {
-				logger.error(e.getMessage(), e);
 			} catch (MimeException e) {
 				logger.error(e.getMessage(), e);
 			}
 		}
 	}
-
+	
 }

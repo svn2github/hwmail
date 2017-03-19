@@ -16,7 +16,10 @@
 package com.hs.mail.smtp.spool;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.InitializingBean;
 import com.hs.mail.mailet.Mailet;
 import com.hs.mail.mailet.MailetContext;
 import com.hs.mail.smtp.message.DeliveryStatusNotifier;
+import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
 /**
@@ -74,8 +78,9 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			return Consumer.CONSUME_ERROR_KEEP;
 		}
 
-		// Save the original retry count for this message. 
+		// Save the original retry count and recipients count of this message.
 		int retries = message.getRetryCount();
+		int rcptcnt = message.getRecipientsSize();
 		
 		processMessage(message);
 		
@@ -88,23 +93,27 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			error = true;
 		}
 
-		// See if the retry count was changed by the mailets.
-		if (message.getRetryCount() > retries) {
-			// This means temporary exception was caught while processing the
-			// message. Store this message back in spool and it will get picked
-			// up and processed later.
-			// We only tell the watcher to do not delete the message. 
-			// The original message was "stored" by the mailet.
-			logger.info("Storing message {} into spool after {} retries",
-					message.getName(),
-					retries);
-			return Consumer.CONSUME_ERROR_KEEP;
-		}
+		// See if there are valid recipients unsent.
+		if (message.getRecipientsSize() > 0) {
+		
+		// This means temporary exception was caught while processing the
+		// message.
+		// Store this message back in spool and it will get picked up and
+		// processed later.
 
+		logger.info("Storing message {} into spool after {} retries",
+					message.getName(), retries);
+		
+		return retry(message, (message.getRetryCount() != retries)
+				|| (message.getRecipientsSize() != rcptcnt));
+		
+		}
+		
 		// OK, we made it through... remove message from the spool.
 		message.dispose();
 
-		return (error) ? Consumer.CONSUME_ERROR_FAIL
+		return (error)
+				? Consumer.CONSUME_ERROR_FAIL
 				: Consumer.CONSUME_SUCCEEDED;
 	}
 	
@@ -122,13 +131,13 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 	}
 
 	private void processMessage(SmtpMessage msg) {
+		Set<Recipient> recipients = msg.getRecipients();
 		for (Mailet aMailet : mailets) {
 			try {
-				if (aMailet.accept(msg.getRecipients(), msg)) {
-					logger.debug("Processing {} through {}",
-							msg.getName(),
+				if (aMailet.accept(recipients, msg)) {
+					logger.debug("Processing {} through {}", msg.getName(),
 							aMailet.getClass().getName());
-					aMailet.service(msg.getRecipients(), msg);
+					aMailet.service(recipients, msg);
 				}
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
@@ -147,5 +156,18 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			}
 		}
 	}
-
+	
+	private int retry(SmtpMessage message, boolean dirty) {
+		if (dirty) {
+			try {
+				message.setLastUpdate(new Date());
+				message.store();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+		// We only tell the watcher to do not delete the message.
+		return Consumer.CONSUME_ERROR_KEEP;
+	}
+	
 }

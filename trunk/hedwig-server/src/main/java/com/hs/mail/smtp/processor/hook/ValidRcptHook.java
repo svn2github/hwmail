@@ -53,7 +53,14 @@ public class ValidRcptHook implements RcptHook {
 	@Override
 	public void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
 		if (Config.isLocal(rcpt.getHost())) {
-			if (!isValidRecipient(session, rcpt)) {
+			boolean valid = true;
+			try {
+				valid = isValidRecipient(session, rcpt);
+			} catch (Exception _) {	
+				// Maybe JDBC connection exception. 
+				// We have a second chance at spool.
+			}
+			if (!valid) {
 				throw new SmtpException(SmtpException.NO_SUCH_USER);
 			}
 		}

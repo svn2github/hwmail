@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -95,6 +96,10 @@ public class SmtpMessage implements Serializable {
 	 * The time this message was created. 
 	 */
 	private transient long time;
+	/*
+	 * The identifiers of recipient who has received this mail.
+	 */
+	private transient Vector<Long> delivered;
 
 	public SmtpMessage(MailAddress from, int node) {
 		this.time = System.currentTimeMillis();
@@ -174,6 +179,17 @@ public class SmtpMessage implements Serializable {
 			this.errorMessage  = errorMessage;
 		else
 			this.errorMessage += errorMessage;
+	}
+	
+	public void delivered(long soleRecipientID) {
+		if (delivered == null) {
+			delivered = new Vector<Long>();
+		}
+		delivered.add(soleRecipientID);
+	}
+	
+	public Vector<Long> getDelivered() {
+		return delivered;
 	}
 
 	public File getDataFile() {

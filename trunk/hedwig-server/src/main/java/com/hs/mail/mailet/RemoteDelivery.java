@@ -23,7 +23,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -134,8 +133,9 @@ public class RemoteDelivery extends AbstractMailet {
 			throws MessagingException {
 		// Organize the recipients into distinct servers (name made case insensitive)
 		Hashtable<String, Collection<Recipient>> targets = new Hashtable<String, Collection<Recipient>>();
-		for (Recipient recipient : recipients) {
-			String targetServer = recipient.getHost().toLowerCase(Locale.US);
+		for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {
+			Recipient rcpt = it.next();
+			String targetServer = rcpt.getHost().toLowerCase(Locale.US);
 			if (!Config.isLocal(targetServer)) {
 				String key = (null == gateway) ? targetServer : gateway;
 				Collection<Recipient> temp = targets.get(key);
@@ -143,7 +143,8 @@ public class RemoteDelivery extends AbstractMailet {
 					temp = new ArrayList<Recipient>();
 					targets.put(key, temp);
 				}
-				temp.add(recipient);
+				temp.add(rcpt);
+				it.remove();
 			}
 		}
 		
@@ -152,28 +153,20 @@ public class RemoteDelivery extends AbstractMailet {
 		}
 		
 		// We have the recipients organized into distinct servers
-		List<Recipient> undelivered = new ArrayList<Recipient>();
+		List<Recipient> validUnsent = new ArrayList<Recipient>();
 		MimeMessage mimemsg = message.getMimeMessage();
-		boolean deleteMessage = true;
 		for (String targetServer : targets.keySet()) {
 			Collection<Recipient> temp = targets.get(targetServer);
 			if (!deliver(targetServer, temp, message, mimemsg)) {
 				// Retry this message later
-				deleteMessage = false;
 				if (!temp.isEmpty()) {
-					undelivered.addAll(temp);
+					validUnsent.addAll(temp);
 				}
 			}
 		}
-		if (!deleteMessage) {
-			try {
-				message.setRetryCount(message.getRetryCount() + 1);
-				message.setLastUpdate(new Date());
-				recipients.clear();
-				recipients.addAll(undelivered);
-				message.store();
-			} catch (IOException e) {
-			}
+		if (!validUnsent.isEmpty()) {
+			message.setRetryCount(message.getRetryCount() + 1);
+			recipients.addAll(validUnsent);
 		}
 	}
 

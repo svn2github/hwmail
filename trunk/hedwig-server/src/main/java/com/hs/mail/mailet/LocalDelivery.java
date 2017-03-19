@@ -15,7 +15,9 @@
  */
 package com.hs.mail.mailet;
 
+import java.sql.SQLRecoverableException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +25,8 @@ import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.smtp.message.Recipient;
@@ -61,23 +65,39 @@ public class LocalDelivery extends AbstractMailet {
 	public void service(Set<Recipient> recipients, SmtpMessage message)
 			throws MessagingException {
 		Set<Recipient> temp = new HashSet<Recipient>();
-		for (Recipient recipient : recipients) {
-			if (Config.isLocal(recipient.getHost())) {
-				temp.add(recipient);
+		for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {
+			Recipient rcpt = it.next();		
+			if (Config.isLocal(rcpt.getHost())) {
+				temp.add(rcpt);
+				it.remove();
 			}
 		}
 		for (Mailet aMailet : mailets) {
 			try {
 				if (aMailet.accept(temp, message)) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Processing {} through {}", message.getName(), 
-								aMailet.getClass().getName());
-					}
+					logger.debug("Processing {} through {}", message.getName(),
+							aMailet.getClass().getName());
 					aMailet.service(temp, message);
 				}
 			} catch (Exception e) {
+				if (isTemporaryException(e)) {
+					// Temporary error, try again later.
+					recipients.addAll(temp);
+					break;
+				}
 				logger.error(e.getMessage(), e);
 			}
+		}
+	}
+	
+	private static boolean isTemporaryException(Exception e) {
+		if (e instanceof CannotGetJdbcConnectionException) {
+			return true;
+		} else if (e instanceof DataAccessException) {
+			DataAccessException dae = (DataAccessException) e;
+			return (dae.getRootCause() instanceof SQLRecoverableException);
+		} else {
+			return (e instanceof SQLRecoverableException);
 		}
 	}
 

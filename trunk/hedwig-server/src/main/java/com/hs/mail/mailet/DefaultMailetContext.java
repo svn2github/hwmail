@@ -55,6 +55,7 @@ public class DefaultMailetContext implements MailetContext {
 			SmtpMessage msg) throws IOException {
 		mailboxManager.addMessage(soleRecipientID, msg.getMailMessage(),
 				MailUtils.encodeMailbox(destination));
+		msg.delivered(soleRecipientID);
 	}
 	
 }
