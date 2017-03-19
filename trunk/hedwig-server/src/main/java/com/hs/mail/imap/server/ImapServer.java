@@ -142,6 +142,13 @@ public class ImapServer implements InitializingBean {
 		} else {
 			endpoint = new InetSocketAddress(getPort());
 		}
+		
+		// Set TCP parameters
+		bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.keepAlive", true);
+		bootstrap.setOption("child.reuseAddress", true);
+		bootstrap.setOption("reuseAddress", true);
+		
 		bootstrap.bind(endpoint);
 		
 		LoggerFactory.getLogger("console").info("{} started on port {}",
