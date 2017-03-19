@@ -43,7 +43,7 @@ public class FileWatcher implements Watcher {
     private long watchInterval = 30000;
     private long processInterval = 10;
     private boolean includeDirectory = false;
-    private File failureDirFile = null;
+    private File failureDir = null;
     private Comparator<File> fileComparator = null;
 
 	public long getWatchInterval() {
@@ -70,8 +70,12 @@ public class FileWatcher implements Watcher {
 		this.targetDir = targetDir;
 	}
 	
+	public File getFailureDir() {
+		return failureDir;
+	}
+	
     public void setFailureDir(String failureDir) {
-        this.failureDirFile = new File(failureDir);
+        this.failureDir = new File(failureDir);
     }
     
 	public void setFileComparator(Comparator<File> fileComparator) {
@@ -81,13 +85,13 @@ public class FileWatcher implements Watcher {
 	public void start() {
 		if (targetDir != null) {
 			try {
-				if (null == failureDirFile) {
-					failureDirFile = new File(targetDir.getParent(), "failure");
+				if (null == failureDir) {
+					failureDir = new File(targetDir.getParent(), "failure");
 				}
-				FileUtils.forceMkdir(failureDirFile);
+				FileUtils.forceMkdir(failureDir);
 			} catch (Exception e) {
 				logger.error("Cannot create failure directory {}",
-						failureDirFile);
+						failureDir);
 				return;
 			}
 			mainJob = new MainJob(this);
@@ -179,12 +183,12 @@ public class FileWatcher implements Watcher {
 				} else if (sc == Consumer.CONSUME_ERROR_MOVE) {
 					try {
 						if (workingFile.isFile()) {
-							FileUtils.moveFile(workingFile, failureDirFile);
+							FileUtils.moveFile(workingFile, failureDir);
 						} else {
-							FileUtils.moveDirectory(workingFile, failureDirFile);
+							FileUtils.moveDirectory(workingFile, failureDir);
 						}
 					} catch (IOException e) {
-						logger.warn("Cannot move {} to {}", workingFile, failureDirFile);
+						logger.warn("Cannot move {} to {}", workingFile, failureDir);
 					}
 				}
 			}
