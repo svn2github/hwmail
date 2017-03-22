@@ -67,12 +67,12 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 				// \Recent set for the messages in this mailbox.
 				manager.resetRecent(selected.getMailboxID());
 			}
-			long sessionID = session.getSessionID();
-			long mailboxID = mailbox.getMailboxID();
-			
-			if (selected == null || selected.getMailboxID() != mailboxID) {
+
+			if (selected == null
+					|| selected.getMailboxID() != mailbox.getMailboxID()) {
 				manager.removeEventListener(selected);
-				selected = new SelectedMailbox(sessionID, mailboxID, isReadOnly());
+				selected = new SelectedMailbox(session.getSessionID(),
+						mailbox.getMailboxID(), isReadOnly());
 				session.selected(selected);
 				manager.addEventListener(selected);
 			} else {
