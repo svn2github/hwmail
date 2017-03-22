@@ -90,6 +90,10 @@ public class SelectedMailbox implements EventListener {
 		return readOnly;
 	}
 
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
 	/**
 	 * Check whether this mailbox contains recent messages.
 	 */

@@ -69,15 +69,22 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			}
 			long sessionID = session.getSessionID();
 			long mailboxID = mailbox.getMailboxID();
-			selected = new SelectedMailbox(sessionID, mailboxID, isReadOnly());
+			
+			if (selected == null || selected.getMailboxID() != mailboxID) {
+				manager.removeEventListener(selected);
+				selected = new SelectedMailbox(sessionID, mailboxID, isReadOnly());
+				session.selected(selected);
+				manager.addEventListener(selected);
+			} else {
+				selected.setReadOnly(isReadOnly());
+			}
+			
 			UidToMsnMapper map = new UidToMsnMapper(selected, false);
 			mailbox.setReadOnly(isReadOnly());
 			SelectResponse response = builder.build(map, mailbox);
 			responder.respond(response);
 			
 			selected.setRecent(response.getRecentMessageCount() > 0);
-			session.selected(selected);
-			manager.addEventListener(selected);
 			
 			responder.okCompleted(request, "[" + getResponseCode() + "]");
 		}
