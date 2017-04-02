@@ -151,23 +151,29 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 		}
 	}
 
-	private boolean afterLifetime(SmtpMessage message) {
+	private boolean beforeLifetime(SmtpMessage message) {
 		String prop = Config.getProperty("maximal_queue_lifetime", "1d");
 		Date base = ScheduleUtils.getDateBefore(prop);
-		return (base != null && base.after(message.getLastUpdate()));
+		return (base == null || base.before(message.getLastUpdate()));
 	}
 	
 	private int retry(Watcher watcher, SmtpMessage message, boolean dirty) {
 		try {
 			if (dirty) {
+				// Retry count or recipients status has changed.
 				message.setLastUpdate(new Date());
 				message.store();
 			}
-			if (afterLifetime(message)) {
-				message.moveTo(((FileWatcher) watcher).getFailureDir());
-				return Consumer.CONSUME_ERROR_FAIL;
+
+			if (beforeLifetime(message)) {
+				return Consumer.CONSUME_ERROR_KEEP;
 			}
-			return Consumer.CONSUME_ERROR_KEEP;
+
+			// Consider this message as undeliverable when the time in the
+			// queue has reached the maximum queue lifetime limit.
+			// This message is moved to failure directory.
+			message.moveTo(((FileWatcher) watcher).getFailureDir());
+			return Consumer.CONSUME_ERROR_FAIL;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			message.dispose();
