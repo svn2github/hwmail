@@ -36,6 +36,8 @@ public class ScheduleUtils {
 					try {
 						int amount = Integer.parseInt(str.substring(0, i));
 						switch (Character.toUpperCase(ch)) {
+						case 'H':
+							return DateUtils.addHours(new Date(), -amount);
 						case 'D':
 							return DateUtils.addDays(new Date(), -amount);
 						case 'M':

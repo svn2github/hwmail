@@ -16,6 +16,7 @@
 package com.hs.mail.smtp.spool;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -25,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.schedule.ScheduleUtils;
 import com.hs.mail.mailet.Mailet;
 import com.hs.mail.mailet.MailetContext;
 import com.hs.mail.smtp.message.DeliveryStatusNotifier;
@@ -74,8 +77,9 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			return Consumer.CONSUME_ERROR_KEEP;
 		}
 
-		// Save the original retry count for this message. 
+		// Save the original retry count and recipient count of this message.
 		int retries = message.getRetryCount();
+		int rcptcnt = message.getRecipientsSize();
 		
 		processMessage(message);
 		
@@ -88,24 +92,23 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			error = true;
 		}
 
-		// See if the retry count was changed by the mailets.
-		if (message.getRetryCount() > retries) {
-			// This means temporary exception was caught while processing the
-			// message. Store this message back in spool and it will get picked
-			// up and processed later.
-			// We only tell the watcher to do not delete the message. 
-			// The original message was "stored" by the mailet.
-			logger.info("Storing message {} into spool after {} retries",
-					message.getName(),
-					retries);
-			return Consumer.CONSUME_ERROR_KEEP;
+		// See if there are valid recipients unsent.
+		if (message.getRecipientsSize() == 0) {
+			// OK, we made it through... remove message from the spool.
+			message.dispose();
+
+			return (error) ? Consumer.CONSUME_ERROR_FAIL
+					: Consumer.CONSUME_SUCCEEDED;
 		}
 
-		// OK, we made it through... remove message from the spool.
-		message.dispose();
+		// This means temporary exception was caught while processing the
+		// message. Store this message back in spool and it will get picked
+		// up and processed later.
+		logger.info("Storing message {} into spool after {} retries",
+				message.getName(), retries);
 
-		return (error) ? Consumer.CONSUME_ERROR_FAIL
-				: Consumer.CONSUME_SUCCEEDED;
+		return retry(watcher, message, (message.getRetryCount() != retries)
+				|| (message.getRecipientsSize() != rcptcnt));
 	}
 	
 	private boolean accept(SmtpMessage message) {
@@ -145,6 +148,30 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 			} catch (MessagingException e) {
 				logger.error(e.getMessage(), e);
 			}
+		}
+	}
+
+	private boolean afterLifetime(SmtpMessage message) {
+		String prop = Config.getProperty("maximal_queue_lifetime", "1d");
+		Date base = ScheduleUtils.getDateBefore(prop);
+		return (base != null && base.after(message.getLastUpdate()));
+	}
+	
+	private int retry(Watcher watcher, SmtpMessage message, boolean dirty) {
+		try {
+			if (dirty) {
+				message.setLastUpdate(new Date());
+				message.store();
+			}
+			if (afterLifetime(message)) {
+				message.moveTo(((FileWatcher) watcher).getFailureDir());
+				return Consumer.CONSUME_ERROR_FAIL;
+			}
+			return Consumer.CONSUME_ERROR_KEEP;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			message.dispose();
+			return Consumer.CONSUME_ERROR_FAIL;
 		}
 	}
 

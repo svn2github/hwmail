@@ -182,11 +182,7 @@ public class FileWatcher implements Watcher {
 					}
 				} else if (sc == Consumer.CONSUME_ERROR_MOVE) {
 					try {
-						if (workingFile.isFile()) {
-							FileUtils.moveFile(workingFile, failureDir);
-						} else {
-							FileUtils.moveDirectory(workingFile, failureDir);
-						}
+						FileUtils.moveToDirectory(workingFile, failureDir, false);
 					} catch (IOException e) {
 						logger.warn("Cannot move {} to {}", workingFile, failureDir);
 					}

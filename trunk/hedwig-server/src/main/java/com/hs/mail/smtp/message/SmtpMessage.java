@@ -38,6 +38,7 @@ import javax.mail.Session;
 import javax.mail.internet.MailDateFormat;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.hs.mail.container.config.Config;
@@ -233,6 +234,11 @@ public class SmtpMessage implements Serializable {
 		} finally {
 			IOUtils.closeQuietly(os);
 		}
+	}
+	
+	public void moveTo(File directory) throws IOException {
+		FileUtils.moveFileToDirectory(getControlFile(), directory, false);
+		FileUtils.moveFileToDirectory(getDataFile(), directory, false);
 	}
 	
 	public void createTrigger() throws IOException {
