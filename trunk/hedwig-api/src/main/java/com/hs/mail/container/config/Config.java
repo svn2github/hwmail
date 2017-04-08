@@ -66,6 +66,7 @@ public class Config implements InitializingBean {
 	private static Set<String> defaultCacheFields;
 	private static long defaultQuota;
 	private static String[] domains;
+	private static String[] mydestinations;
 	private static String hostName;
 	private static String helloName;
 	private static String[] namespaces;
@@ -163,11 +164,16 @@ public class Config implements InitializingBean {
 	public static String getDefaultDomain() {
 		return domains[0];
 	}
-
+	
 	public static boolean isLocal(String domain) {
-		return ArrayUtils.contains(domains, domain);
+		return ArrayUtils.contains(domains, domain)
+				|| ArrayUtils.contains(mydestinations, domain);
 	}
 	
+	public static boolean isMyDestination(String destination) {
+		return ArrayUtils.contains(mydestinations, destination);
+	}
+
 	public static String getHostName() {
 		return hostName;
 	}
@@ -285,6 +291,16 @@ public class Config implements InitializingBean {
 		for (int i = 0; i < domains.length; i++) {
 			console.info("Handling mail for: {}", domains[i]);
 		}
+		
+		String destination = getProperty("mydestination", null);
+		if (null == destination) {
+			mydestinations = "localhost".equals(hostName)
+					? new String[] { hostName, "localhost." + domains[0] }
+					: new String[] { hostName, "localhost." + domains[0], "localhost" };
+		} else {
+			mydestinations = StringUtils.stripAll(StringUtils.split(destination, ","));
+		}
+		
 		namespaces = StringUtils.split(getProperty("namespaces", null), ",");
 		
 		/*

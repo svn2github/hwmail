@@ -33,7 +33,7 @@ public abstract class AbstractACLProcessor extends AbstractImapProcessor {
 		}
 
 		UserManager manager = getUserManager();
-		String address = manager.toAddress(identifier);
+		String address = manager.rewriteAddress(identifier);
 		long userid = manager.getUserID(address);
 		if (userid == 0) {
 			throw new AccountNotFoundException("Account for " + identifier + " not found");

@@ -160,7 +160,7 @@ public class SmtpMessageConsumer implements Consumer, InitializingBean {
 	private int retry(Watcher watcher, SmtpMessage message, boolean dirty) {
 		try {
 			if (dirty) {
-				// Retry count or recipients status has changed.
+				// Retry count changed or there are valid recipients unsent.
 				message.setLastUpdate(new Date());
 				message.store();
 			}

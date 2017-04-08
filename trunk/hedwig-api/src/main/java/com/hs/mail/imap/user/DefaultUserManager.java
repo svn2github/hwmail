@@ -69,7 +69,7 @@ public class DefaultUserManager implements UserManager {
 	 *             when the user does not exist or not authenticated
 	 */
 	public long login(String username, String password) throws LoginException {
-		String address = toAddress(username); 
+		String address = rewriteAddress(username); 
 		User user = DaoFactory.getUserDao().getUserByAddress(address);
 		if (user == null) {
 			throw new AccountNotFoundException("Account for " + username
@@ -95,7 +95,8 @@ public class DefaultUserManager implements UserManager {
 	}
 	
 	public User getUserByAddress(String address) {
-		return DaoFactory.getUserDao().getUserByAddress(address);
+		String rwaddress = rewriteAddress(address);
+		return DaoFactory.getUserDao().getUserByAddress(rwaddress);
 	}
 
 	public List<Alias> expandAlias(String alias) {
@@ -139,14 +140,21 @@ public class DefaultUserManager implements UserManager {
 		return new File(Config.getDataDirectory(), sb.toString());
 	}
 	
-	public String toAddress(String user) {
-		if (user.indexOf('@') != -1)
-			return user;
-		else
-			return new StringBuffer(user)
+	public String rewriteAddress(String address) {
+		final int pos = address.indexOf('@');
+		if (pos != -1) {
+			return (Config.isMyDestination(address.substring(pos + 1))) 
+					? new StringBuffer(address.substring(0, pos))
+								.append('@')
+								.append(Config.getDefaultDomain())
+								.toString() 
+					: address;
+		} else {
+			return new StringBuffer(address)
 							.append('@')
 							.append(Config.getDefaultDomain())
 							.toString();
+		}
 	}
 
 }
