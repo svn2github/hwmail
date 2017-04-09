@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.apache.james.mime4j.field.address.AddressList;
-import org.apache.james.mime4j.parser.Field;
+import org.apache.james.mime4j.dom.address.AddressList;
+import org.apache.james.mime4j.stream.Field;
 import org.apache.jsieve.exception.InternetAddressException;
 import org.apache.jsieve.exception.SieveException;
 import org.apache.jsieve.mail.Action;

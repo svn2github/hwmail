@@ -25,8 +25,8 @@ import javax.mail.MessagingException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.MimeException;
-import org.apache.james.mime4j.field.AbstractField;
-import org.apache.james.mime4j.message.Header;
+import org.apache.james.mime4j.dom.Header;
+import org.apache.james.mime4j.field.LenientFieldParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class ToRepository extends AbstractMailet {
 		try {
 			if (returnPath != null) {
 				Header header = msg.getHeader().getHeader();
-				header.setField(AbstractField.parse(returnPath));
+				header.setField(LenientFieldParser.parse(returnPath));
 				msg.setSize(msg.getSize() + returnPath.getBytes().length);
 			}
 			for (Iterator<Recipient> it = recipients.iterator(); it.hasNext();) {

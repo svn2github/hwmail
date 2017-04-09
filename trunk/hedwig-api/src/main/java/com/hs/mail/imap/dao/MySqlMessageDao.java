@@ -24,7 +24,6 @@ import java.util.Date;
 
 import javax.mail.Flags;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -58,7 +57,7 @@ public class MySqlMessageDao extends AnsiMessageDao {
 				pstmt.setTimestamp(4, (sent != null) ? new Timestamp(sent
 						.getTime()) : null); // sentdate
 				pstmt.setString(5, (header.getFrom() != null) 
-						? StringUtils.strip(header.getFrom().getDisplayString(), "\"") 
+						? getDisplayString(header.getFrom()) 
 						: null); // fromaddr
 				return pstmt;
 			}

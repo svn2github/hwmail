@@ -12,7 +12,7 @@
 		<aspectj-version>1.6.10</aspectj-version>
    	    <activation-version>1.1.1</activation-version>
 	    <javamail-version>1.4.7</javamail-version>
-	    <mime4j-version>0.6</mime4j-version>
+	    <mime4j-version>0.8.0</mime4j-version>
 	    <jsieve-version>0.3</jsieve-version>
 		<dnsjava-version>2.1.7</dnsjava-version>
 		<netty-version>3.10.5.Final</netty-version>
@@ -106,7 +106,12 @@
 			<!-- Apache JAMES -->
 			<dependency>
 				<groupId>org.apache.james</groupId>
-				<artifactId>apache-mime4j</artifactId>
+				<artifactId>apache-mime4j-core</artifactId>
+				<version>${mime4j-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.james</groupId>
+				<artifactId>apache-mime4j-dom</artifactId>
 				<version>${mime4j-version}</version>
 			</dependency>
 			<dependency>

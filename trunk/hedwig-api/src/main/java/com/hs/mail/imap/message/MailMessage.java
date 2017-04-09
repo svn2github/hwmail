@@ -27,7 +27,7 @@ import javax.mail.Flags;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mime4j.field.address.Mailbox;
+import org.apache.james.mime4j.dom.address.Mailbox;
 
 import com.hs.mail.container.config.Config;
 

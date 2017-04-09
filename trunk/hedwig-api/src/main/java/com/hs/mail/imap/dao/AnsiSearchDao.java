@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
@@ -137,7 +138,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 					// Stored header values are not decoded.
 					String tmp = rs.getString(2);
 					if (tmp != null) {
-						String value = DecoderUtil.decodeEncodedWords(tmp);
+						String value = DecoderUtil.decodeEncodedWords(tmp, DecodeMonitor.SILENT);
 						if (StringUtils.contains(value, pattern)) {
 							results.add(rs.getLong(1));
 						}

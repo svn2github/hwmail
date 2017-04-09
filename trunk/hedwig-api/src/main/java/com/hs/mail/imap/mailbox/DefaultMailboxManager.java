@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +56,7 @@ import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
+import com.hs.mail.util.CaseInsensitiveMap;
 import com.hs.mail.util.EhCacheWrapper;
 
 import net.sf.ehcache.Ehcache;
@@ -478,7 +478,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 	
 	private Map<String, String> defaultHeader(Map<String, String> results) {
-		Map<String, String> header = new HashMap<String, String>();
+		Map<String, String> header = new CaseInsensitiveMap<String, String>();
 		if (results != null) {
 			for (String field : Config.getDefaultCacheFields()) {
 				header.put(field, results.get(field));

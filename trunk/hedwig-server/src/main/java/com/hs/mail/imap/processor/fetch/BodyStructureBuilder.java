@@ -36,11 +36,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mime4j.MimeException;
-import org.apache.james.mime4j.descriptor.MaximalBodyDescriptor;
-import org.apache.james.mime4j.message.Header;
-import org.apache.james.mime4j.parser.Field;
-import org.apache.james.mime4j.parser.MimeTokenStream;
-import org.apache.james.mime4j.parser.RecursionMode;
+import org.apache.james.mime4j.dom.Header;
+import org.apache.james.mime4j.message.DefaultBodyDescriptorBuilder;
+import org.apache.james.mime4j.message.HeaderImpl;
+import org.apache.james.mime4j.message.MaximalBodyDescriptor;
+import org.apache.james.mime4j.stream.EntityState;
+import org.apache.james.mime4j.stream.Field;
+import org.apache.james.mime4j.stream.MimeConfig;
+import org.apache.james.mime4j.stream.MimeTokenStream;
+import org.apache.james.mime4j.stream.RecursionMode;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.io.CountingInputStream;
@@ -59,14 +63,20 @@ public class BodyStructureBuilder {
 		this.envelopeBuilder = envelopeBuilder;
 	}
 	
-	public MimeDescriptor build(InputStream is) throws IOException,
-			MimeException {
-		MimeTokenStream parser = MimeParser.createMaximalDescriptorParser();
+	public MimeDescriptor build(InputStream is)
+			throws IOException, MimeException {
+		MimeConfig config = MimeConfig.custom().setMaxLineLen(-1)
+				.setMaxHeaderLen(-1).build();
+
+		final MimeTokenStream parser = new MimeTokenStream(config,
+				new DefaultBodyDescriptorBuilder());
+
 		parser.parse(is);
+
 		parser.setRecursionMode(RecursionMode.M_NO_RECURSE);
 		return createDescriptor(parser);
 	}
-	
+
 	public MimeDescriptor build(Date date, long physmessageid)
 			throws IOException, MimeException {
 		File file = Config.getDataFile(date, physmessageid);
@@ -116,57 +126,58 @@ public class BodyStructureBuilder {
 			}
 		}
 	}
-	
-    private MimeDescriptor createDescriptor(MimeTokenStream parser)
+
+	private MimeDescriptor createDescriptor(MimeTokenStream parser)
 			throws IOException, MimeException {
-		int next = parser.next();
-		Header header = new Header();
-		while (next != MimeTokenStream.T_BODY
-				&& next != MimeTokenStream.T_END_OF_STREAM
-				&& next != MimeTokenStream.T_START_MULTIPART) {
-			if (next == MimeTokenStream.T_FIELD) {
+		EntityState next = parser.next();
+		Header header = new HeaderImpl();
+		while (next != EntityState.T_BODY
+				&& next != EntityState.T_END_OF_STREAM
+				&& next != EntityState.T_START_MULTIPART) {
+			if (next == EntityState.T_FIELD) {
 				header.addField(parser.getField());
 			}
 			next = parser.next();
 		}
-    	
-    	switch (next) {
-		case MimeTokenStream.T_BODY:
-			return simplePartDescriptor(parser, header);
-		case MimeTokenStream.T_START_MULTIPART:
-			return compositePartDescriptor(parser, header);
-		case MimeTokenStream.T_END_OF_STREAM:
-            throw new MimeException("Premature end of stream");
-		default:
-            throw new MimeException("Unexpected parse state");
+
+		switch (next) {
+			case T_BODY :
+				return simplePartDescriptor(parser, header);
+			case T_START_MULTIPART :
+				return compositePartDescriptor(parser, header);
+			case T_END_OF_STREAM :
+				throw new MimeException("Premature end of stream");
+			default :
+				throw new MimeException("Unexpected parse state");
 		}
 	}
-    
+
     private MimeDescriptor compositePartDescriptor(
 			MimeTokenStream parser, Header header) throws IOException,
 			MimeException {
 		MaximalBodyDescriptor descriptor = (MaximalBodyDescriptor) parser
 				.getBodyDescriptor();
-		MimeDescriptor mimeDescriptor = createDescriptor(0, 0, descriptor,
+		MimeDescriptor mimeDescriptor = createDescriptor(0, 0, descriptor, 
 				null, null);
-		int next = parser.next();
-		while (next != MimeTokenStream.T_END_MULTIPART
-				&& next != MimeTokenStream.T_END_OF_STREAM) {
-			if (next == MimeTokenStream.T_START_BODYPART) {
+		EntityState next = parser.next();
+		while (next != EntityState.T_END_MULTIPART
+				&& next != EntityState.T_END_OF_STREAM) {
+			if (next == EntityState.T_START_BODYPART) {
 				mimeDescriptor.addPart(createDescriptor(parser));
 			}
 			next = parser.next();
 		}
 		return mimeDescriptor;
-	}
+    }
 
 	private MimeDescriptor simplePartDescriptor(MimeTokenStream parser,
 			Header header) throws IOException, MimeException {
 		MaximalBodyDescriptor descriptor = (MaximalBodyDescriptor) parser
 				.getBodyDescriptor();
-		if ("message/rfc822".equals(descriptor.getMimeType())) {
-			CountingInputStream stream = new CountingInputStream(parser
-					.getDecodedInputStream());
+		if ("message".equalsIgnoreCase(descriptor.getMediaType())
+				&& "rfc822".equalsIgnoreCase(descriptor.getSubType())) {
+			final CountingInputStream stream = new CountingInputStream(
+					parser.getDecodedInputStream());
 			MimeDescriptor embeddedMessageDescriptor = build(stream);
 			Envelope envelope = createEnvelope(header);
 			int octetCount = stream.getOctetCount();
@@ -177,6 +188,7 @@ public class BodyStructureBuilder {
 			CountingInputStream stream = new CountingInputStream(parser
 					.getInputStream());
 			stream.readAll();
+			stream.close();
 			int bodyOctets = stream.getOctetCount();
 			int lines = stream.getLineCount();
 			return createDescriptor(bodyOctets, lines, descriptor, null, null);
@@ -186,9 +198,8 @@ public class BodyStructureBuilder {
 	private MimeDescriptor createDescriptor(long bodyOctets, long lines,
 			MaximalBodyDescriptor descriptor,
 			MimeDescriptor embeddedMessageDescriptor, Envelope envelope) {
-		Map<String, String> parameters = new TreeMap<String, String>(descriptor
-				.getContentTypeParameters());
-		String charset = descriptor.getCharset();
+		final Map<String, String> parameters = new TreeMap<String, String>(descriptor.getContentTypeParameters());
+		final String charset = descriptor.getCharset();
 		if (charset == null) {
 			if ("TEXT".equalsIgnoreCase(descriptor.getMediaType())) {
 				parameters.put("charset", "us-ascii");
@@ -196,7 +207,7 @@ public class BodyStructureBuilder {
 		} else {
 			parameters.put("charset", charset);
 		}
-		String boundary = descriptor.getBoundary();
+		final String boundary = descriptor.getBoundary();
 		if (boundary != null) {
 			parameters.put("boundary", boundary);
 		}
@@ -217,7 +228,7 @@ public class BodyStructureBuilder {
 				envelope);
 		return mimeDescriptor;
 	}
-	
+
 	private List<String> createParameters(Map<String, String> parameters) {
 		if (MapUtils.isNotEmpty(parameters)) {
 			List<String> results = new ArrayList<String>();
@@ -230,7 +241,7 @@ public class BodyStructureBuilder {
 			return null;
 		}
 	}
-	
+
 	private Envelope createEnvelope(Header h) {
 		Map<String, String> header = new HashMap<String, String>();
 		List<Field> fields = h.getFields();
@@ -241,5 +252,5 @@ public class BodyStructureBuilder {
 		}
 		return envelopeBuilder.build(header);
 	}
-		
+	
 }

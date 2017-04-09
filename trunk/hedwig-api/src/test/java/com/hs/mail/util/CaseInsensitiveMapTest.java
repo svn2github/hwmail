@@ -13,7 +13,7 @@ public class CaseInsensitiveMapTest {
 
 	@Test
 	public void testCaseInsensitive() {
-        Map<Object, String> map = new CaseInsensitiveMap<String, String>();
+        Map<String, String> map = new CaseInsensitiveMap<String, String>();
         map.put("One", "One");
         map.put("Two", "Two");
         assertEquals("One", (String) map.get("one"));
@@ -24,16 +24,16 @@ public class CaseInsensitiveMapTest {
 
 	@Test
     public void testNullHandling() {
-    	Map<Object, String> map = new CaseInsensitiveMap<String, String>();
+    	Map<String, String> map = new CaseInsensitiveMap<String, String>();
         map.put("One", "One");
         map.put("Two", "Two");
         map.put(null, "Three");
         assertEquals("Three", (String) map.get(null));
         map.put(null, "Four");
         assertEquals("Four", (String) map.get(null));
-        Set<Object> keys = map.keySet();
-        assertTrue(keys.contains("one"));
-        assertTrue(keys.contains("two"));
+        Set<String> keys = map.keySet();
+        assertTrue(keys.contains("One"));
+        assertTrue(keys.contains("Two"));
         assertTrue(keys.contains(null));
         assertTrue(keys.size() == 3);
     }
@@ -46,7 +46,7 @@ public class CaseInsensitiveMapTest {
         map.put("one", "Three");
         map.put(null, "Four");
         map.put(new Integer(20), "Five");
-        Map<Object, String> caseInsensitiveMap = new CaseInsensitiveMap<String, String>(map);
+        Map<Object, String> caseInsensitiveMap = new CaseInsensitiveMap<Object, String>(map);
         assertTrue(caseInsensitiveMap.size() == 4);
         assertTrue(caseInsensitiveMap.containsKey("one"));
         assertTrue(caseInsensitiveMap.containsKey("two"));

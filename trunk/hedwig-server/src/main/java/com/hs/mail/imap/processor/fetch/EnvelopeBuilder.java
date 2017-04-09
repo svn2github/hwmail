@@ -19,16 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.james.mime4j.field.address.AddressList;
-import org.apache.james.mime4j.field.address.DomainList;
-import org.apache.james.mime4j.field.address.Group;
-import org.apache.james.mime4j.field.address.Mailbox;
-import org.apache.james.mime4j.field.address.MailboxList;
-import org.apache.james.mime4j.field.address.parser.ParseException;
+import org.apache.james.mime4j.dom.address.AddressList;
+import org.apache.james.mime4j.dom.address.DomainList;
+import org.apache.james.mime4j.dom.address.Group;
+import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.dom.address.MailboxList;
+import org.apache.james.mime4j.field.address.LenientAddressParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import com.hs.mail.imap.ImapConstants;
 
@@ -41,7 +41,7 @@ import com.hs.mail.imap.ImapConstants;
 public class EnvelopeBuilder {
 	
 	private static Logger logger = LoggerFactory.getLogger(EnvelopeBuilder.class);
-	
+
 	public static final String[] WANTED_FIELDS = new String[] {
 			ImapConstants.RFC822_DATE, ImapConstants.RFC822_SUBJECT,
 			ImapConstants.RFC822_FROM, ImapConstants.RFC822_SENDER,
@@ -50,52 +50,35 @@ public class EnvelopeBuilder {
 			ImapConstants.RFC822_IN_REPLY_TO, ImapConstants.RFC822_MESSAGE_ID };
 	
 	public Envelope build(Map<String, String> header) {
-		String date = header.get(ImapConstants.RFC822_DATE);
-		String subject = header.get(ImapConstants.RFC822_SUBJECT);
-		Address[] fromAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_FROM));
-		Address[] senderAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_SENDER), fromAddresses);
-		Address[] replyToAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_REPLY_TO), fromAddresses);
-		Address[] toAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_TO));
-		Address[] ccAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_CC));
-		Address[] bccAddresses = buildAddresses(header
-				.get(ImapConstants.RFC822_BCC)); 
-		String inReplyTo = header.get(ImapConstants.RFC822_IN_REPLY_TO);
-		String messageId = header.get(ImapConstants.RFC822_MESSAGE_ID);
-		Envelope envelope = new Envelope(date, subject, fromAddresses,
-				senderAddresses, replyToAddresses, toAddresses, ccAddresses,
-				bccAddresses, inReplyTo, messageId);
+		final String date = header.get(ImapConstants.RFC822_DATE);
+		final String subject = header.get(ImapConstants.RFC822_SUBJECT);
+		final Address[] fromAddresses = buildAddresses(header.get(ImapConstants.RFC822_FROM));
+		final Address[] senderAddresses = buildAddresses(header.get(ImapConstants.RFC822_SENDER), fromAddresses);
+		final Address[] replyToAddresses = buildAddresses(header.get(ImapConstants.RFC822_REPLY_TO), fromAddresses);
+		final Address[] toAddresses = buildAddresses(header.get(ImapConstants.RFC822_TO));
+		final Address[] ccAddresses = buildAddresses(header.get(ImapConstants.RFC822_CC));
+		final Address[] bccAddresses = buildAddresses(header.get(ImapConstants.RFC822_BCC)); 
+		final String inReplyTo = header.get(ImapConstants.RFC822_IN_REPLY_TO);
+		final String messageId = header.get(ImapConstants.RFC822_MESSAGE_ID);
+		Envelope envelope = new Envelope(date, subject, fromAddresses, 
+						senderAddresses, replyToAddresses, toAddresses, ccAddresses, 
+						bccAddresses, inReplyTo, messageId);
 		return envelope;
 	}
-	
+
 	private Address[] buildAddresses(String value, Address[] defaults) {
 		Address[] addresses = buildAddresses(value);
-		return (null == addresses) ? defaults : addresses;
+		return addresses == null ? defaults : addresses;
 	}
 	
 	private Address[] buildAddresses(String value) {
-		try {
-			return buildMailAddresses(value);
-		} catch (ParseException ex) {
-			logger.warn(ex.getMessage());
-			return null;
-		}
-	}
-	
-	private Address[] buildMailAddresses(String value) throws ParseException {
 		if (StringUtils.isEmpty(value)) {
 			return null;
 		} else {
-			AddressList addressList = AddressList.parse(value);
-			int size = addressList.size();
-			List<Address> addresses = new ArrayList<Address>(size);
-			for (int i = 0; i < size; i++) {
-				org.apache.james.mime4j.field.address.Address address = addressList
-						.get(i);
+			AddressList addressList = LenientAddressParser.DEFAULT.parseAddressList(value);
+			final int size = addressList.size();
+			final List<Address> addresses = new ArrayList<Address>(size);
+			for (org.apache.james.mime4j.dom.address.Address address : addressList) {
 				if (address instanceof Group) {
 					addAddresses((Group) address, addresses);
 				} else if (address instanceof Mailbox) {
@@ -111,17 +94,19 @@ public class EnvelopeBuilder {
 	
 	private void addAddresses(Group group, List<Address> addresses) {
 		String groupName = group.getName();
+		// Start group
 		addresses.add(new Address(null, null, groupName, null));
 		MailboxList mailboxList = group.getMailboxes();
 		for (int i = 0; i < mailboxList.size(); i++) {
 			Address mailboxAddress = buildAddress(mailboxList.get(i));
 			addresses.add(mailboxAddress);
 		}
+		// End group
 		addresses.add(new Address(null, null, null, null));
 	}
-	
+
 	private Address buildAddress(Mailbox mailbox) {
-		// Javamail raises exception when personal name is surrounded with
+		// JavaMail raises exception when personal name is surrounded with
 		// double quotation mark.
 		String name = StringUtils.strip(mailbox.getName(), "\"");
 		String domain = mailbox.getDomain();

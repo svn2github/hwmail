@@ -19,7 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,8 @@ import javax.mail.Flags;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.james.mime4j.parser.Field;
+import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.stream.Field;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -37,6 +37,7 @@ import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageHeader;
 import com.hs.mail.imap.message.PhysMessage;
+import com.hs.mail.util.CaseInsensitiveMap;
 
 /**
  * 
@@ -224,7 +225,7 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		String sql = "SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid";
 		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql,
 				new Object[] { new Long(physMessageID) });
-		Map<String, String> results = new HashMap<String, String>();
+		Map<String, String> results = new CaseInsensitiveMap<String, String>();
 		while (rs.next()) {
 			results.put(rs.getString(1), rs.getString(2));
 		}
@@ -236,13 +237,13 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 				.append("SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid AND UPPER(n.headername) IN ");
 		Object[] param = new Object[fields.length + 1];
 		param[0] = new Long(physMessageID);
-		
+
 		System.arraycopy(fields, 0, param, 1, fields.length);
 		sql.append("(")
 				.append(StringUtils.repeat("UPPER(?)", ",", fields.length))
 				.append(")");
 
-		Map<String, String> results = new HashMap<String, String>();
+		Map<String, String> results = new CaseInsensitiveMap<String, String>();
 		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql.toString(), param);
 		while (rs.next()) {
 			results.put(rs.getString(1), rs.getString(2));
@@ -305,5 +306,14 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 			return fd;
 		}
 	 };
+
+	protected static String getDisplayString(Mailbox mailbox) {
+		String name = mailbox.getName();
+		if (name != null && name.length() > 0) {
+			return name + " <" + mailbox.getAddress() + ">";
+		} else {
+			return mailbox.getAddress();
+		}
+	}
 
 }

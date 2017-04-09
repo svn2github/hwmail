@@ -21,25 +21,29 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.MimeIOException;
+import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
+import org.apache.james.mime4j.dom.Header;
+import org.apache.james.mime4j.dom.address.AddressList;
+import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.dom.address.MailboxList;
+import org.apache.james.mime4j.dom.field.AddressListField;
+import org.apache.james.mime4j.dom.field.DateTimeField;
+import org.apache.james.mime4j.dom.field.FieldName;
+import org.apache.james.mime4j.dom.field.MailboxListField;
+import org.apache.james.mime4j.dom.field.ParsedField;
+import org.apache.james.mime4j.dom.field.UnstructuredField;
 import org.apache.james.mime4j.field.AbstractField;
-import org.apache.james.mime4j.field.AddressListField;
-import org.apache.james.mime4j.field.DateTimeField;
-import org.apache.james.mime4j.field.FieldName;
-import org.apache.james.mime4j.field.MailboxListField;
-import org.apache.james.mime4j.field.UnstructuredField;
-import org.apache.james.mime4j.field.address.AddressList;
-import org.apache.james.mime4j.field.address.Mailbox;
-import org.apache.james.mime4j.field.address.MailboxList;
+import org.apache.james.mime4j.field.LenientFieldParser;
 import org.apache.james.mime4j.io.MaxHeaderLimitException;
-import org.apache.james.mime4j.message.Header;
+import org.apache.james.mime4j.message.HeaderImpl;
 import org.apache.james.mime4j.parser.AbstractContentHandler;
-import org.apache.james.mime4j.parser.Field;
-import org.apache.james.mime4j.parser.MimeEntityConfig;
 import org.apache.james.mime4j.parser.MimeStreamParser;
-import org.springframework.util.CollectionUtils;
+import org.apache.james.mime4j.stream.Field;
+import org.apache.james.mime4j.stream.MimeConfig;
 
 /**
  * 
@@ -48,37 +52,37 @@ import org.springframework.util.CollectionUtils;
  *
  */
 public class MessageHeader {
-	private Header header =  new Header();
+	private Header header = new HeaderImpl();
 
 	public MessageHeader(InputStream is) throws MimeIOException, IOException {
 		final MimeStreamParser parser = createMimeParser();
 		parser.setContentHandler(new AbstractContentHandler() {
 			@Override
-			public void endHeader() {
+			public void endHeader() throws MimeException {
 				parser.stop();
 			}
 			@Override
 			public void field(Field field) throws MimeException {
-				Field parsedField = AbstractField.parse(field.getRaw());
+				ParsedField parsedField = LenientFieldParser
+						.parse(field.getRaw(), DecodeMonitor.SILENT);
 				header.addField(parsedField);
 			}
 		});
-        try {
-        	parser.parse(is);
-        } catch (MaxHeaderLimitException ex) {
-        	// Ignore this exception
-        } catch (MimeException ex) {
-        	throw new MimeIOException(ex);
-        }
+		try {
+			parser.parse(is);
+		} catch (MaxHeaderLimitException ex) {
+			// Ignore this exception
+		} catch (MimeException ex) {
+			throw new MimeIOException(ex);
+		}
 	}
 	
 	private static MimeStreamParser createMimeParser() {
-		MimeEntityConfig config = new MimeEntityConfig();
-		config.setMaxLineLen(-1);
+		MimeConfig config = MimeConfig.custom().setMaxLineLen(-1).build();
 		return new MimeStreamParser(config);
 	}
-	
-    public Header getHeader() {
+
+	public Header getHeader() {
 		return header;
 	}
 
@@ -89,11 +93,12 @@ public class MessageHeader {
 			if (field instanceof UnstructuredField)
 				results.add(((UnstructuredField) field).getValue());
 			else
-				results.add(DecoderUtil.decodeEncodedWords(field.getBody()));
+				results.add(DecoderUtil.decodeEncodedWords(field.getBody(),
+						DecodeMonitor.SILENT));
 		}
 		return results;
 	}
-    
+
     public String getSubject() {
 		UnstructuredField field = obtainField(FieldName.SUBJECT);
 		if (field == null)
