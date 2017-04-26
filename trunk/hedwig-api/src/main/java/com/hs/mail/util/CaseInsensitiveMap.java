@@ -129,6 +129,10 @@ public class CaseInsensitiveMap<K, V> implements Map<K, V> {
 							: o),
 					e.getValue());
 		}
+
+		public void remove() {
+			it.remove();
+		}
 	}
 
 	/**
@@ -173,7 +177,7 @@ public class CaseInsensitiveMap<K, V> implements Map<K, V> {
 	 * KeySet implementation. 
 	 */
 	private class KeySet extends AbstractSet<K> {
-		
+	
 		public int size() {
 			return map.size();
 		}
@@ -181,7 +185,6 @@ public class CaseInsensitiveMap<K, V> implements Map<K, V> {
 		public Iterator<K> iterator() {
 			return newKeyIterator();
 		}
-
 	}
 
 	public Collection<V> values() {
@@ -204,7 +207,6 @@ public class CaseInsensitiveMap<K, V> implements Map<K, V> {
 		public Iterator<Map.Entry<K, V>> iterator() {
 			return newEntryIterator();
 		}
-
 	}
 	
 	/**
@@ -238,7 +240,6 @@ public class CaseInsensitiveMap<K, V> implements Map<K, V> {
 			}
 			return super.equals(obj);
 		}
-
 	}
 
 }
