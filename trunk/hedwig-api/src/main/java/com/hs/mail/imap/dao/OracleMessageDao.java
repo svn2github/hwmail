@@ -55,9 +55,7 @@ public class OracleMessageDao extends AnsiMessageDao {
 				Date sent = header.getDate();
 				pstmt.setTimestamp(4, (sent != null) ? new Timestamp(sent
 						.getTime()) : null); // sentdate
-				pstmt.setString(5, (header.getFrom() != null) 
-						? getDisplayString(header.getFrom()) 
-						: null); // fromaddr
+				pstmt.setString(5, header.getFrom()); // fromaddr
 				return pstmt;
 			}
 		}, keyHolder);

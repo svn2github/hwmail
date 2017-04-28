@@ -27,7 +27,6 @@ import javax.mail.Flags;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.stream.Field;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -306,14 +305,5 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 			return fd;
 		}
 	 };
-
-	protected static String getDisplayString(Mailbox mailbox) {
-		String name = mailbox.getName();
-		if (name != null && name.length() > 0) {
-			return name + " <" + mailbox.getAddress() + ">";
-		} else {
-			return mailbox.getAddress();
-		}
-	}
 
 }

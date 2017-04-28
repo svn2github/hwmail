@@ -27,7 +27,6 @@ import javax.mail.Flags;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mime4j.dom.address.Mailbox;
 
 import com.hs.mail.container.config.Config;
 
@@ -60,13 +59,7 @@ public class MailMessage extends FetchData {
 	}
 	
 	public String getFrom() {
-		Mailbox f = header.getFrom();
-		return (f != null) ? f.getAddress() : null;
-	}
-	
-	public String getReplyTo() {
-		Mailbox m = header.getReplyTo();
-		return (m == null) ? getFrom() : m.getAddress();
+		return header.getFromAddress();
 	}
 	
 	public InputStream getInputStream() throws IOException {

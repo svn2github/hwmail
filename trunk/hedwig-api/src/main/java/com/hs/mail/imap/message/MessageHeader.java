@@ -28,7 +28,6 @@ import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
 import org.apache.james.mime4j.dom.Header;
 import org.apache.james.mime4j.dom.address.AddressList;
-import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
 import org.apache.james.mime4j.dom.field.AddressListField;
 import org.apache.james.mime4j.dom.field.DateTimeField;
@@ -44,6 +43,9 @@ import org.apache.james.mime4j.parser.AbstractContentHandler;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.Field;
 import org.apache.james.mime4j.stream.MimeConfig;
+import org.apache.james.mime4j.util.ByteSequence;
+import org.apache.james.mime4j.util.CharsetUtil;
+import org.apache.james.mime4j.util.MimeUtil;
 
 /**
  * 
@@ -99,53 +101,47 @@ public class MessageHeader {
 		return results;
 	}
 
-    public String getSubject() {
+	public String getSubject() {
 		UnstructuredField field = obtainField(FieldName.SUBJECT);
 		if (field == null)
 			return null;
 
-		return field.getValue();
+		String value = getNonAsciiValue(field);
+		return (value != null) ? value : field.getValue();
 	}
 
     public Date getDate() {
-		DateTimeField dateField = obtainField(FieldName.DATE);
-		if (dateField == null)
+		DateTimeField field = obtainField(FieldName.DATE);
+		if (field == null)
 			return null;
 
-		return dateField.getDate();
+		return field.getDate();
 	}
 
-	public Mailbox getFrom() {
-		MailboxList mailboxList = getMailboxList(FieldName.FROM);
-		if (CollectionUtils.isEmpty(mailboxList)) {
-			Field field = header.getField(FieldName.FROM);
-			return (field != null) ? new Mailbox(field.getBody(), null) : null;
-		} else {
-			return mailboxList.get(0);
-		}
+	public String getFrom() {
+		MailboxListField field = obtainField(FieldName.FROM);
+		if (field == null)
+			return null;
+
+		String value = getNonAsciiValue(field);
+		if (value == null)
+			value = DecoderUtil.decodeEncodedWords(field.getBody(),
+					DecodeMonitor.SILENT);
+		
+		return unquoteName(value);
 	}
 	
-	public Mailbox getReplyTo() {
-		MailboxList mailboxList = getMailboxList(FieldName.REPLY_TO);
-		if (CollectionUtils.isEmpty(mailboxList)) {
-			return null;
-		} else {
-			return mailboxList.get(0);
-		}
+	public String getFromAddress() {
+        MailboxListField field = obtainField(FieldName.FROM);
+        if (field == null)
+            return null;
+
+        MailboxList mailboxList = field.getMailboxList();
+		return CollectionUtils.isEmpty(mailboxList)
+			? field.getBody()
+			: mailboxList.get(0).getAddress();
 	}
-
-    public AddressList getTo() {
-		return getAddressList(FieldName.TO);
-	}
-
-    public AddressList getCc() {
-        return getAddressList(FieldName.CC);
-    }
-
-    public AddressList getBcc() {
-        return getAddressList(FieldName.BCC);
-    }
-
+	
     public AddressList getAddressList(String fieldName) {
 		AddressListField field = obtainField(fieldName);
 		if (field == null)
@@ -154,13 +150,97 @@ public class MessageHeader {
 		return field.getAddressList();
 	}
     
-    private MailboxList getMailboxList(String fieldName) {
-        MailboxListField field = obtainField(fieldName);
-        if (field == null)
-            return null;
+	private static String getNonAsciiValue(Field field) {
+		ByteSequence raw = field.getRaw();
+		if (indexOf(raw, "=?") == -1) {
+			// Raw text is not "encoded-word".
+			int len = raw.length();
+			int off = field.getName().length() + 1;
+			if (len > off + 1
+					&& (CharsetUtil.isWhitespace((char) raw.byteAt(off)))) {
+				// Skip white spaces
+				off++;
+			}
+			for (int i = off; i < len; i++) {
+				if (!CharsetUtil.isASCII((char) raw.byteAt(i))) {
+					// Non-ascii text found, treat this text "as is".
+					byte[] b = new byte[len - off];  
+					for (int j = 0; j < b.length; j++) {
+						b[j] = raw.byteAt(off + j);
+					}
+					return MimeUtil.unfold(new String(b));
+				}
+			}
+		}
+		return null;
+	}	
+	
+	private static int indexOf(ByteSequence bs, String str) {
+		int targetLength = str.length();
+		int max = bs.length() - targetLength;
+		char first = str.charAt(0);
+		for (int i = 0; i < max; i++) {
+			// Loook for the first character
+			if ((char) bs.byteAt(i) != first) {
+				while (++i < max && ((char) bs.byteAt(i) != first));
+			}
+			// Found the first character, now look at the rest of v2
+			if (i < max) {
+				int j = i + 1;
+				int end = j + targetLength - 1;
+				for (int k = 1; j < end
+						&& ((char) bs.byteAt(j) == str.charAt(k)); j++, k++);
 
-        return field.getMailboxList();
-    }
+				if (j == end) {
+					// Found whole string
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+	
+	private static String unquoteName(String str) {
+		if (str == null || str.length() == 0) {
+			return str;
+		}
+		
+		int pos = 0;
+		char current = str.charAt(pos);
+		if (current != '\"') {
+			return str;
+		}
+
+		StringBuilder dst = new StringBuilder();
+		pos++;
+		int len = str.length();
+		boolean escaped = false;
+		while (pos < len) {
+			current = str.charAt(pos++);
+			if (escaped) {
+				if (current != '\"' && current != '\\') {
+					dst.append('\\');
+				}
+				dst.append(current);
+				escaped = false;
+			} else {
+				if (current == '\"') {
+					break;
+				}
+				if (current == '\\') {
+					escaped = true;
+				} else if (current != '\r' && current != '\n') {
+					dst.append(current);
+				}
+			}
+		}
+		
+		while (pos < len) {
+			dst.append(str.charAt(pos++));
+		}
+
+		return dst.toString();
+	}
 
 	<F extends Field> F obtainField(String fieldName) {
 		if (header == null)
