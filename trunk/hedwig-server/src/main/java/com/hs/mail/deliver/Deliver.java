@@ -35,6 +35,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.james.mime4j.dom.address.Address;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.dom.field.FieldName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -179,8 +180,8 @@ public class Deliver {
 			try {
 				is = new FileInputStream(file);
 				MessageHeader header = new MessageHeader(is);
-				if (from == null && header.getFrom() != null) {
-					from = header.getFrom().getAddress();
+				if (from == null) {
+					from = header.getFromAddress();
 				}
 				if (rcpts == null) {
 					rcpts = getRecipients(header);
@@ -209,9 +210,9 @@ public class Deliver {
 
 	private static String[] getRecipients(MessageHeader header) {
 		Set<String> rcpts = new HashSet<String>();
-		getRecipients(header.getTo(), rcpts);
-		getRecipients(header.getCc(), rcpts);
-		getRecipients(header.getBcc(), rcpts);
+		getRecipients(header.getAddressList(FieldName.TO), rcpts);
+		getRecipients(header.getAddressList(FieldName.CC), rcpts);
+		getRecipients(header.getAddressList(FieldName.BCC), rcpts);
 		return rcpts.toArray(new String[0]);
 	}
 	
