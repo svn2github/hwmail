@@ -1,3 +1,18 @@
+/*
+ * Copyright 2010 the original author or authors.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.mailet;
 
 import java.io.File;
@@ -19,17 +34,31 @@ import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 import com.hs.mail.util.FileUtils;
 
+/**
+ * Sends the message through daemonized SpamAssassin (spamd), visit
+ * <a href="http://spamassassin.apache.org/">Apache SpamAssassin</a> for info on
+ * configuration. The header X-Spam-Flag is added to every spam message with the
+ * value of YES. The header X-Spam-Status is also added, this header contains
+ * the score and the threshold score for spam (usually 5.0).
+ * 
+ * 
+ * @author Wonchul Doh
+ * @since 26 April, 2017
+ *
+ */
 public class SpamAssassin extends AbstractMailet {
 
 	static Logger logger = LoggerFactory.getLogger(SpamAssassin.class);
 	
-	private String spamdHost;
+	private String spamdHost;	// The host for spamd
 
-	private int spamdPort;
+	private int spamdPort;	// The port number of spamd
 	
-	private String action;
+	private String action;	// Action for SPAM message
 	
-	private String argument;
+	// Argument for SPAM action, message for reject action or destination folder
+	// for fileinto action
+	private String argument; 
 	
 	public void init(MailetContext context) {
 		super.init(context);
@@ -57,7 +86,7 @@ public class SpamAssassin extends AbstractMailet {
 			SpamAssassinInvoker sa = new SpamAssassinInvoker(spamdHost, spamdPort);
 
 			if (!sa.scanMail(message)) {
-				// Message is not a spam
+				// Message is not a SPAM
 				return;
 			}
 			
