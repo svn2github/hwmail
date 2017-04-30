@@ -39,12 +39,6 @@ public class Recipient extends MailAddress {
 		super(address, strict);
 	}
 
-	public Recipient(long id, String address, boolean strict)
-			throws SmtpException {
-		super(address, strict);
-		setID(id);
-	}
-
 	public void setID(long id) {
 		this.id = id;
 	}

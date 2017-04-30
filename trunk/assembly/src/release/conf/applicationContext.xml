@@ -44,6 +44,7 @@
 	<bean id="def.props"
 		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="location" value="file:${app.home}/conf/default.properties" />
+		<property name="fileEncoding" value="UTF-8" />
 	</bean>
 
 	<!-- =================================================================== -->
@@ -204,6 +205,7 @@
 	<bean id="deliver.local" class="com.hs.mail.mailet.LocalDelivery">
 		<property name="mailets">
 			<list>
+				<!-- <bean class="com.hs.mail.mailet.SpamAssassin" /> -->
 				<bean class="com.hs.mail.mailet.AliasingForwarding" />
 				<bean class="com.hs.mail.mailet.ToRepository" />
 			</list>

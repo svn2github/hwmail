@@ -78,6 +78,7 @@ public class AliasingForwarding extends AbstractMailet {
 									long id = getUserManager().getUserID(forwardTo.getMailbox());
 									if (id != 0) {
 										forwardTo.setID(id);
+										forwardTo.setDestination(rcpt.getDestination());
 										newRecipients.add(forwardTo);
 									} else {
 										throw new AddressException("Forwarding address not found.");
@@ -103,14 +104,17 @@ public class AliasingForwarding extends AbstractMailet {
 					for (Alias alias : expanded) {
 						if (alias.getDeliverTo().startsWith(ImapConstants.NAMESPACE_PREFIX)) {
 							// Aliased mailbox is a public folder.
-							Recipient pf = new Recipient(ImapConstants.ANYONE_ID, rcpt.getMailbox(), false);
+							Recipient pf = new Recipient(rcpt.getMailbox(), false);
+							pf.setID(ImapConstants.ANYONE_ID);
 							pf.setDestination(alias.getDeliverTo());
 							newRecipients.add(pf);
 						} else {
-							User aliased = getUserManager().getUserByAddress(alias.getDeliverTo());
-							if (aliased != null) {
-								newRecipients.add(new Recipient(aliased.getID(),
-										aliased.getUserID(), false));
+							user = getUserManager().getUserByAddress(alias.getDeliverTo());
+							if (user != null) {
+								Recipient aliased = new Recipient(user.getUserID(), false);
+								aliased.setID(user.getID());
+								aliased.setDestination(rcpt.getDestination());
+								newRecipients.add(aliased);
 							}
 						}
 					}

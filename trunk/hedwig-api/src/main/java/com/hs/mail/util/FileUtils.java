@@ -30,6 +30,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import com.hs.mail.container.config.Config;
+
 /**
  * 
  * @author Won Chul Doh
@@ -96,6 +98,31 @@ public class FileUtils {
 		} finally {
 			IOUtils.closeQuietly(output);
 			IOUtils.closeQuietly(input);
+		}
+	}
+	
+	public static void prependToFile(String data, File file)
+			throws IOException {
+		File temp = File.createTempFile("HDE", ".tmp", Config.getTempDirectory());
+		InputStream input = null;
+		OutputStream output = null;
+		boolean success = false;
+		try {
+			input = new FileInputStream(file);
+			output = new FileOutputStream(temp);
+			output.write(data.getBytes());
+			IOUtils.copyLarge(input, output);
+			success = true;
+		} finally {
+			IOUtils.closeQuietly(output);
+			IOUtils.closeQuietly(input);
+			if (success) {
+				boolean rename = temp.renameTo(file);
+				if (!rename) {
+					org.apache.commons.io.FileUtils.copyFile(temp, file);
+				}
+			}
+			temp.delete();
 		}
 	}
 
