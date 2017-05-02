@@ -244,6 +244,12 @@ public interface MailboxManager {
 	public void deleteMessage(final long uid);
 
 	/**
+	 * Deletes orphan messages (physical messages which are not referenced by
+	 * any mailbox message).
+	 */
+	public void deleteOrphanMessages();
+
+	/**
 	 * Copies a message to the given mailbox.
 	 * 
 	 * @param uid

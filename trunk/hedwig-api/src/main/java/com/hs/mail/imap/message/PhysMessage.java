@@ -15,7 +15,13 @@
  */
 package com.hs.mail.imap.message;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+
+import org.apache.commons.io.FileUtils;
+
+import com.hs.mail.container.config.Config;
 
 /**
  * 
@@ -48,4 +54,13 @@ public class PhysMessage {
 		this.internalDate = internalDate;
 	}
 
+	public void deleteFile() throws IOException {
+		File dataFile = Config.getDataFile(internalDate, physMessageID);
+		FileUtils.forceDelete(dataFile);
+		File descFile = Config.getMimeDescriptorFile(internalDate, physMessageID);
+		if (descFile.exists()) {
+			FileUtils.forceDelete(descFile);
+		}
+	}
+	
 }

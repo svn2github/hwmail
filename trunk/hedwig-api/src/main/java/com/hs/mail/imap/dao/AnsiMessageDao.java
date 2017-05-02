@@ -28,6 +28,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.stream.Field;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -117,6 +118,18 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 					}
 			}
 		);
+	}
+	
+	public void deleteOrphanMessages(final PhysMessageCallback pmcb) {
+		String sql = "SELECT p.physmessageid, p.internaldate FROM hw_physmessage p LEFT JOIN hw_message m ON m.physmessageid=p.physmessageid WHERE m.physmessageid IS NULL";
+		getJdbcTemplate().query(sql, new RowCallbackHandler() {
+			public void processRow(ResultSet rs) throws SQLException {
+				PhysMessage pm = new PhysMessage();
+				pm.setPhysMessageID(rs.getLong("physmessageid"));
+				pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
+				pmcb.processPhysMessage(pm);
+			}
+		});
 	}
 	
 	public void deletePhysicalMessage(long physMessageID) {

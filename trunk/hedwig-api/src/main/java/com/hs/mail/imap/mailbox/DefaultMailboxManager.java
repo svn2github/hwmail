@@ -27,8 +27,9 @@ import java.util.Set;
 
 import javax.mail.Flags;
 
+import net.sf.ehcache.Ehcache;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -58,8 +59,6 @@ import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
 import com.hs.mail.util.CaseInsensitiveMap;
 import com.hs.mail.util.EhCacheWrapper;
-
-import net.sf.ehcache.Ehcache;
 
 /**
  * 
@@ -203,9 +202,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 							TransactionStatus status) {
 						try {
 							MailboxDao dao = DaoFactory.getMailboxDao();
-							List<PhysMessage> danglings = dao
-									.getDanglingMessageIDList(ownerID,
-											mailboxID);
 							// We must evict objects for these deleted messages.
 							// But, how we can do it?
 							dao.deleteMessages(ownerID, mailboxID);
@@ -215,14 +211,6 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 								// prevent the mailbox from selecting
 								dao.forbidSelectMailbox(ownerID, mailboxID);
 							}
-							if (CollectionUtils.isNotEmpty(danglings)) {
-								for (PhysMessage pm : danglings) {
-									if (hdCache != null) {
-										hdCache.remove(pm.getPhysMessageID());
-									}
-									deletePhysicalMessage(pm);
-								}
-							}
 						} catch (DataAccessException ex) {
 							status.setRollbackOnly();
 							throw ex;
@@ -231,21 +219,20 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	private void deletePhysicalMessage(PhysMessage pm) {
-		MessageDao dao = DaoFactory.getMessageDao();
-		dao.deletePhysicalMessage(pm.getPhysMessageID());
+	private void deletePhysicalMessage(final PhysMessage pm) {
+		getTransactionTemplate().execute(
+				new TransactionCallbackWithoutResult() {
+					public void doInTransactionWithoutResult(
+							TransactionStatus status) {
+						MessageDao dao = DaoFactory.getMessageDao();
+						dao.deletePhysicalMessage(pm.getPhysMessageID());
+					}
+				});
 		if (hdCache != null) {
 			hdCache.remove(pm.getPhysMessageID());
 		}
 		try {
-			File dataFile = Config.getDataFile(pm.getInternalDate(),
-					pm.getPhysMessageID());
-			FileUtils.forceDelete(dataFile);
-			File descriptorFile = Config.getMimeDescriptorFile(
-					pm.getInternalDate(), pm.getPhysMessageID());
-			if (descriptorFile.exists()) {
-				FileUtils.forceDelete(descriptorFile);
-			}
+			pm.deleteFile();
 		} catch (IOException ex) {
 			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
 		}
@@ -401,11 +388,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 							TransactionStatus status) {
 						try {
 							MessageDao dao = DaoFactory.getMessageDao();
-							PhysMessage pm = dao.getDanglingMessageID(uid);
 							dao.deleteMessage(uid);
-							if (pm != null) {
-								deletePhysicalMessage(pm);
-							}
 						} catch (DataAccessException ex) {
 							status.setRollbackOnly();
 							throw ex;
@@ -414,6 +397,15 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
+	public void deleteOrphanMessages() {
+		MessageDao dao = DaoFactory.getMessageDao();
+		dao.deleteOrphanMessages(new MessageDao.PhysMessageCallback() {
+			public void processPhysMessage(final PhysMessage pm) {
+				deletePhysicalMessage(pm);
+			}
+		});
+	}
+	
 	public void copyMessage(final long uid, final long mailboxID) {
 		getTransactionTemplate().execute(
 				new TransactionCallbackWithoutResult() {

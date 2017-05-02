@@ -2,7 +2,6 @@ package com.hs.mail.imap.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +9,6 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.message.PhysMessage;
 
 /**
  * 
@@ -143,46 +141,6 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	public void forbidSelectMailbox(long ownerID, long mailboxID) {
 		String sql = "UPDATE hw_mailbox SET noselect_flag = 'Y' WHERE mailboxid = ?";
 		getJdbcTemplate().update(sql, mailboxID);
-	}
-
-	public List<PhysMessage> getDanglingMessageIDList(long ownerID) {
-		String sql = "SELECT m.physmessageid, p.internaldate "
-				+      "FROM hw_mailbox b, hw_message m, hw_physmessage p "
-				+     "WHERE b.ownerid = ? "
-				+       "AND m.mailboxid = b.mailboxid "
-				+       "AND m.physmessageid = p.physmessageid "
-				+     "GROUP BY m.physmessageid, p.internaldate "
-				+    "HAVING COUNT(m.physmessageid) = 1";
-		return getJdbcTemplate().query(sql,
-				new Object[] { new Long(ownerID) }, new RowMapper<PhysMessage>() {
-					public PhysMessage mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						PhysMessage pm = new PhysMessage();
-						pm.setPhysMessageID(rs.getLong("physmessageid"));
-						pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
-						return pm;
-					}
-				});
-	}
-	
-	public List<PhysMessage> getDanglingMessageIDList(long ownerID,
-			long mailboxID) {
-		String sql = "SELECT m.physmessageid, p.internaldate "
-				+      "FROM hw_message m, hw_physmessage p "
-				+     "WHERE m.mailboxid = ? "
-				+       "AND m.physmessageid = p.physmessageid "
-				+     "GROUP BY m.physmessageid, p.internaldate "
-				+    "HAVING COUNT(m.physmessageid) = 1";
-		return getJdbcTemplate().query(sql,
-				new Object[] { new Long(mailboxID) }, new RowMapper<PhysMessage>() {
-					public PhysMessage mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						PhysMessage pm = new PhysMessage();
-						pm.setPhysMessageID(rs.getLong("physmessageid"));
-						pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
-						return pm;
-					}
-				});
 	}
 
 	public void deleteMessages(long ownerID) {

@@ -42,11 +42,17 @@ public class DiskCleanupJob {
 	
 	public void execute() {
 		logger.debug("Starting disk cleanup job.");
+
+		// Delete physical messages which are not referenced by any mailbox
+		// message.
+		mailboxManager.deleteOrphanMessages();
+		
 		String prop = Config.getProperty("stop_cron_after", "2h");
 		Date stopAt = ScheduleUtils.getTimeAfter(prop, DateUtils.addHours(new Date(), 2));
 		if ((prop = Config.getProperty("expunge_after", null)) != null) {
 			new MessageExpunger(mailboxManager).expunge(prop, stopAt.getTime());
 		}
+		
 		if ((prop = Config.getProperty("compress_after", null)) != null) {
 			new MessageCompressor().compress(prop, stopAt.getTime());
 		}

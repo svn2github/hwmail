@@ -18,7 +18,6 @@ package com.hs.mail.imap.dao;
 import java.util.List;
 
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.message.PhysMessage;
 
 /**
  * 
@@ -82,30 +81,6 @@ public interface MailboxDao extends DaoSupport {
 	 */
 	public List<Long> getDeletedMessageIDList(long mailboxID);
 
-	/**
-	 * Get the list of physical message identifiers which will be dangling
-	 * pointers (pointing messages which are already deleted) after deleting all
-	 * the messages owned by the user.
-	 * 
-	 * @param ownerID
-	 *            ID of the user
-	 * @return list of PhysMessage objects
-	 */
-	public List<PhysMessage> getDanglingMessageIDList(long ownerID);
-	
-	/**
-	 * Get the list of physical message identifiers which will be dangling
-	 * pointers (pointing messages which are already deleted) after expunging
-	 * the mailbox.
-	 * 
-	 * @param ownerID
-	 *            ID of the user who owns the mailbox
-	 * @param mailboxID
-	 *            ID of the mailbox
-	 * @return list of PhysMessage objects
-	 */
-	public List<PhysMessage> getDanglingMessageIDList(long ownerID, long mailboxID);
-	
 	/**
 	 * Check whether the mailbox really exists.
 	 * 

@@ -1,14 +1,8 @@
 package com.hs.mail.web.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -22,15 +16,11 @@ import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.HwDaoFactory;
 import com.hs.mail.imap.dao.HwUserDao;
 import com.hs.mail.imap.dao.MailboxDao;
-import com.hs.mail.imap.dao.MessageDao;
-import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.web.model.PublicFolder;
 
 public class HwUserManager {
-
-	private static Logger logger = LoggerFactory.getLogger(HwUserManager.class);
 
 	private TransactionTemplate transactionTemplate;
 
@@ -124,27 +114,10 @@ public class HwUserManager {
 	
 	private void emptyMailboxes(long ownerID) {
 		MailboxDao dao = DaoFactory.getMailboxDao();
-		List<PhysMessage> danglings = dao.getDanglingMessageIDList(ownerID);
 		dao.deleteMessages(ownerID);
 		dao.deleteMailboxes(ownerID);
-		if (CollectionUtils.isNotEmpty(danglings)) {
-			for (PhysMessage pm : danglings) {
-				deletePhysicalMessage(pm);
-			}
-		}
 	}
 	
-	private void deletePhysicalMessage(PhysMessage pm) {
-		MessageDao dao = DaoFactory.getMessageDao();
-		dao.deletePhysicalMessage(pm.getPhysMessageID());
-		try {
-			File file = Config.getDataFile(pm.getInternalDate(), pm.getPhysMessageID());
-			FileUtils.forceDelete(file);
-		} catch (IOException ex) {
-			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
-		}
-	}
-
 	public Alias getAlias(long id) {
 		return HwDaoFactory.getHwUserDao().getAlias(id); 
 	}
