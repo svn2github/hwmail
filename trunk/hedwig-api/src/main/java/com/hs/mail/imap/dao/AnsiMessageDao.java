@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.dao;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -100,26 +101,11 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		update(sqls, messageID);
 	}
 
-	public PhysMessage getDanglingMessageID(long messageID) {
-		String sql = "SELECT m.physmessageid, p.internaldate "
-				+      "FROM hw_message m, hw_physmessage p "
-				+     "WHERE m.physmessageid = (SELECT physmessageid FROM hw_message WHERE messageid = ?) "
-				+       "AND p.physmessageid = m.physmessageid "
-				+     "GROUP BY m.physmessageid, p.internaldate "
-				+    "HAVING COUNT(m.physmessageid) = 1";
-		return queryForObject(sql,
-				new Object[] { new Long(messageID) }, new RowMapper<PhysMessage>() {
-					public PhysMessage mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						PhysMessage pm = new PhysMessage();
-						pm.setPhysMessageID(rs.getLong("physmessageid"));
-						pm.setInternalDate(new Date(rs.getTimestamp("internaldate").getTime()));
-						return pm;
-					}
-			}
-		);
+	public int getOrphanMessageCount() {
+		String sql = "SELECT COUNT(*) FROM hw_physmessage p LEFT JOIN hw_message m ON m.physmessageid=p.physmessageid WHERE m.physmessageid IS NULL";
+		return getJdbcTemplate().queryForObject(sql, Integer.class);
 	}
-	
+
 	public void deleteOrphanMessages(final PhysMessageCallback pmcb) {
 		String sql = "SELECT p.physmessageid, p.internaldate FROM hw_physmessage p LEFT JOIN hw_message m ON m.physmessageid=p.physmessageid WHERE m.physmessageid IS NULL";
 		getJdbcTemplate().query(sql, new RowCallbackHandler() {
@@ -132,12 +118,16 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		});
 	}
 	
-	public void deletePhysicalMessage(long physMessageID) {
+	public void deletePhysicalMessage(PhysMessage physMessage) {
 		String[] sql = { "DELETE FROM hw_physmessage WHERE physmessageid = ?",
 				"DELETE FROM hw_headervalue WHERE physmessageid = ?" };
-		Object[] param = { new Long(physMessageID) };
+		Object[] param = { physMessage.getPhysMessageID() };
 		getJdbcTemplate().update(sql[0], param);
 		getJdbcTemplate().update(sql[1], param);
+		try {
+			physMessage.deleteFile();
+		} catch (IOException ignore) {
+		}
 	}
 	
 	public List<Long> resetRecent(long mailboxID) {

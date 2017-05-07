@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -49,7 +50,7 @@ import com.hs.mail.util.InetAddressMatcher;
  */
 public class Config implements InitializingBean {
 	
-	static Logger console = LoggerFactory.getLogger("console");
+	static Logger logger = LoggerFactory.getLogger(Config.class);
 
 	public static final String ZIPFILE_EXTENSION = "zip";
 	public static final String MDCPOSTFIX = "__";
@@ -248,18 +249,18 @@ public class Config implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		dataDirectory = getFileProperty("data_directory", "${app.home}"
 				+ File.separator + "data");
-		console.info("Data directory is: {}", dataDirectory.getCanonicalPath());
+		logger.debug("Data directory:  {}", dataDirectory.getCanonicalPath());
 		
 		tempDirectory = getFileProperty("temp_directory", "${app.home}"
 				+ File.separator + "temp");
-		console.info("Temp directory is: {}", tempDirectory.getCanonicalPath());
+		logger.debug("Temp directory:  {}", tempDirectory.getCanonicalPath());
 		
 		spoolDirectory = getFileProperty("queue_directory", "${app.home}"
 				+ File.separator + "spool");
-		console.info("Spool directory is: {}", spoolDirectory.getCanonicalPath());
+		logger.debug("Spool directory: {}", spoolDirectory.getCanonicalPath());
 	
 		authScheme = getProperty("auth_scheme", null);
-		console.info("Authentication scheme is {}",
+		logger.debug("\nAuthentication scheme is {}",
 				((authScheme != null) ? authScheme : "not specified"));
 		
 		/**
@@ -270,7 +271,7 @@ public class Config implements InitializingBean {
 		
 		long quota = getNumberProperty("default_quota", 0);
 		defaultQuota = quota * 1024 * 1024;
-		console.info("Default quota is: {}MB", quota);
+		logger.debug("Default quota is {}MB", quota);
 		
 		hostName = getProperty("myhostname", null);
 		if (null == hostName) {
@@ -280,7 +281,7 @@ public class Config implements InitializingBean {
 				hostName = "localhost";
 			}
 		}
-		console.info("Local host is: {}", hostName);
+		logger.debug("Local host is {}", hostName);
 
 		String domain = getProperty("mydomain", null);
 		if (null == domain) {
@@ -289,7 +290,7 @@ public class Config implements InitializingBean {
 			domains = StringUtils.stripAll(StringUtils.split(domain, ","));
 		}
 		for (int i = 0; i < domains.length; i++) {
-			console.info("Handling mail for: {}", domains[i]);
+			logger.debug("Handling mail for {}", domains[i]);
 		}
 		
 		String destination = getProperty("mydestination", null);
@@ -308,7 +309,7 @@ public class Config implements InitializingBean {
 		 */
 		String networks = getProperty("mynetworks", "0.0.0.0/0.0.0.0");
 		authorizedNetworks = new InetAddressMatcher(networks);
-		console.info("SMTP relaying is allowded to: {}", networks);
+		logger.debug("SMTP relaying is allowded to {}", networks);
 		
 		smtpdSoftErrorLimit = (int) getNumberProperty("smtpd_soft_error_limit", 10);
 		smtpdHardErrorLimit = (int) getNumberProperty("smtpd_hard_error_limit", 20);
@@ -328,13 +329,13 @@ public class Config implements InitializingBean {
 			postmaster = postmaster + "@"
 					+ (domainName != null ? domainName : hostName);
 		}
-		console.info("Postmaster address is: {}", postmaster);
+		logger.debug("Postmaster address is {}", postmaster);
 		
 		maxMessageSize = getNumberProperty("message_size_limit", 10240000);
-		console.info("Maximum message size is: {}", maxMessageSize);
+		logger.debug("Maximum message size is {}", maxMessageSize);
 		
 		maxRcpt = (int) getNumberProperty("smtp_recipient_limit", 0);
-		console.info("Maximun recipients count is: {}", maxRcpt);
+		logger.debug("Maximun recipients count is {}", maxRcpt);
 		
 		saslAuthEnabled = getBooleanProperty("smtp_sasl_auth_enable", false);
 
@@ -344,6 +345,16 @@ public class Config implements InitializingBean {
 			FileUtils.forceMkdir(spoolDirectory);
 			FileUtils.forceMkdir(getSnapshotDirectory());
 			buildSSLContext();
+			verbosePrint();
+		}
+	}
+	
+	private void verbosePrint() {
+		try {
+			System.out.println("Using HEDWIG_HOME: " + System.getProperty("app.home"));
+			System.out.println("Using JAVA_HOME:   " + SystemUtils.JAVA_HOME);
+			System.out.println();
+		} catch (Exception ignore) {
 		}
 	}
 	

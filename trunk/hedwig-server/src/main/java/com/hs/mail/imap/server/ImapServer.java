@@ -151,8 +151,7 @@ public class ImapServer implements InitializingBean {
 		
 		bootstrap.bind(endpoint);
 		
-		LoggerFactory.getLogger("console").info("{} started on port {}",
-				getServiceType(), getPort());
+		System.out.println("IMAP Service started on port:" + getPort());
 	}
 	
 	private int getWorkerCount() {

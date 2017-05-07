@@ -39,15 +39,13 @@ public interface MessageDao extends DaoSupport {
 
 	public FetchData getMessageFetchData(long messageID);
 	
-	public PhysMessage getDanglingMessageID(long messageID);
-
 	public void addMessage(long mailboxID, MailMessage message);
 	
 	public void addMessage(long mailboxID, MailMessage message, Flags flags);
 	
 	public void deleteMessage(long messageID);
 	
-	public void deletePhysicalMessage(long physMessageID);
+	public void deletePhysicalMessage(PhysMessage physMessage);
 	
 	public void setFlags(long messageID, Flags flags, boolean replace, boolean set);
 	
@@ -65,6 +63,8 @@ public interface MessageDao extends DaoSupport {
 
 	public List<Map<String, Object>> getMessageByMessageID(long userId,
 			String messageID);
+
+	public int getOrphanMessageCount();
 
 	public void deleteOrphanMessages(final PhysMessageCallback pmcb);
 

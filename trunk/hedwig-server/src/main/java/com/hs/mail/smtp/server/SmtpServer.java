@@ -56,6 +56,8 @@ public class SmtpServer extends DefaultServer implements InitializingBean {
 		
 		// Start the server
 		start();
+		
+		System.out.println("SMTP Service started on port:" + getPort());
 	}
 	
 }

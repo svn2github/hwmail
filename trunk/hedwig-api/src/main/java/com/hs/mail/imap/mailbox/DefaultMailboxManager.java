@@ -225,16 +225,11 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 					public void doInTransactionWithoutResult(
 							TransactionStatus status) {
 						MessageDao dao = DaoFactory.getMessageDao();
-						dao.deletePhysicalMessage(pm.getPhysMessageID());
+						dao.deletePhysicalMessage(pm);
 					}
 				});
 		if (hdCache != null) {
 			hdCache.remove(pm.getPhysMessageID());
-		}
-		try {
-			pm.deleteFile();
-		} catch (IOException ex) {
-			logger.warn(ex.getMessage(), ex); // Ignore - What we can do?
 		}
 	}
 

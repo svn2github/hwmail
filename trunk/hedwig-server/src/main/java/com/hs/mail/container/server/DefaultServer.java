@@ -186,9 +186,6 @@ public class DefaultServer implements Server {
 		mainThread = new MainSocketThread();
 		mainThread.open();
 		mainThread.start();
-
-		LoggerFactory.getLogger("console").info("{} started on port {}",
-				getServiceType(), port);
 	}
 	
 	public void stop() {
