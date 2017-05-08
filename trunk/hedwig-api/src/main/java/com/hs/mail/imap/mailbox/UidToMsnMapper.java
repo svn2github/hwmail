@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.mailbox;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.hs.mail.imap.dao.DaoFactory;
@@ -52,6 +53,11 @@ public class UidToMsnMapper {
 				selected.add(msgnum, uid);
 		}
 		return uid;
+	}
+	
+	public boolean containsUID(long uid) {
+		prepare();
+		return Collections.binarySearch(uids, uid) >= 0;
 	}
 
 	public int getMessageNumber(long uid) {

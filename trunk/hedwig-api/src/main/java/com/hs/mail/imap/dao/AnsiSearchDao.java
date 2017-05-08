@@ -158,13 +158,25 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	private List<Long> query(UidToMsnMapper map, long mailboxID, SequenceKey key) {
 		List<Long> result = new ArrayList<Long>();
 		SequenceRange[] sequenceSet = key.getSequenceSet();
-		for (int i = 0; i < sequenceSet.length; i++) {
-			long min = map.getMinMessageNumber(sequenceSet[i].getMin());
-			long max = map.getMaxMessageNumber(sequenceSet[i].getMax());
-			for (long j = min; j <= max && j >= 0; j++) {
-				long messageID = map.getUID((int) j);
-				if (messageID != -1) {
-					result.add(messageID);
+		if (key.isUseUid()) {
+			for (int i = 0; i < sequenceSet.length; i++) {
+				long min = sequenceSet[i].getMin();
+				long max = sequenceSet[i].getMax();
+				for (long j = min; j <= max && j >= 0; j++) {
+					if (map.containsUID(j)) {
+						result.add(j);
+					}
+				}
+			}
+		} else {
+			for (int i = 0; i < sequenceSet.length; i++) {
+				long min = map.getMinMessageNumber(sequenceSet[i].getMin());
+				long max = map.getMaxMessageNumber(sequenceSet[i].getMax());
+				for (long j = min; j <= max && j >= 0; j++) {
+					long messageID = map.getUID((int) j);
+					if (messageID != -1) {
+						result.add(messageID);
+					}
 				}
 			}
 		}
