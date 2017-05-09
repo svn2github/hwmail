@@ -21,7 +21,12 @@ this.each(function(i, elem) {
         });
     files.each(function() { $(this).parent().remove(); });
     input.trigger('fileselect', [1, label]).prev().text(label);
-    if (clone) input.parent().parent().append(clone);
+    if (clone) {
+      var file = clone.find(":file");
+      $('<input type="file" name="' + file.attr('name') + '">').insertAfter(file);
+      file.remove();
+      input.parent().parent().append(clone);
+    }
   }).on('click', '.btn-file > .close', function() {
     $(this).parent().remove();
   });
