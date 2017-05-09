@@ -34,14 +34,10 @@ public class UidToMsnMapper {
 	protected List<Long> uids;
 	protected boolean useUID = false;
 
-	public UidToMsnMapper(SelectedMailbox selected, List<Long> uids, boolean useUID) {
-		this.selected = selected;
-		this.uids = uids;
-		this.useUID = useUID;
-	}
-
 	public UidToMsnMapper(SelectedMailbox selected, boolean useUID) {
-		this(selected, selected.getCachedUids(), useUID);
+		this.selected = selected;
+		this.uids = selected.getCachedUids();
+		this.useUID = useUID;
 	}
 
 	public long getUID(int msgnum) {
@@ -77,6 +73,7 @@ public class UidToMsnMapper {
 	}
 
 	public List<Long> getUIDList() {
+		prepare();
 		return uids;
 	}
 	

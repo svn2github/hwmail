@@ -33,6 +33,7 @@
 	<modules>
 		<module>hedwig-api</module>
 		<module>hedwig-server</module>
+		<module>hedwig-adm</module>
 		<module>hedwig-web</module>
 		<module>assembly</module>
 	</modules>
@@ -76,6 +77,11 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>hedwig-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>hedwig-adm</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

@@ -43,11 +43,7 @@ public class SearchProcessor extends AbstractImapProcessor {
 		SearchRequest request = (SearchRequest) message;
 		SelectedMailbox selected = session.getSelectedMailbox();
 		MailboxManager manager = getMailboxManager();
-		List<Long> uids = selected.getCachedUids();
-		if (uids == null) {
-			uids = manager.getMessageIDList(selected.getMailboxID());
-		}
-		UidToMsnMapper map = new UidToMsnMapper(selected, uids, request.isUseUID());
+		UidToMsnMapper map = new UidToMsnMapper(selected, request.isUseUID());
 		List<Long> results = search(manager, map, selected.getMailboxID(),
 				request);
 		if (CollectionUtils.isNotEmpty(results)) {

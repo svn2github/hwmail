@@ -244,10 +244,10 @@ public interface MailboxManager {
 	public void deleteMessage(final long uid);
 
 	/**
-	 * Deletes orphan messages (physical messages which are not referenced by
+	 * Deletes dangling messages (physical messages which are not referenced by
 	 * any mailbox message).
 	 */
-	public void deleteOrphanMessages();
+	public void purgeMessages();
 
 	/**
 	 * Copies a message to the given mailbox.

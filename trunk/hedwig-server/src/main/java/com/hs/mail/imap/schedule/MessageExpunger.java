@@ -77,9 +77,9 @@ public class MessageExpunger {
 					name,
 					DateFormatUtils.ISO_DATE_FORMAT.format(criteria.get(name)) + ".");
 			String mbox = BASE64MailboxEncoder.encode(name);
-			List<Long> mailboxIdes = manager.getMailboxIDList(mbox);
-			if (CollectionUtils.isNotEmpty(mailboxIdes)) {
-				for (Long mailboxID : mailboxIdes) {
+			List<Long> mailboxIds = manager.getMailboxIDList(mbox);
+			if (CollectionUtils.isNotEmpty(mailboxIds)) {
+				for (Long mailboxID : mailboxIds) {
 					if (System.currentTimeMillis() >= timeLimit) {
 						return;
 					}

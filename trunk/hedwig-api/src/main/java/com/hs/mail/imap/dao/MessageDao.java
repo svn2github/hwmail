@@ -64,9 +64,9 @@ public interface MessageDao extends DaoSupport {
 	public List<Map<String, Object>> getMessageByMessageID(long userId,
 			String messageID);
 
-	public int getOrphanMessageCount();
+	public int getDanglingMessageCount();
 
-	public void deleteOrphanMessages(final PhysMessageCallback pmcb);
+	public void purgeMessages(final PhysMessageCallback pmcb);
 
 	interface PhysMessageCallback {
 

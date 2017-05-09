@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	        <value>file:${app.home}/conf/default.properties</value>
+	    </property>
+	</bean>
+
+	<bean id="log4jInitialization"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
+		<property name="targetMethod" value="initLogging" />
+		<property name="arguments">
+			<list>
+				<value>file:${app.home}/conf/log4j.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="def.props"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    	<property name="location" value="file:${app.home}/conf/default.properties"/>
+    	<property name="fileEncoding" value="UTF-8" />
+    </bean>
+
+	<bean id="componentManager" class="com.hs.mail.container.config.ComponentManager" />
+
+	<bean id="config" class="com.hs.mail.container.config.Config">
+		<property name="properties" ref="def.props" />
+		<property name="initData" value="false" />
+	</bean>
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+	</bean>
+
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
+		factory-method="getInstance">
+		<constructor-arg ref="dataSource"/>
+	</bean>
+	
+	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
+		<property name="transactionManager" ref="txManager" />
+	</bean>
+	
+	<bean id="mailboxManager" class="com.hs.mail.imap.mailbox.DefaultMailboxManager">
+		<property name="transactionManager" ref="txManager" />
+	</bean>
+	
+	<bean class="com.hs.mail.adm.Main" depends-on="config"/>
+	
+</beans>

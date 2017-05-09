@@ -392,9 +392,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 				});
 	}
 
-	public void deleteOrphanMessages() {
+	public void purgeMessages() {
 		MessageDao dao = DaoFactory.getMessageDao();
-		dao.deleteOrphanMessages(new MessageDao.PhysMessageCallback() {
+		dao.purgeMessages(new MessageDao.PhysMessageCallback() {
 			public void processPhysMessage(final PhysMessage pm) {
 				deletePhysicalMessage(pm);
 			}

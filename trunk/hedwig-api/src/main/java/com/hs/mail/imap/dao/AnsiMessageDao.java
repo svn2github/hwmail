@@ -101,12 +101,12 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		update(sqls, messageID);
 	}
 
-	public int getOrphanMessageCount() {
+	public int getDanglingMessageCount() {
 		String sql = "SELECT COUNT(*) FROM hw_physmessage p LEFT JOIN hw_message m ON m.physmessageid=p.physmessageid WHERE m.physmessageid IS NULL";
 		return getJdbcTemplate().queryForObject(sql, Integer.class);
 	}
 
-	public void deleteOrphanMessages(final PhysMessageCallback pmcb) {
+	public void purgeMessages(final PhysMessageCallback pmcb) {
 		String sql = "SELECT p.physmessageid, p.internaldate FROM hw_physmessage p LEFT JOIN hw_message m ON m.physmessageid=p.physmessageid WHERE m.physmessageid IS NULL";
 		getJdbcTemplate().query(sql, new RowCallbackHandler() {
 			public void processRow(ResultSet rs) throws SQLException {

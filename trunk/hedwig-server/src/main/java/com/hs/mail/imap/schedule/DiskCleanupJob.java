@@ -45,7 +45,7 @@ public class DiskCleanupJob {
 
 		// Delete physical messages which are not referenced by any mailbox
 		// message.
-		mailboxManager.deleteOrphanMessages();
+		mailboxManager.purgeMessages();
 		
 		String prop = Config.getProperty("stop_cron_after", "2h");
 		Date stopAt = ScheduleUtils.getTimeAfter(prop, DateUtils.addHours(new Date(), 2));
