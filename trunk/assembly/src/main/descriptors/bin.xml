@@ -9,6 +9,7 @@
 			<includes>
 				<include>${groupId}:hedwig-api*:jar:${version}</include>
 				<include>${groupId}:hedwig-server*:jar:${version}</include>
+				<include>${groupId}:hedwig-adm*:jar:${version}</include>
 			</includes>
 			<binaries>
 				<outputDirectory>lib</outputDirectory>
