@@ -4,6 +4,7 @@ import java.io.InputStream;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.hs.mail.webmail.exception.WmaException;
@@ -124,7 +125,8 @@ public interface WmaFolder {
 	void setFlagMessages(long[] uids, Flags flags, boolean set)
 			throws WmaException;
 	
-	void writeMessagePart(HttpServletResponse response, long uid, int part) 
+	void writeMessagePart(HttpServletRequest request,
+			HttpServletResponse response, long uid, int part)
 			throws WmaException;
 	
 	void writeMimeMessage(HttpServletResponse response, long uid, String filename)

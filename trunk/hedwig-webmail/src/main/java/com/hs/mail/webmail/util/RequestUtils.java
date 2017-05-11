@@ -18,6 +18,8 @@ package com.hs.mail.webmail.util;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 
  * @author Won Chul Doh
@@ -30,12 +32,19 @@ public class RequestUtils {
 		String value = request.getParameter(name);
 		if (value != null) {
 			try {
-				String encoding = request.getCharacterEncoding();
-				// If the request.getCharacterEncoding() is null, the default
-				// parsing value of the String is ISO-8859-1.
-				return new String(
-						value.getBytes((null == encoding) ? "ISO-8859-1"
-								: encoding), "UTF-8");
+				if ((StringUtils.isNotEmpty(request.getContentType()))
+						&& (request.getContentType()
+								.startsWith("multipart/form-data"))) {
+					// If POST, do not decode.
+					return value;
+				} else {
+					String encoding = request.getCharacterEncoding();
+					// If the request.getCharacterEncoding() is null, the
+					// default parsing value of the String is ISO-8859-1.
+					return new String(
+							value.getBytes((null == encoding) ? "ISO-8859-1"
+									: encoding), "UTF-8");
+				}
 			} catch (Exception ex) {
 			}
 		}
@@ -173,6 +182,23 @@ public class RequestUtils {
 			numbers[i] = toLong(values[i].trim());
 		}
 		return numbers;
+	}
+
+	public static String getBrowser(HttpServletRequest request) {
+		String userAgent = request.getHeader("User-Agent");
+		if (userAgent.contains("Trident") || userAgent.contains("MSIE")) {
+			return "MSIE";
+		} else if (userAgent.contains("Opera") || userAgent.contains("OPR")) {
+			return "Opera";
+		} else if (userAgent.contains("Firefox")) {
+			return "Firefox";
+		} else if (userAgent.contains("Chrome")) {
+			return "Chrome";
+		} else if (userAgent.contains("Safari")) {
+			return "Safari";
+		} else {
+			return "Unknown";
+		}
 	}
 
 }

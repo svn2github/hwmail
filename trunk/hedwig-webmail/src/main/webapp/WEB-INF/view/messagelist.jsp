@@ -45,7 +45,7 @@
 		<a id="revoke" class="btn btn-default btn-sm"><fmt:message key="menu.revoke"/></a>
 </c:if>
 <c:if test="${path == 'INBOX'}">
-	<a id="upload" class="btn btn-default btn-sm"><fmt:message key="menu.rawmsg.import"/></a>
+	<a id="upload" class="btn btn-default btn-sm"><fmt:message key="menu.upload.eml"/></a>
 </c:if>
 <c:if test="${path != prefs.draftFolder}">
 		<div class="btn-group">

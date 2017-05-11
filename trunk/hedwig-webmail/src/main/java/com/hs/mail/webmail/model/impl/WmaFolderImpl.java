@@ -1,6 +1,7 @@
 package com.hs.mail.webmail.model.impl;
 
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -12,6 +13,7 @@ import javax.mail.Session;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -23,6 +25,7 @@ import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaFolder;
 import com.hs.mail.webmail.model.WmaMessagePart;
 import com.hs.mail.webmail.model.WmaStore;
+import com.hs.mail.webmail.util.RequestUtils;
 import com.hs.mail.webmail.util.WmaUtils;
 import com.sun.mail.imap.IMAPFolder;
 
@@ -270,8 +273,9 @@ public class WmaFolderImpl implements WmaFolder {
 	/*** Message Part related 
 	 * @throws WmaException **********************************************/
 	
-	private static void writeMessagePart(HttpServletResponse response,
-			WmaMessagePart wpart, String disposition) throws WmaException {
+	private static void writeMessagePart(HttpServletRequest request,
+			HttpServletResponse response, WmaMessagePart wpart,
+			String disposition) throws WmaException {
 		String filename = wpart.getName();
 		// we do it all for fun or not?
 		if (null == filename) {
@@ -279,12 +283,15 @@ public class WmaFolderImpl implements WmaFolder {
 		}
 		String contentType = null;
 		try {
+			filename = "MSIE".equals(RequestUtils.getBrowser(request))
+					? URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20")
+					: new String(filename.getBytes("UTF-8"), "ISO-8859-1");
 			contentType = new ContentType(wpart.getContentType()).getBaseType();
 		}catch(Exception e){
 			contentType = "application/octet-stream";
 		}
 		response.setContentType(contentType);
-		// RFC 2047 since IE deos not support RFC 2231
+		// RFC 2047 since IE does not support RFC 2231
 		response.setHeader("Content-Disposition", disposition + "; " + "filename=\"" + filename + "\"");			
 		
 		// stream out part
@@ -300,13 +307,14 @@ public class WmaFolderImpl implements WmaFolder {
 		}
 	}
 
-	public void writeMessagePart(HttpServletResponse response, long uid,
-			int part) throws WmaException {
+	public void writeMessagePart(HttpServletRequest request,
+			HttpServletResponse response, long uid, int part)
+			throws WmaException {
 		try {
 			folder.open(Folder.READ_ONLY);
 			Message msg = folder.getMessageByUID(uid);
 			WmaMessagePart wpart = WmaDisplayMessage.getWmaMessagePart(msg, part, null);
-			writeMessagePart(response, wpart, Part.INLINE);
+			writeMessagePart(request, response, wpart, Part.INLINE);
 		} catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
 			throw new WmaException("wma.folder.displaypart.failed")

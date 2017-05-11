@@ -141,7 +141,7 @@ public class MessageController {
 		String path = RequestUtils.getRequiredParameter(request, "path");
 		WmaStore store = session.getWmaStore();
 		WmaFolder folder = store.getWmaFolder(path);
-		folder.writeMessagePart(response, uid, part);
+		folder.writeMessagePart(request, response, uid, part);
 	}
 
 	@RequestMapping(value = "/message/recipients")
