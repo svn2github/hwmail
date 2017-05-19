@@ -74,7 +74,6 @@ public class Config implements InitializingBean {
 	private static InetAddressMatcher authorizedNetworks;
 	private static String postmaster; 
 	private static long maxMessageSize;
-	private static int maxRcpt;
 	private static int smtpdSoftErrorLimit;
 	private static int smtpdHardErrorLimit;
 	private static int smtpdErrorSleepTime;
@@ -197,10 +196,6 @@ public class Config implements InitializingBean {
 	
 	public static long getMaxMessageSize() {
 		return maxMessageSize;
-	}
-	
-	public static int getMaxRcptCount() {
-		return maxRcpt;
 	}
 	
 	public static int getSmtpdSoftErrorLimit() {
@@ -333,9 +328,6 @@ public class Config implements InitializingBean {
 		
 		maxMessageSize = getNumberProperty("message_size_limit", 10240000);
 		logger.debug("Maximum message size is {}", maxMessageSize);
-		
-		maxRcpt = (int) getNumberProperty("smtp_recipient_limit", 0);
-		logger.debug("Maximun recipients count is {}", maxRcpt);
 		
 		saslAuthEnabled = getBooleanProperty("smtp_sasl_auth_enable", false);
 
