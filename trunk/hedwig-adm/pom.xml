@@ -16,6 +16,10 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>hedwig-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hedwig-server</artifactId>
+		</dependency>
 
 		<!-- Apache commons -->
 		<dependency>
