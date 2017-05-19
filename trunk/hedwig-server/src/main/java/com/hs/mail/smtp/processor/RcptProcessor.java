@@ -29,8 +29,10 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
+import com.hs.mail.smtp.processor.hook.MaxRcptHook;
 import com.hs.mail.smtp.processor.hook.RcptAccessHook;
 import com.hs.mail.smtp.processor.hook.RcptHook;
+import com.hs.mail.smtp.processor.hook.RelayRcptHook;
 import com.hs.mail.smtp.processor.hook.ValidRcptHook;
 
 /**
@@ -46,11 +48,23 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 
 	@Override
 	public void configure() throws ConfigException {
-		String restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
+		hooks = new ArrayList<RcptHook>();
+
+		int maxRcpt = (int) Config.getNumberProperty("smtp_recipient_limit", 0);
+		if (maxRcpt > 0) {
+			hooks.add(new MaxRcptHook(maxRcpt));
+		}
+
+		String restrictions = Config.getProperty("smtpd_relay_restrictions", "permit_mynetworks, permit_sasl_authenticated");
 		if (StringUtils.isNotBlank(restrictions)) {
-			String[] restrictionArray = StringUtils.split(restrictions, ",");
-			hooks = new ArrayList<RcptHook>(restrictionArray.length);
-			for (String restriction : restrictionArray) {
+			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
+			hooks.add(new RelayRcptHook(array));
+		}
+		
+		restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
+		if (StringUtils.isNotBlank(restrictions)) {
+			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
+			for (String restriction : array) {
 				String[] tokens = StringUtils.split(restriction);
 				if (ArrayUtils.isNotEmpty(tokens)) {
 					if ("check_recipient_access".equals(tokens[0])) {
@@ -92,22 +106,8 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 		if ("postmaster".equalsIgnoreCase(to)) {
 			to = Config.getPostmaster();
 		}
-		int maxRcpt = Config.getMaxRcptCount();
-		if (maxRcpt > 0) {
-			int rcptCount = message.getRecipientsSize();
-			if (rcptCount >= maxRcpt) {
-				throw new SmtpException(SmtpException.RECIPIENTS_COUNT_LIMIT);
-			}
-		}
+
 		Recipient recipient = new Recipient(to);
-		String toDomain = recipient.getHost();
-		if (!Config.isLocal(toDomain)) {
-			if (!Config.getAuthorizedNetworks().matches(
-					session.getClientAddress())) {
-				throw new SmtpException(SmtpException.RELAY_DENIED);
-			}
-		}
-		
 		// Reject if invalid recipient
 		doRcpt(session, message, recipient);
 

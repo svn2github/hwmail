@@ -26,6 +26,8 @@ import java.net.Socket;
  */
 public interface ConnectionHandler {
 
+	public void configure();
+	
 	public void handleConnection(Socket soc) throws IOException;
 
 }

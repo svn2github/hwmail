@@ -49,6 +49,7 @@ import org.xbill.DNS.Record;
 import org.xbill.DNS.Resolver;
 import org.xbill.DNS.ResolverConfig;
 import org.xbill.DNS.SetResponse;
+import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
@@ -210,6 +211,19 @@ public class DnsServer implements InitializingBean {
 				}
 			}
 		}
+	}
+
+	public Collection<String> findTXTRecords(String hostname) {
+		List<String> txtR = new ArrayList<String>();
+        Record records[] = lookup(hostname, Type.TXT);
+
+        if (records != null) {
+        	for (Record record : records) {
+        		TXTRecord txt = (TXTRecord) record;
+        		txtR.add(txt.rdataToString());
+        	}
+        }
+        return txtR;
 	}
 	
 	/**

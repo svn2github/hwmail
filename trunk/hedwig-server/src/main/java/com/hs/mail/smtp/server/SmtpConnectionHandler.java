@@ -18,7 +18,12 @@ package com.hs.mail.smtp.server;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.ConnectionHandler;
@@ -28,6 +33,7 @@ import com.hs.mail.exception.LookupException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
+import com.hs.mail.util.RollingPrintStream;
 
 /**
  * 
@@ -36,31 +42,64 @@ import com.hs.mail.smtp.processor.SmtpProcessorFactory;
  * 
  */
 public class SmtpConnectionHandler implements ConnectionHandler {
+
+	private List<ConnectHandler> connectHandlers; 
 	
 	private boolean debug = false;
 
 	private PrintStream out;	// debug output stream
 
-	public void setDebug(boolean debug) {
-		this.debug = debug;
+	public SmtpConnectionHandler() {
+		connectHandlers = new ArrayList<ConnectHandler>(2);
+		connectHandlers.add(new WelcomeMessageHandler());
 	}
 	
-	public synchronized void setDebugOut(PrintStream out) {
-		this.out = out;
-	}
+	public void configure() {
+		if (Config.getBooleanProperty("smtp_trace_protocol", false)) {
+			this.debug = true;
+			String path = Config.getProperty("smtp_protocol_log", null);
+			if (path != null) {
+				try {
+					this.out = new RollingPrintStream(path);
+				} catch (IOException e) {
+					// Ignore this exception
+				}
+			}
+		}
 
+		String restrictions = Config.getProperty("smtps_client_restrictions", null);
+		if (StringUtils.isNotBlank(restrictions)) {
+			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
+			List<String> blacklist = new ArrayList<String>();
+			boolean permit_mynetworks = false;
+			for (String restriction : array) {
+				String[] tokens = StringUtils.split(restriction);
+				if (ArrayUtils.isNotEmpty(tokens)) {
+					if ("permit_mynetworks".equals(tokens[0])) {
+						permit_mynetworks = true;
+					}
+					if ("reject_rbl_client".equals(tokens[0])) {
+						if (tokens.length > 1) {
+							blacklist.add(tokens[1]);
+						}
+					}
+				}
+			}
+			if (!blacklist.isEmpty()) {
+				DNSRBLHandler cHandler = new DNSRBLHandler();
+				cHandler.setBlacklist(blacklist.toArray(new String[blacklist.size()]));
+				connectHandlers.add(0, cHandler);
+			}
+		}
+	}
+	
 	public void handleConnection(Socket soc) throws IOException {
 		TcpTransport trans = new TcpTransport();
 		trans.setChannel(new TcpSocketChannel(soc));
 		SmtpSession session = new SmtpSession(trans);
 		session.setDebug(debug, out);
 
-		String greetings = new StringBuilder()
-				.append("220 ")
-				.append(Config.getHelloName())
-				.append(" Service ready")
-				.toString();
-		session.writeResponse(greetings);
+		onConnect(session, trans);
 
 		while (!trans.isSessionEnded()) {
 			String line = trans.readLine();
@@ -79,6 +118,15 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 					session.writeResponse("500 5.5.1 Unknown command \"" + command
 							+ "\"");
 				}
+			}
+		}
+	}
+
+	protected void onConnect(SmtpSession session, TcpTransport trans) {
+		for (ConnectHandler cHandler : connectHandlers) {
+			cHandler.onConnect(session, trans);
+			if (trans.isSessionEnded()) {
+				return;
 			}
 		}
 	}
