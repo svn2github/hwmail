@@ -15,10 +15,16 @@
  */
 package com.hs.mail.util;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class InetAddressMatcher {
 	
@@ -103,4 +109,28 @@ public class InetAddressMatcher {
 		return sb.toString();
 	}
 
+	public static String getCidrSignature() {
+		try {
+			return new StringBuilder()
+					.append(getCidrSignature(Inet4Address.getByName("127.0.0.1")))
+					.append(" ")
+					.append(getCidrSignature(Inet4Address.getLocalHost()))
+					.toString();
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+	
+	public static String getCidrSignature(InetAddress addr)
+			throws SocketException {
+		NetworkInterface ni = NetworkInterface.getByInetAddress(addr);
+		for (InterfaceAddress iaddr : ni.getInterfaceAddresses()) {
+			if (iaddr.getAddress() instanceof Inet4Address) {
+				return addr.getHostAddress() + "/"
+						+ iaddr.getNetworkPrefixLength();
+			}
+		}
+		return StringUtils.EMPTY;
+	}
+	
 }
