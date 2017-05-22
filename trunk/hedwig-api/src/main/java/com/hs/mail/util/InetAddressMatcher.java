@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -122,15 +123,17 @@ public class InetAddressMatcher {
 	}
 	
 	public static String getCidrSignature(InetAddress addr)
-			throws SocketException {
+			throws SocketException, UnknownHostException {
 		NetworkInterface ni = NetworkInterface.getByInetAddress(addr);
 		for (InterfaceAddress iaddr : ni.getInterfaceAddresses()) {
 			if (iaddr.getAddress() instanceof Inet4Address) {
-				return addr.getHostAddress() + "/"
+				byte[] bytes = addr.getAddress();
+				bytes[bytes.length - 1] = 0;
+				return InetAddress.getByAddress(bytes).getHostAddress() + "/"
 						+ iaddr.getNetworkPrefixLength();
 			}
 		}
 		return StringUtils.EMPTY;
 	}
-	
+
 }
