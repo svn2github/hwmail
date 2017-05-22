@@ -33,8 +33,6 @@ public class SmtpServer extends DefaultServer implements InitializingBean {
 		serverSocketFactory = (isUseTLS()) 
 				? new TLSServerSocketFactory(Config.getSSLContext())
 				: new DefaultServerSocketFactory();
-		
-		super.configure();
 
 		// Configure connection handler
 		connectionHandler = new SmtpConnectionHandler();

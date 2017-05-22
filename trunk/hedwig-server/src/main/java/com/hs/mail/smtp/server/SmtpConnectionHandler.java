@@ -67,17 +67,13 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 			}
 		}
 
-		String restrictions = Config.getProperty("smtps_client_restrictions", null);
+		String restrictions = Config.getProperty("smtpd_client_restrictions", null);
 		if (StringUtils.isNotBlank(restrictions)) {
 			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
 			List<String> blacklist = new ArrayList<String>();
-			boolean permit_mynetworks = false;
 			for (String restriction : array) {
 				String[] tokens = StringUtils.split(restriction);
 				if (ArrayUtils.isNotEmpty(tokens)) {
-					if ("permit_mynetworks".equals(tokens[0])) {
-						permit_mynetworks = true;
-					}
 					if ("reject_rbl_client".equals(tokens[0])) {
 						if (tokens.length > 1) {
 							blacklist.add(tokens[1]);
