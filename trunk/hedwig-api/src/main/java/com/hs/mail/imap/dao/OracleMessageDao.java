@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import javax.mail.Flags;
 
@@ -27,6 +28,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageHeader;
 
@@ -37,6 +39,18 @@ import com.hs.mail.imap.message.MessageHeader;
  *
  */
 public class OracleMessageDao extends AnsiMessageDao {
+
+	private int fetchSize = 2000;
+
+	public OracleMessageDao() {
+		fetchSize = (int) Config.getNumberProperty("uids_fetch_size", fetchSize);
+	}
+
+	@Override
+	public List<Long> getMessageIDList(long mailboxID) {
+		getJdbcTemplate().setFetchSize(fetchSize);
+		return super.getMessageIDList(mailboxID);
+	}
 
 	@Override
 	protected long addPhysicalMessage(final MailMessage message) {

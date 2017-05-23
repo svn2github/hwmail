@@ -1,4 +1,4 @@
-package com.hs.mail.smtp.server;
+package com.hs.mail.smtp.processor.hook;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,7 +11,7 @@ import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.SmtpSession;
 
-public class DNSRBLHandler implements ConnectHandler {
+public class DNSRBLHandler implements ConnectHook {
 
 	private static Logger logger = LoggerFactory.getLogger(DNSRBLHandler.class);
 
@@ -20,8 +20,8 @@ public class DNSRBLHandler implements ConnectHandler {
 	 */
 	private String[] blacklist;
 
-	public void setBlacklist(String[] blacklist) {
-		this.blacklist = blacklist;	
+	public DNSRBLHandler(String[] blacklist) {
+		this.blacklist = blacklist;
 	}
 
 	public void onConnect(SmtpSession session, TcpTransport trans) {

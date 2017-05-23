@@ -1,10 +1,10 @@
-package com.hs.mail.smtp.server;
+package com.hs.mail.smtp.processor.hook;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.SmtpSession;
 
-public class RemoteAddrNotInNetwork implements ConnectHandler {
+public class RemoteAddrNotInNetwork implements ConnectHook {
 
 	@Override
 	public void onConnect(SmtpSession session, TcpTransport trans) {

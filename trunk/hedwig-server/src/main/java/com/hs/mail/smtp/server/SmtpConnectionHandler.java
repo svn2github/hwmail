@@ -33,6 +33,8 @@ import com.hs.mail.exception.LookupException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
+import com.hs.mail.smtp.processor.hook.ConnectHook;
+import com.hs.mail.smtp.processor.hook.DNSRBLHandler;
 import com.hs.mail.util.RollingPrintStream;
 
 /**
@@ -43,14 +45,14 @@ import com.hs.mail.util.RollingPrintStream;
  */
 public class SmtpConnectionHandler implements ConnectionHandler {
 
-	private List<ConnectHandler> connectHandlers; 
+	private List<ConnectHook> connectHandlers; 
 	
 	private boolean debug = false;
 
 	private PrintStream out;	// debug output stream
 
 	public SmtpConnectionHandler() {
-		connectHandlers = new ArrayList<ConnectHandler>(2);
+		connectHandlers = new ArrayList<ConnectHook>(2);
 		connectHandlers.add(new WelcomeMessageHandler());
 	}
 	
@@ -67,23 +69,11 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 			}
 		}
 
-		String restrictions = Config.getProperty("smtpd_client_restrictions", null);
-		if (StringUtils.isNotBlank(restrictions)) {
-			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
-			List<String> blacklist = new ArrayList<String>();
-			for (String restriction : array) {
-				String[] tokens = StringUtils.split(restriction);
-				if (ArrayUtils.isNotEmpty(tokens)) {
-					if ("reject_rbl_client".equals(tokens[0])) {
-						if (tokens.length > 1) {
-							blacklist.add(tokens[1]);
-						}
-					}
-				}
-			}
-			if (!blacklist.isEmpty()) {
-				DNSRBLHandler cHandler = new DNSRBLHandler();
-				cHandler.setBlacklist(blacklist.toArray(new String[blacklist.size()]));
+		String rblservers = Config.getProperty("maps_rbl_domains", null);
+		if (StringUtils.isNotBlank(rblservers)) {
+			String[] blacklist = StringUtils.stripAll(StringUtils.split(rblservers, ","));
+			if (ArrayUtils.isNotEmpty(blacklist)) {
+				DNSRBLHandler cHandler = new DNSRBLHandler(blacklist);
 				connectHandlers.add(0, cHandler);
 			}
 		}
@@ -119,7 +109,7 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 	}
 
 	protected void onConnect(SmtpSession session, TcpTransport trans) {
-		for (ConnectHandler cHandler : connectHandlers) {
+		for (ConnectHook cHandler : connectHandlers) {
 			cHandler.onConnect(session, trans);
 			if (trans.isSessionEnded()) {
 				return;
@@ -127,4 +117,17 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 		}
 	}
 	
+	class WelcomeMessageHandler implements ConnectHook {
+
+		public void onConnect(SmtpSession session, TcpTransport trans) {
+			String greetings = new StringBuilder()
+					.append("220 ")
+					.append(Config.getHelloName())
+					.append(" Service ready")
+					.toString();
+			session.writeResponse(greetings);
+		}
+
+	}
+
 }

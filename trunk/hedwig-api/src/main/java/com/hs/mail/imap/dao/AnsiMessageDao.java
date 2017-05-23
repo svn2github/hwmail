@@ -51,7 +51,6 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 
 	public List<Long> getMessageIDList(long mailboxID) {
 		String sql = "SELECT messageid FROM hw_message WHERE mailboxid = ? ORDER BY messageid";
-		getJdbcTemplate().setFetchSize(2000);
 		return (List<Long>) getJdbcTemplate().queryForList(sql,
 				new Object[] { new Long(mailboxID) }, Long.class);
 	}

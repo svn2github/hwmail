@@ -244,18 +244,18 @@ public class Config implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		dataDirectory = getFileProperty("data_directory", "${app.home}"
 				+ File.separator + "data");
-		logger.debug("Data directory:  {}", dataDirectory.getCanonicalPath());
+		logger.info("Data directory:  {}", dataDirectory.getCanonicalPath());
 		
 		tempDirectory = getFileProperty("temp_directory", "${app.home}"
 				+ File.separator + "temp");
-		logger.debug("Temp directory:  {}", tempDirectory.getCanonicalPath());
+		logger.info("Temp directory:  {}", tempDirectory.getCanonicalPath());
 		
 		spoolDirectory = getFileProperty("queue_directory", "${app.home}"
 				+ File.separator + "spool");
-		logger.debug("Spool directory: {}", spoolDirectory.getCanonicalPath());
+		logger.info("Spool directory: {}", spoolDirectory.getCanonicalPath());
 	
 		authScheme = getProperty("auth_scheme", null);
-		logger.debug("\nAuthentication scheme is {}",
+		logger.info("\nAuthentication scheme is {}",
 				((authScheme != null) ? authScheme : "not specified"));
 		
 		/**
@@ -266,7 +266,7 @@ public class Config implements InitializingBean {
 		
 		long quota = getNumberProperty("default_quota", 0);
 		defaultQuota = quota * 1024 * 1024;
-		logger.debug("Default quota is {}MB", quota);
+		logger.info("Default quota is {}MB", quota);
 		
 		hostName = getProperty("myhostname", null);
 		if (null == hostName) {
@@ -276,7 +276,7 @@ public class Config implements InitializingBean {
 				hostName = "localhost";
 			}
 		}
-		logger.debug("Local host is {}", hostName);
+		logger.info("Local host is {}", hostName);
 
 		String domain = getProperty("mydomain", null);
 		if (null == domain) {
@@ -285,7 +285,7 @@ public class Config implements InitializingBean {
 			domains = StringUtils.stripAll(StringUtils.split(domain, ","));
 		}
 		for (int i = 0; i < domains.length; i++) {
-			logger.debug("Handling mail for {}", domains[i]);
+			logger.info("Handling mail for {}", domains[i]);
 		}
 		
 		String destination = getProperty("mydestination", null);
@@ -302,9 +302,12 @@ public class Config implements InitializingBean {
 		/*
 		 * SMTP related parameters
 		 */
-		String networks = getProperty("mynetworks", "0.0.0.0/0.0.0.0");
+		String networks = getProperty("mynetworks", null);
+		if (networks == null) {
+			networks = InetAddressMatcher.getCidrSignature();
+		}
 		authorizedNetworks = new InetAddressMatcher(networks);
-		logger.debug("SMTP relaying is allowded to {}", networks);
+		logger.info("SMTP relaying is allowded to {}", networks);
 		
 		smtpdSoftErrorLimit = (int) getNumberProperty("smtpd_soft_error_limit", 10);
 		smtpdHardErrorLimit = (int) getNumberProperty("smtpd_hard_error_limit", 20);
@@ -324,10 +327,10 @@ public class Config implements InitializingBean {
 			postmaster = postmaster + "@"
 					+ (domainName != null ? domainName : hostName);
 		}
-		logger.debug("Postmaster address is {}", postmaster);
+		logger.info("Postmaster address is {}", postmaster);
 		
 		maxMessageSize = getNumberProperty("message_size_limit", 10240000);
-		logger.debug("Maximum message size is {}", maxMessageSize);
+		logger.info("Maximum message size is {}", maxMessageSize);
 		
 		saslAuthEnabled = getBooleanProperty("smtp_sasl_auth_enable", false);
 
