@@ -142,6 +142,9 @@ public class MailTransportAgent implements Serializable {
 	 */
 	public void setAuthenticated(boolean auth) {
 		this.authenticated = auth;
+		if (this.authenticated) {
+			System.setProperty("mail.smtp.auth", "true");
+		}
 	}
 
 	/**

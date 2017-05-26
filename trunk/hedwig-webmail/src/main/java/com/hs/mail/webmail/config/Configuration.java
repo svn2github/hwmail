@@ -1,7 +1,6 @@
 package com.hs.mail.webmail.config;
 
 import java.io.File;
-import java.util.Locale;
 import java.util.Properties;
 
 import org.springframework.beans.BeansException;
