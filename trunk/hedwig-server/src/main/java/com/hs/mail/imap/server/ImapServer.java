@@ -15,7 +15,6 @@
  */
 package com.hs.mail.imap.server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -32,14 +31,11 @@ import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.server.codec.ImapMessageEncoder;
 import com.hs.mail.imap.server.codec.ImapRequestDecoder;
-import com.hs.mail.util.RollingPrintStream;
 
 /**
  * NIO IMAP Server which use Netty
@@ -49,8 +45,6 @@ import com.hs.mail.util.RollingPrintStream;
  */
 public class ImapServer implements InitializingBean {
 	
-	private static Logger logger = LoggerFactory.getLogger(ImapServer.class);
-
 	/**
 	 * The host name of network interface to which the service will bind. If not
 	 * set, the server binds to all available interfaces.
@@ -192,15 +186,7 @@ public class ImapServer implements InitializingBean {
 	
 	private DebuggingHandler createDebuggingHandler() {
 		DebuggingHandler handler = new DebuggingHandler();
-		String path = Config.getProperty("imap_protocol_log", null);
-		if (path != null) {
-			try {
-				handler.setDebugOut(new RollingPrintStream(path));
-			} catch (IOException e) {
-				// Ignore this exception
-				logger.error(e.getMessage());
-			}
-		}
+		handler.setLogger(Config.getProperty("imap_protocol_log", null));
 		return handler;
 	}
 	

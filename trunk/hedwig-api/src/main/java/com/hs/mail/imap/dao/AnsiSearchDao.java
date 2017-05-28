@@ -201,7 +201,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	
 	private List<Long> conjunctionQuery(UidToMsnMapper map, long mailboxID,
 			SearchKeyList key, boolean and) {
-		List<Long> list = null;
+		List<Long> list = new ArrayList<Long>();
 		List<Long> temp = null;
 		List<SearchKey> keys = key.getSearchKeys();
 		CompositeKey ck = null;
@@ -225,12 +225,13 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	}
 	
 	private List<Long> conjunction(List<Long> list1, List<Long> list2, boolean and) {
-		if (CollectionUtils.isNotEmpty(list1)) {
-			return (and) ? ListUtils.intersection(list1, list2) 
-						 : ListUtils.sum(list1, list2);
-		} else {
-			return list2;
-		}
+		if (CollectionUtils.isEmpty(list1))
+			return (and) ? list1 : list2;
+		else if (CollectionUtils.isEmpty(list2))
+			return (and) ? list2 : list1;
+		else
+			return (and) ? ListUtils.intersection(list1, list2)
+			             : ListUtils.sum(list1, list2);
 	}
 
 }

@@ -12,11 +12,8 @@ public class RelayRcptHook implements RcptHook {
 	
 	private boolean permit_mynetworks = true;
 
-	private boolean permit_sasl_auth  = true;
-	
 	public RelayRcptHook(String[] restrictions) {
 		permit_mynetworks = ArrayUtils.contains(restrictions, "permit_mynetworks");
-		permit_sasl_auth  = ArrayUtils.contains(restrictions, "permit_sasl_authenticated");
 	}
 
 	public void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
@@ -29,9 +26,10 @@ public class RelayRcptHook implements RcptHook {
 	}
 
 	private boolean isRelayingAllowed(SmtpSession session) {
-		return (permit_mynetworks && Config.getAuthorizedNetworks().matches(
-				session.getClientAddress()))
-				|| (permit_sasl_auth && (session.getAuthID() > 0));
+		return !permit_mynetworks
+				|| Config.getAuthorizedNetworks()
+						.matches(session.getClientAddress())
+				|| (session.getAuthID() > 0);
 	}
 
 }

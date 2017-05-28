@@ -15,14 +15,17 @@
  */
 package com.hs.mail.smtp;
 
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Random;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.SmtpMessage;
+import com.hs.mail.util.Log4jUtils;
 
 /**
  * 
@@ -31,6 +34,8 @@ import com.hs.mail.smtp.message.SmtpMessage;
  *
  */
 public class SmtpSession {
+	
+	private static Logger logger = Logger.getLogger(SmtpSession.class);
 	
     /**
      * Static Random instance used to generate SMTP ids
@@ -44,8 +49,6 @@ public class SmtpSession {
 	private String smtpID;
 	private long authID = -1;
 	private int errorCount = 0;
-	private boolean debug = false;
-	private PrintStream out;	// debug output stream 
 	private SmtpMessage message;
 
 	public SmtpSession(TcpTransport trans) {
@@ -54,16 +57,14 @@ public class SmtpSession {
 		this.smtpID = random.nextInt(1024) + "";
 	}
 	
-	public void setDebug(boolean debug, PrintStream out) {
-		this.debug = debug;
-		if (debug) {
-			this.out = (out != null) ? out : System.out;
-		}
+	public static void setLogger(String filename) {
+		logger.setLevel(Level.DEBUG);
+		Log4jUtils.addAppender(logger, filename, "%m%n");
 	}
 	
 	public void debug(String line) {
-		if (debug) {
-			out.println(line);
+		if (logger.isDebugEnabled()) {
+			logger.debug(line);
 		}
 	}
 

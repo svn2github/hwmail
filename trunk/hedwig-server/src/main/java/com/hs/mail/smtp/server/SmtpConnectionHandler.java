@@ -16,7 +16,6 @@
 package com.hs.mail.smtp.server;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,6 @@ import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
 import com.hs.mail.smtp.processor.hook.ConnectHook;
 import com.hs.mail.smtp.processor.hook.DNSRBLHandler;
-import com.hs.mail.util.RollingPrintStream;
 
 /**
  * 
@@ -47,10 +45,6 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 
 	private List<ConnectHook> connectHandlers; 
 	
-	private boolean debug = false;
-
-	private PrintStream out;	// debug output stream
-
 	public SmtpConnectionHandler() {
 		connectHandlers = new ArrayList<ConnectHook>(2);
 		connectHandlers.add(new WelcomeMessageHandler());
@@ -58,15 +52,7 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 	
 	public void configure() {
 		if (Config.getBooleanProperty("smtp_trace_protocol", false)) {
-			this.debug = true;
-			String path = Config.getProperty("smtp_protocol_log", null);
-			if (path != null) {
-				try {
-					this.out = new RollingPrintStream(path);
-				} catch (IOException e) {
-					// Ignore this exception
-				}
-			}
+			SmtpSession.setLogger(Config.getProperty("smtp_protocol_log", null));
 		}
 
 		String rblservers = Config.getProperty("maps_rbl_domains", null);
@@ -83,7 +69,6 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 		TcpTransport trans = new TcpTransport();
 		trans.setChannel(new TcpSocketChannel(soc));
 		SmtpSession session = new SmtpSession(trans);
-		session.setDebug(debug, out);
 
 		onConnect(session, trans);
 

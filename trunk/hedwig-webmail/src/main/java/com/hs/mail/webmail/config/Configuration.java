@@ -1,6 +1,7 @@
 package com.hs.mail.webmail.config;
 
 import java.io.File;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.springframework.beans.BeansException;
@@ -92,6 +93,13 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 	}
 
 	public void afterPropertiesSet() throws Exception {
+		Enumeration<?> e = properties.propertyNames();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (key.startsWith("mail.")) {
+				System.setProperty(key, properties.getProperty(key));
+			}
+		}
 	}
 
 	private static String getHost(String address) {

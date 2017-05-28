@@ -55,7 +55,8 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 			hooks.add(new MaxRcptHook(maxRcpt));
 		}
 
-		String restrictions = Config.getProperty("smtpd_relay_restrictions", "permit_mynetworks, permit_sasl_authenticated");
+		String restrictions = Config.getProperty("smtpd_relay_restrictions",
+				"permit_mynetworks");
 		if (StringUtils.isNotBlank(restrictions)) {
 			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
 			hooks.add(new RelayRcptHook(array));

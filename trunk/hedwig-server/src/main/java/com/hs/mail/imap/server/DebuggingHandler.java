@@ -15,14 +15,16 @@
  */
 package com.hs.mail.imap.server;
 
-import java.io.PrintStream;
-
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelDownstreamHandler;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelUpstreamHandler;
 import org.jboss.netty.channel.MessageEvent;
+
+import com.hs.mail.util.Log4jUtils;
 
 /**
  * A ChannelHandler that logs all protocol streams.
@@ -34,35 +36,16 @@ import org.jboss.netty.channel.MessageEvent;
 public class DebuggingHandler implements ChannelUpstreamHandler,
 		ChannelDownstreamHandler {
 	
-	private PrintStream out;	// debug output stream
+	private static Logger logger = Logger.getLogger(DebuggingHandler.class);
 
 	public DebuggingHandler() {
 	}
 
-	/**
-	 * Set the stream to be used for debugging output. If <code>out</code> is
-	 * null, <code>System.out</code> will be used.
-	 * 
-	 * @param out
-	 *            the PrintStream to use for debugging output
-	 */
-	public synchronized void setDebugOut(PrintStream out) {
-		this.out = out;
-	}
-
-	/**
-	 * Returns the stream to be used for debugging output. If no stream has been
-	 * set, <code>System.out</code> is returned.
-	 * 
-	 * @return the PrintStream to use for debugging output.
-	 */
-    public synchronized PrintStream getDebugOut() {
-		if (out == null)
-			return System.out;
-		else
-			return out;
-	}
-	
+    public void setLogger(String filename) {
+    	logger.setLevel(Level.DEBUG);
+    	Log4jUtils.addAppender(logger, filename, "%m");
+    }
+    
 	private String toString(ChannelBuffer buffer) {
 		byte[] dst = new byte[buffer.readableBytes()];
 		buffer.getBytes(buffer.readerIndex(), dst);
@@ -74,13 +57,15 @@ public class DebuggingHandler implements ChannelUpstreamHandler,
 	 * {@link #getDebugOut()}.
 	 */
 	public void debug(ChannelEvent e) {
-		if (e instanceof MessageEvent) {
-			Object msg = ((MessageEvent) e).getMessage();
-	        if (msg instanceof ChannelBuffer) {
-	        	getDebugOut().print(toString((ChannelBuffer) msg));
-	        } else {
-	        	getDebugOut().print(msg);
-	        }
+		if (logger.isDebugEnabled()) {
+			if (e instanceof MessageEvent) {
+				Object msg = ((MessageEvent) e).getMessage();
+		        if (msg instanceof ChannelBuffer) {
+		        	logger.debug(toString((ChannelBuffer) msg));
+		        } else {
+		        	logger.debug(msg);
+		        }
+			}
 		}
 	}
 	
