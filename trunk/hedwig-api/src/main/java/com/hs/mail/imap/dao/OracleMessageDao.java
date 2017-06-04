@@ -40,16 +40,12 @@ import com.hs.mail.imap.message.MessageHeader;
  */
 public class OracleMessageDao extends AnsiMessageDao {
 
-	private int fetchSize = 2000;
-
-	public OracleMessageDao() {
-		fetchSize = (int) Config.getNumberProperty("uids_fetch_size", fetchSize);
-	}
-
 	@Override
 	public List<Long> getMessageIDList(long mailboxID) {
-		getJdbcTemplate().setFetchSize(fetchSize);
-		return super.getMessageIDList(mailboxID);
+		String sql = "SELECT messageid FROM hw_message WHERE mailboxid = ? ORDER BY messageid";
+		return (List<Long>) getJdbcTemplate(Config.getUIDListFetchSize())
+				.queryForList(sql, new Object[]{new Long(mailboxID)},
+						Long.class);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ package com.hs.mail.imap.dao;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
@@ -29,6 +30,21 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
  *
  */
 abstract class AbstractDao extends JdbcDaoSupport {
+	
+	/**
+	 * Create an return a new instance of JdbcTemplate with given fetch size.
+	 * Because a DAO that extends JdbcDaoSupport every call to getJdbcTemplate()
+	 * returns the same shared JdbcTemplate instance with same fetch size value.
+	 * 
+	 * @param fetchSize
+	 *            the new fetch size
+	 * @return Ad hoc JdbcTemplate instance
+	 */
+	protected JdbcTemplate getJdbcTemplate(int fetchSize) {
+		JdbcTemplate jt = new JdbcTemplate(getDataSource());
+		jt.setFetchSize(fetchSize);
+		return jt;
+	}
 
 	/**
 	 * Query given SQL to create a prepared statement from SQL and a list of

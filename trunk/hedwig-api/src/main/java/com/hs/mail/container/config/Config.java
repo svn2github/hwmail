@@ -66,6 +66,7 @@ public class Config implements InitializingBean {
 	private static File spoolDirectory;
 	private static Set<String> defaultCacheFields;
 	private static long defaultQuota;
+	private static int uidlistFetchSize = 1000;
 	private static String[] domains;
 	private static String[] mydestinations;
 	private static String hostName;
@@ -155,6 +156,10 @@ public class Config implements InitializingBean {
 
 	public static long getDefaultQuota() {
 		return defaultQuota;
+	}
+
+	public static int getUIDListFetchSize() {
+		return uidlistFetchSize;
 	}
 
 	public static String[] getDomains() {
@@ -267,6 +272,8 @@ public class Config implements InitializingBean {
 		long quota = getNumberProperty("default_quota", 0);
 		defaultQuota = quota * 1024 * 1024;
 		logger.info("Default quota is {}MB", quota);
+		
+		uidlistFetchSize = (int) getNumberProperty("uidlist_fetch_size", 1000);
 		
 		hostName = getProperty("myhostname", null);
 		if (null == hostName) {

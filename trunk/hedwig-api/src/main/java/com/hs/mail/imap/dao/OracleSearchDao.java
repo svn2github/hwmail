@@ -3,7 +3,9 @@ package com.hs.mail.imap.dao;
 import java.util.List;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.message.search.DateKey;
 
 /**
@@ -13,6 +15,11 @@ import com.hs.mail.imap.message.search.DateKey;
  *
  */
 public class OracleSearchDao extends AnsiSearchDao {
+
+	@Override
+	protected JdbcTemplate getAdHocJdbcTemplate() {
+		return getJdbcTemplate(Config.getUIDListFetchSize());
+	}
 
 	@Override
 	protected SearchQuery getSearchQuery() {

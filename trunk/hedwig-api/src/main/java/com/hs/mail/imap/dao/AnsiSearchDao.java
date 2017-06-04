@@ -25,6 +25,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 import com.hs.mail.imap.dao.SearchQuery.Query;
@@ -51,6 +52,10 @@ import com.hs.mail.imap.message.search.SortKey;
  */
 @SuppressWarnings("unchecked")
 abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
+	
+	protected JdbcTemplate getAdHocJdbcTemplate() {
+		return getJdbcTemplate();
+	}
 
 	public List<Long> query(UidToMsnMapper map, long mailboxID, SearchKey key) {
 		if (key instanceof AndKey) {
@@ -95,8 +100,8 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 		} else {
 			// "TO", "CC"
 		}
-		return getJdbcTemplate().queryForList(sql.toString(),
-				new Object[] { new Long(mailboxID) }, Long.class);
+		return getAdHocJdbcTemplate().queryForList(sql.toString(),
+				new Object[]{new Long(mailboxID)}, Long.class);
 	}
 	
 	abstract protected SearchQuery getSearchQuery();
@@ -129,22 +134,25 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 			final String pattern) {
 		if (StringUtils.isEmpty(pattern)) {
 			Query query = getSearchQuery().toQuery(mailboxID, name, true);
-			return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
+			return getAdHocJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 		} else {
 			Query query = getSearchQuery().toQuery(mailboxID, name, false);
 			final List<Long> results = new ArrayList<Long>();
-			getJdbcTemplate().query(query.sql, query.args, new RowCallbackHandler() {
-				public void processRow(ResultSet rs) throws SQLException {
-					// Stored header values are not decoded.
-					String tmp = rs.getString(2);
-					if (tmp != null) {
-						String value = DecoderUtil.decodeEncodedWords(tmp, DecodeMonitor.SILENT);
-						if (StringUtils.contains(value, pattern)) {
-							results.add(rs.getLong(1));
+			getAdHocJdbcTemplate().query(query.sql, query.args,
+					new RowCallbackHandler() {
+						public void processRow(ResultSet rs)
+								throws SQLException {
+							// Stored header values are not decoded.
+							String tmp = rs.getString(2);
+							if (tmp != null) {
+								String value = DecoderUtil.decodeEncodedWords(
+										tmp, DecodeMonitor.SILENT);
+								if (StringUtils.contains(value, pattern)) {
+									results.add(rs.getLong(1));
+								}
+							}
 						}
-					}
-				}
-			});
+					});
 			return results;
 		}
 	}
@@ -186,7 +194,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	private List<Long> query(UidToMsnMapper map, long mailboxID, KeywordKey key) {
 		Query query = getSearchQuery().toQuery(mailboxID, key);
 		if (key.getTestSet()) {
-			return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
+			return getAdHocJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 		} else {
 			return ListUtils.subtract(map.getUIDList(), getJdbcTemplate()
 					.queryForList(query.sql, query.args, Long.class));
@@ -196,7 +204,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	private List<Long> query(UidToMsnMapper map, long mailboxID,
 			CompositeKey key, boolean and) {
 		Query query = getSearchQuery().toQuery(mailboxID, key, and);
-		return getJdbcTemplate().queryForList(query.sql, query.args, Long.class);
+		return getAdHocJdbcTemplate().queryForList(query.sql, query.args, Long.class);
 	}
 	
 	private List<Long> conjunctionQuery(UidToMsnMapper map, long mailboxID,
