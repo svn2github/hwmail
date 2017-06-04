@@ -59,6 +59,7 @@ public class SmtpSession {
 	
 	public static void setLogger(String filename) {
 		logger.setLevel(Level.DEBUG);
+    	logger.setAdditivity(false);
 		Log4jUtils.addAppender(logger, filename, "%m%n");
 	}
 	
