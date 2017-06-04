@@ -15,15 +15,12 @@
  */
 package com.hs.mail.imap.server;
 
-import java.nio.channels.ClosedChannelException;
-
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,13 +95,7 @@ public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
 		logger.warn("Exception from downstream.", e.getCause());
-		if (e.getCause() instanceof ReadTimeoutException) {
-			e.getChannel().close();
-		} else if (e.getCause() instanceof ClosedChannelException) {
-			e.getChannel().close();
-		} else {
-			e.getChannel().write(e.getCause().getMessage() + "\r\n");
-		}
+		e.getChannel().close();
 	}
 
 }
