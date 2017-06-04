@@ -74,21 +74,22 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 
 		while (!trans.isSessionEnded()) {
 			String line = trans.readLine();
-			if (line != null) {
-				session.debug(line);
-				StringTokenizer st = new StringTokenizer(line);
-				if (!st.hasMoreTokens()) {
-					break;
-				}
-				String command = st.nextToken().trim();
-				try {
-					SmtpProcessor processor = SmtpProcessorFactory
-							.createSmtpProcessor(command);
-					processor.process(session, trans, st);
-				} catch (LookupException e) {
-					session.writeResponse("500 5.5.1 Unknown command \"" + command
-							+ "\"");
-				}
+			if (line == null) {
+				break;
+			}
+			session.debug(line);
+			StringTokenizer st = new StringTokenizer(line);
+			if (!st.hasMoreTokens()) {
+				break;
+			}
+			String command = st.nextToken().trim();
+			try {
+				SmtpProcessor processor = SmtpProcessorFactory
+						.createSmtpProcessor(command);
+				processor.process(session, trans, st);
+			} catch (LookupException e) {
+				session.writeResponse("500 5.5.1 Unknown command \"" + command
+						+ "\"");
 			}
 		}
 	}
