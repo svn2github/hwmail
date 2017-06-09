@@ -34,6 +34,10 @@ import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
 import com.hs.mail.smtp.processor.hook.ConnectHook;
 import com.hs.mail.smtp.processor.hook.DNSRBLHandler;
+import com.hs.mail.smtp.processor.hook.HookResult;
+import com.hs.mail.smtp.processor.hook.HookReturnCode;
+import com.hs.mail.smtp.processor.hook.RejectHook;
+import com.hs.mail.smtp.processor.hook.RemoteAddrInNetwork;
 
 /**
  * 
@@ -47,7 +51,6 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 	
 	public SmtpConnectionHandler() {
 		connectHandlers = new ArrayList<ConnectHook>(2);
-		connectHandlers.add(new WelcomeMessageHandler());
 	}
 	
 	public void configure() {
@@ -55,12 +58,27 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 			SmtpSession.setLogger(Config.getProperty("smtp_protocol_log", null));
 		}
 
-		String rblservers = Config.getProperty("maps_rbl_domains", null);
-		if (StringUtils.isNotBlank(rblservers)) {
-			String[] blacklist = StringUtils.stripAll(StringUtils.split(rblservers, ","));
-			if (ArrayUtils.isNotEmpty(blacklist)) {
-				DNSRBLHandler cHandler = new DNSRBLHandler(blacklist);
-				connectHandlers.add(0, cHandler);
+		String restrictions = Config.getProperty("smtpd_client_restrictions", null);
+		if (StringUtils.isNotBlank(restrictions)) {
+			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
+			DNSRBLHandler rblHandler = null;
+			for (String restriction : array) {
+				String[] tokens = StringUtils.split(restriction);
+				if (ArrayUtils.isNotEmpty(tokens)) {
+					if ("permit_mynetworks".equals(tokens[0])) {
+						connectHandlers.add(new RemoteAddrInNetwork());
+					} else if ("reject_rbl_client".equals(tokens[0])) {
+						if (tokens.length == 2) {
+							if (rblHandler == null) {
+								rblHandler = new DNSRBLHandler();
+								connectHandlers.add(rblHandler);
+							}
+							rblHandler.add(tokens[1]);
+						}
+					} else if ("reject".equals(tokens[0])) {
+						connectHandlers.add(new RejectHook());
+					}
+				}
 			}
 		}
 	}
@@ -88,7 +106,7 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 						.createSmtpProcessor(command);
 				processor.process(session, trans, st);
 			} catch (LookupException e) {
-				session.writeResponse("500 5.5.1 Unknown command \"" + command
+				session.writeResponse("500 5.5.1 Unknown command \"" + command 
 						+ "\"");
 			}
 		}
@@ -96,24 +114,27 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 
 	protected void onConnect(SmtpSession session, TcpTransport trans) {
 		for (ConnectHook cHandler : connectHandlers) {
-			cHandler.onConnect(session, trans);
-			if (trans.isSessionEnded()) {
+			HookResult hr = cHandler.onConnect(session, trans);
+			if (hr.getResult() == HookReturnCode.REJECT) {
+				session.writeResponse(hr.getMessage());
+				trans.endSession();
 				return;
 			}
+			if (hr.getResult() == HookReturnCode.OK) {
+				break;
+			}
 		}
+		// Send welcome message to client
+		welcome(session);
 	}
-	
-	class WelcomeMessageHandler implements ConnectHook {
 
-		public void onConnect(SmtpSession session, TcpTransport trans) {
-			String greetings = new StringBuilder()
-					.append("220 ")
-					.append(Config.getHelloName())
-					.append(" Service ready")
-					.toString();
-			session.writeResponse(greetings);
-		}
-
+	private void welcome(SmtpSession session) {
+		String greetings = new StringBuilder()
+				.append("220 ")
+				.append(Config.getHelloName())
+				.append(" Service ready")
+				.toString();
+		session.writeResponse(greetings);
 	}
 
 }

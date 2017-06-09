@@ -260,7 +260,7 @@ public class Config implements InitializingBean {
 		logger.info("Spool directory: {}", spoolDirectory.getCanonicalPath());
 	
 		authScheme = getProperty("auth_scheme", null);
-		logger.info("\nAuthentication scheme is {}",
+		logger.info("Authentication scheme is {}",
 				((authScheme != null) ? authScheme : "not specified"));
 		
 		/**

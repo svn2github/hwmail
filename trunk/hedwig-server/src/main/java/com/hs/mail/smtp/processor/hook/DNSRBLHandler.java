@@ -2,12 +2,13 @@ package com.hs.mail.smtp.processor.hook;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.SmtpSession;
 
@@ -18,18 +19,18 @@ public class DNSRBLHandler implements ConnectHook {
 	/**
 	 * The list of RBL servers to be checked to limit spam
 	 */
-	private String[] blacklist;
+	private List<String> blacklist;
 
-	public DNSRBLHandler(String[] blacklist) {
-		this.blacklist = blacklist;
+	public DNSRBLHandler() {
+		this.blacklist = new ArrayList<String>();
+	}
+	
+	public void add(String black) {
+		this.blacklist.add(black);
 	}
 
-	public void onConnect(SmtpSession session, TcpTransport trans) {
-		if (Config.getAuthorizedNetworks().matches(session.getClientAddress())) {
-			return;
-		}
-
-		if (blacklist != null) {
+	public HookResult onConnect(SmtpSession session, TcpTransport trans) {
+		if (!blacklist.isEmpty()) {
 			String ipAddress = session.getRemoteIP();
             StringBuffer sb = new StringBuffer();
             StringTokenizer st = new StringTokenizer(ipAddress, " .", false);
@@ -49,12 +50,11 @@ public class DNSRBLHandler implements ConnectHook {
 							.append(" is blocked by RBL at ")
 							.append(rbl);
 					
-					session.writeResponse(response.toString()); 
-					trans.endSession();
-					return;
+					return HookResult.reject(response.toString());
 				}
 			}
 		}
+		return HookResult.DUNNO;
 	}
 
 	protected boolean resolve(String ip) {

@@ -5,6 +5,6 @@ import com.hs.mail.smtp.SmtpSession;
 
 public interface ConnectHook {
 
-	void onConnect(SmtpSession session, TcpTransport trans);
+	HookResult onConnect(SmtpSession session, TcpTransport trans);
 
 }
