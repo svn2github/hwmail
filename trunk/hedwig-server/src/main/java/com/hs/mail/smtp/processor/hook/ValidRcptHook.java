@@ -1,3 +1,16 @@
+/*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.smtp.processor.hook;
 
 import java.util.List;
@@ -6,7 +19,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.ComponentManager;
-import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -20,7 +32,7 @@ import com.hs.mail.smtp.message.SmtpMessage;
 
 public class ValidRcptHook implements RcptHook {
 
-	private boolean isValidRecipient(SmtpSession session, Recipient rcpt) {
+	private HookResult isValidRecipient(SmtpSession session, Recipient rcpt) {
 		User user = getUserManager().getUserByAddress(rcpt.getMailbox());
 		if (user != null) {
 			if (StringUtils.isEmpty(user.getForwardTo())) {
@@ -38,32 +50,27 @@ public class ValidRcptHook implements RcptHook {
 										alias.getDeliverTo(),
 										MailboxACL.p_Post_RIGHT)) {
 							// User does not have right to post to the folder.
-							throw new SmtpException(SmtpException.RECIPIENT_REJECTED);
+							return HookResult.reject(SmtpException.RECIPIENT_REJECTED);
 						}
 					}
 				}
 			} else {
 				// User and alias does not exist
-				return false;
+				return HookResult.reject(SmtpException.NO_SUCH_USER);
 			}
 		}
-		return true;
+		return HookResult.DUNNO;
 	}
 	
 	@Override
-	public void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
-		if (Config.isLocal(rcpt.getHost())) {
-			boolean valid = true;
-			try {
-				valid = isValidRecipient(session, rcpt);
-			} catch (Exception _) {	
-				// Maybe JDBC connection exception. 
-				// We have a second chance at spool.
-			}
-			if (!valid) {
-				throw new SmtpException(SmtpException.NO_SUCH_USER);
-			}
+	public HookResult doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
+		try {
+			return isValidRecipient(session, rcpt);
+		} catch (Exception _) {
+			// Maybe JDBC connection exception.
+			// We have a second chance at spool.
 		}
+		return HookResult.DUNNO;
 	}
 
 	private UserManager getUserManager() {

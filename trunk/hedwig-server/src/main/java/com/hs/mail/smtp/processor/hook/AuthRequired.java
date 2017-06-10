@@ -13,27 +13,16 @@
  */
 package com.hs.mail.smtp.processor.hook;
 
-import com.hs.mail.container.config.Config;
-import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
-public class RemoteAddrInNetwork implements ConnectHook, RcptHook {
+public class AuthRequired implements RcptHook {
 
 	@Override
-	public HookResult onConnect(SmtpSession session, TcpTransport trans) {
-		return Config.getAuthorizedNetworks().matches(
-				session.getClientAddress()) ? HookResult.OK : HookResult.DUNNO;
-	}
-
-	@Override
-	public HookResult doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
-		if (Config.getAuthorizedNetworks()
-				.matches(session.getClientAddress())) {
-			return HookResult.OK;
-		}
-		return HookResult.DUNNO;
+	public HookResult doRcpt(SmtpSession session, SmtpMessage message,
+			Recipient rcpt) {
+		return (session.getAuthID() > 0) ? HookResult.OK : HookResult.DUNNO;
 	}
 
 }

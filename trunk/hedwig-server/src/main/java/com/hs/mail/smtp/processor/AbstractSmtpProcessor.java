@@ -29,6 +29,7 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 
 /**
+ * Abstract base class for {#link SmtpProcessor} implementations  
  * 
  * @author Won Chul Doh
  * @since May 30, 2010

@@ -15,12 +15,8 @@
  */
 package com.hs.mail.smtp.processor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
@@ -29,11 +25,11 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
-import com.hs.mail.smtp.processor.hook.MaxRcptHook;
-import com.hs.mail.smtp.processor.hook.RcptAccessHook;
+import com.hs.mail.smtp.processor.hook.HookFactory;
+import com.hs.mail.smtp.processor.hook.HookResult;
+import com.hs.mail.smtp.processor.hook.HookReturnCode;
+import com.hs.mail.smtp.processor.hook.MailLog;
 import com.hs.mail.smtp.processor.hook.RcptHook;
-import com.hs.mail.smtp.processor.hook.RelayRcptHook;
-import com.hs.mail.smtp.processor.hook.ValidRcptHook;
 
 /**
  * Handler for RCPT command. Read recipient. Does some recipient verification.
@@ -44,41 +40,20 @@ import com.hs.mail.smtp.processor.hook.ValidRcptHook;
  */
 public class RcptProcessor extends AbstractSmtpProcessor {
 
-	private List<RcptHook> hooks = null;
+	private List<RcptHook> rHooks = null;
+	private List<RcptHook> pHooks = null;
+	private int maxRcpt = 0; 
 
 	@Override
 	public void configure() throws ConfigException {
-		hooks = new ArrayList<RcptHook>();
+		maxRcpt = (int) Config.getNumberProperty("smtp_recipient_limit", 0);
 
-		int maxRcpt = (int) Config.getNumberProperty("smtp_recipient_limit", 0);
-		if (maxRcpt > 0) {
-			hooks.add(new MaxRcptHook(maxRcpt));
-		}
+		rHooks = HookFactory.getHooks(RcptHook.class,
+				"smtpd_relay_restrictions",
+				"permit_mynetworks, permit_sasl_authenticated, reject");
 
-		String restrictions = Config.getProperty("smtpd_relay_restrictions",
-				"permit_mynetworks");
-		if (StringUtils.isNotBlank(restrictions)) {
-			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
-			hooks.add(new RelayRcptHook(array));
-		}
-		
-		restrictions = Config.getProperty("smtpd_recipient_restrictions", null);
-		if (StringUtils.isNotBlank(restrictions)) {
-			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
-			for (String restriction : array) {
-				String[] tokens = StringUtils.split(restriction);
-				if (ArrayUtils.isNotEmpty(tokens)) {
-					if ("check_recipient_access".equals(tokens[0])) {
-						hooks.add(new RcptAccessHook(tokens.length > 1
-								? tokens[1]
-								: Config.replaceByProperties("${app.home}/conf/recipient_access")));
-					}
-					if ("reject_unlisted_recipient".equals(tokens[0])) {
-						hooks.add(new ValidRcptHook());
-					}
-				}
-			}
-		}
+		pHooks = HookFactory.getHooks(RcptHook.class,
+				"smtpd_recipient_restrictions", null);
 	}
 
 	@Override
@@ -107,7 +82,12 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 		if ("postmaster".equalsIgnoreCase(to)) {
 			to = Config.getPostmaster();
 		}
-
+		if (maxRcpt > 0) {
+			int rcptCount = message.getRecipientsSize();
+			if (rcptCount >= maxRcpt) {
+				throw new SmtpException(SmtpException.RECIPIENTS_COUNT_LIMIT);
+			}
+		}
 		Recipient recipient = new Recipient(to);
 		// Reject if invalid recipient
 		doRcpt(session, message, recipient);
@@ -117,9 +97,18 @@ public class RcptProcessor extends AbstractSmtpProcessor {
 	}
 
 	void doRcpt(SmtpSession session, SmtpMessage message, Recipient rcpt) {
+		String toDomain = rcpt.getHost();
+		List<RcptHook> hooks = Config.isLocal(toDomain) ? pHooks : rHooks;
 		if (hooks != null) {
 			for (RcptHook hook : hooks) {
-				hook.doRcpt(session, message, rcpt);
+				HookResult hr = hook.doRcpt(session, message, rcpt);
+				if (hr.getResult() == HookReturnCode.REJECT) {
+					MailLog.reject(session, message.getFrom(), rcpt, hr.getMessage());
+					throw new SmtpException(hr.getMessage());
+				}
+				if (hr.getResult() == HookReturnCode.OK) {
+					return;
+				}
 			}
 		}
 	}

@@ -13,11 +13,13 @@
  */
 package com.hs.mail.smtp.processor.hook;
 
-import com.hs.mail.container.server.socket.TcpTransport;
-import com.hs.mail.smtp.SmtpSession;
-
-public interface ConnectHook extends Hook {
-
-	HookResult onConnect(SmtpSession session, TcpTransport trans);
+/**
+ * Just and marker interface for different Hooks
+ * 
+ * @author Won Chul Doh
+ * @since Jun 10, 2017
+ *
+ */
+public interface Hook {
 
 }

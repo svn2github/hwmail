@@ -1,11 +1,23 @@
+/*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.smtp.processor.hook;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,18 +31,14 @@ public class DNSRBLHandler implements ConnectHook {
 	/**
 	 * The list of RBL servers to be checked to limit spam
 	 */
-	private List<String> blacklist;
+	private String[] blacklist;
 
-	public DNSRBLHandler() {
-		this.blacklist = new ArrayList<String>();
+	public DNSRBLHandler(String[] blacklist) {
+		this.blacklist = blacklist;
 	}
 	
-	public void add(String black) {
-		this.blacklist.add(black);
-	}
-
 	public HookResult onConnect(SmtpSession session, TcpTransport trans) {
-		if (!blacklist.isEmpty()) {
+		if (ArrayUtils.isNotEmpty(blacklist)) {
 			String ipAddress = session.getRemoteIP();
             StringBuffer sb = new StringBuffer();
             StringTokenizer st = new StringTokenizer(ipAddress, " .", false);
@@ -45,9 +53,9 @@ public class DNSRBLHandler implements ConnectHook {
 					logger.info("Connection from {} is restricted by {}", ipAddress, rbl);
 					
 					StringBuilder response = new StringBuilder();
-					response.append("550 5.7.1 ")
+					response.append("554 5.7.1 Service unavailable; Client host[")
 							.append(ipAddress)
-							.append(" is blocked by RBL at ")
+							.append("] blocked using ")
 							.append(rbl);
 					
 					return HookResult.reject(response.toString());

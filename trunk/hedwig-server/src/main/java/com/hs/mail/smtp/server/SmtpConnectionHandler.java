@@ -17,12 +17,8 @@ package com.hs.mail.smtp.server;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.ConnectionHandler;
@@ -33,11 +29,10 @@ import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
 import com.hs.mail.smtp.processor.hook.ConnectHook;
-import com.hs.mail.smtp.processor.hook.DNSRBLHandler;
+import com.hs.mail.smtp.processor.hook.HookFactory;
 import com.hs.mail.smtp.processor.hook.HookResult;
 import com.hs.mail.smtp.processor.hook.HookReturnCode;
-import com.hs.mail.smtp.processor.hook.RejectHook;
-import com.hs.mail.smtp.processor.hook.RemoteAddrInNetwork;
+import com.hs.mail.smtp.processor.hook.MailLog;
 
 /**
  * 
@@ -47,40 +42,14 @@ import com.hs.mail.smtp.processor.hook.RemoteAddrInNetwork;
  */
 public class SmtpConnectionHandler implements ConnectionHandler {
 
-	private List<ConnectHook> connectHandlers; 
+	private List<ConnectHook> connectHandlers = null; 
 	
-	public SmtpConnectionHandler() {
-		connectHandlers = new ArrayList<ConnectHook>(2);
-	}
-	
-	public void configure() {
+	public void configure() throws Exception {
 		if (Config.getBooleanProperty("smtp_trace_protocol", false)) {
 			SmtpSession.setLogger(Config.getProperty("smtp_protocol_log", null));
 		}
-
-		String restrictions = Config.getProperty("smtpd_client_restrictions", null);
-		if (StringUtils.isNotBlank(restrictions)) {
-			String[] array = StringUtils.stripAll(StringUtils.split(restrictions, ","));
-			DNSRBLHandler rblHandler = null;
-			for (String restriction : array) {
-				String[] tokens = StringUtils.split(restriction);
-				if (ArrayUtils.isNotEmpty(tokens)) {
-					if ("permit_mynetworks".equals(tokens[0])) {
-						connectHandlers.add(new RemoteAddrInNetwork());
-					} else if ("reject_rbl_client".equals(tokens[0])) {
-						if (tokens.length == 2) {
-							if (rblHandler == null) {
-								rblHandler = new DNSRBLHandler();
-								connectHandlers.add(rblHandler);
-							}
-							rblHandler.add(tokens[1]);
-						}
-					} else if ("reject".equals(tokens[0])) {
-						connectHandlers.add(new RejectHook());
-					}
-				}
-			}
-		}
+		connectHandlers = HookFactory.getHooks(ConnectHook.class,
+				"smtpd_client_restrictions", null);
 	}
 	
 	public void handleConnection(Socket soc) throws IOException {
@@ -113,15 +82,20 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 	}
 
 	protected void onConnect(SmtpSession session, TcpTransport trans) {
-		for (ConnectHook cHandler : connectHandlers) {
-			HookResult hr = cHandler.onConnect(session, trans);
-			if (hr.getResult() == HookReturnCode.REJECT) {
-				session.writeResponse(hr.getMessage());
-				trans.endSession();
-				return;
-			}
-			if (hr.getResult() == HookReturnCode.OK) {
-				break;
+		MailLog.connect(session);
+		
+		if (connectHandlers != null) {
+			for (ConnectHook cHandler : connectHandlers) {
+				HookResult hr = cHandler.onConnect(session, trans);
+				if (hr.getResult() == HookReturnCode.REJECT) {
+					MailLog.reject(session, hr.getMessage());
+					session.writeResponse(hr.getMessage());
+					trans.endSession();
+					return;
+				}
+				if (hr.getResult() == HookReturnCode.OK) {
+					break;
+				}
 			}
 		}
 		// Send welcome message to client

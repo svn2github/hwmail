@@ -15,12 +15,8 @@
  */
 package com.hs.mail.smtp.processor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
@@ -29,8 +25,11 @@ import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.SmtpMessage;
-import com.hs.mail.smtp.processor.hook.MailAccessHook;
+import com.hs.mail.smtp.processor.hook.HookFactory;
+import com.hs.mail.smtp.processor.hook.HookResult;
+import com.hs.mail.smtp.processor.hook.HookReturnCode;
 import com.hs.mail.smtp.processor.hook.MailHook;
+import com.hs.mail.smtp.processor.hook.MailLog;
 
 /**
  * Handler for MAIL command. Starts a mail transaction to deliver mail as the
@@ -46,21 +45,8 @@ public class MailProcessor extends AbstractSmtpProcessor {
 
 	@Override
 	public void configure() throws ConfigException {
-		String restrictions = Config.getProperty("smtpd_sender_restrictions", null);
-		if (StringUtils.isNotBlank(restrictions)) {
-			String[] restrictionArray = StringUtils.split(restrictions, ",");
-			hooks = new ArrayList<MailHook>(restrictionArray.length);
-			for (String restriction : restrictionArray) {
-				String[] tokens = StringUtils.split(restriction);
-				if (ArrayUtils.isNotEmpty(tokens)) {
-					if ("check_sender_access".equals(tokens[0])) {
-						hooks.add(new MailAccessHook(tokens.length > 1
-								? tokens[1]
-								: Config.replaceByProperties("${app.home}/conf/sender_access")));
-					}
-				}
-			}
-		}
+		hooks = HookFactory.getHooks(MailHook.class,
+				"smtpd_sender_restrictions", null);
 	}
 
 	@Override
@@ -166,7 +152,14 @@ public class MailProcessor extends AbstractSmtpProcessor {
 	private void doMailFrom(SmtpSession session, MailAddress sender) {
 		if (hooks != null) {
 			for (MailHook hook : hooks) {
-				hook.doMail(session, sender);
+				HookResult hr = hook.doMail(session, sender);
+				if (hr.getResult() == HookReturnCode.REJECT) {
+					MailLog.reject(session, sender, hr.getMessage());
+					throw new SmtpException(hr.getMessage());
+				}
+				if (hr.getResult() == HookReturnCode.OK) {
+					return;
+				}
 			}
 		}
 	}
