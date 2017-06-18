@@ -22,10 +22,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class InetAddressMatcher {
 	
@@ -110,30 +109,53 @@ public class InetAddressMatcher {
 		return sb.toString();
 	}
 
-	public static String getCidrSignature() {
-		try {
-			return new StringBuilder()
-					.append(getCidrSignature(Inet4Address.getByName("127.0.0.1")))
-					.append(" ")
-					.append(getCidrSignature(Inet4Address.getLocalHost()))
-					.toString();
-		} catch (Exception ex) {
-			return null;
+	public static InetAddress getNetworkPart(InetAddress address,
+			int prefixLength) throws UnknownHostException {
+		if (address == null) {
+			throw new IllegalArgumentException("Address must not be null");
 		}
-	}
-	
-	public static String getCidrSignature(InetAddress addr)
-			throws SocketException, UnknownHostException {
-		NetworkInterface ni = NetworkInterface.getByInetAddress(addr);
-		for (InterfaceAddress iaddr : ni.getInterfaceAddresses()) {
-			if (iaddr.getAddress() instanceof Inet4Address) {
-				byte[] bytes = addr.getAddress();
-				bytes[bytes.length - 1] = 0;
-				return InetAddress.getByAddress(bytes).getHostAddress() + "/"
-						+ iaddr.getNetworkPrefixLength();
-			}
+		
+		byte[] array = address.getAddress();
+		
+		if (prefixLength < 0 || prefixLength > array.length * 8) {
+			throw new IllegalArgumentException("Bad prefix length");
 		}
-		return StringUtils.EMPTY;
+		
+		int offset = prefixLength / 8;
+		int reminder = prefixLength % 8;
+		byte mask = (byte) (0xFF << (8 - reminder));
+		
+		if (offset < array.length)
+			array[offset] = (byte) (array[offset] & mask);
+
+		offset++;
+
+		for (; offset < array.length; offset++)
+			array[offset] = 0;
+		
+		return InetAddress.getByAddress(array);
 	}
 
+	public static String getCidrSignature()
+			throws SocketException, UnknownHostException {
+		StringBuilder buffer = new StringBuilder().append("127.0.0.0/8");
+		Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+		while (networkInterfaces.hasMoreElements()) {
+			NetworkInterface networkInterface = networkInterfaces.nextElement();
+			if (!networkInterface.isLoopback()) {
+				for (InterfaceAddress ifaceAddress : networkInterface
+						.getInterfaceAddresses()) {
+					InetAddress address = ifaceAddress.getAddress();
+					if (address instanceof Inet4Address) {
+						int prefixLength = ifaceAddress.getNetworkPrefixLength();
+						InetAddress netPart = getNetworkPart(address, prefixLength);
+						buffer.append(" ").append(netPart.getHostAddress())
+								.append("/").append(prefixLength);
+					}
+				}
+			}
+		}
+		return buffer.toString();
+	}
+	
 }
