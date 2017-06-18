@@ -44,6 +44,7 @@
 
 	<bean id="mta" class="com.hs.mail.webmail.config.MailTransportAgent">
 		<property name="address" value="${mta.address}" />
+		<!-- property name="authenticated" value="true" / -->
 	</bean>
 	
 </beans>
