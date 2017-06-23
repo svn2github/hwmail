@@ -16,6 +16,7 @@ package com.hs.mail.smtp.processor.hook;
 import java.io.File;
 import java.io.IOException;
 
+import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.exception.ConfigException;
 import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
@@ -23,7 +24,7 @@ import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
-public class AccessTableHook implements MailHook, RcptHook {
+public class AccessTableHook implements ConnectHook, MailHook, RcptHook {
 
 	private AccessTable access;
 
@@ -38,6 +39,18 @@ public class AccessTableHook implements MailHook, RcptHook {
 		} catch (IOException e) {
 			throw new ConfigException(e);
 		}
+	}
+
+	@Override
+	public HookResult onConnect(SmtpSession session, TcpTransport trans) {
+		if (access.findAction(session.getClientAddress()) == AccessTable.Action.REJECT) {
+			StringBuilder response = new StringBuilder();
+			response.append("554 5.7.1 Service unavailable; Client host[")
+					.append(session.getRemoteIP())
+					.append("] blocked by system");
+			return HookResult.reject(response.toString());
+		}
+		return HookResult.DUNNO;
 	}
 
 	@Override

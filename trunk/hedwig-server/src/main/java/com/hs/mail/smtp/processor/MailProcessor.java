@@ -58,9 +58,6 @@ public class MailProcessor extends AbstractSmtpProcessor {
 		if (session.getClientDomain() == null || message != null) {
 			throw new SmtpException(SmtpException.COMMAND_OUT_OF_SEQUENCE);
 		}
-		if (Config.isSaslAuthEnabled() && session.getAuthID() < 0) {
-			throw new SmtpException(SmtpException.AUTH_REQUIRED);
-		}
 		if (st.countTokens() < 1) {
 			throw new SmtpException(SmtpException.INVALID_COMMAND_PARAM);
 		}

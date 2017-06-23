@@ -50,7 +50,11 @@ public class HookFactory {
 	
 	private static Hook getHook(String name, String[] tokens)
 			throws ConfigException {
-		if ("check_recipient_access".equals(tokens[0])) {
+		if ("check_client_access".equals(tokens[0])) {
+			return new AccessTableHook(tokens.length > 1
+					? tokens[1]
+					: Config.replaceByProperties("${app.home}/conf/client_access"));
+		} else if ("check_recipient_access".equals(tokens[0])) {
 			return new AccessTableHook(tokens.length > 1
 					? tokens[1]
 					: Config.replaceByProperties("${app.home}/conf/recipient_access"));
@@ -66,6 +70,8 @@ public class HookFactory {
 			return new RejectHook("smtpd_relay_restrictions".equals(name));
 		} else if ("reject_rbl_clients".equals(tokens[0])) {
 			return new DNSRBLHandler(ArrayUtils.remove(tokens, 0));
+		} else if ("reject_unauthenticated_sender".equals(tokens[0])) {
+			return new AuthRequired();
 		} else if ("reject_unlisted_recipient".equals(tokens[0])) {
 			return new ValidRcptHook();
 		} else {

@@ -25,13 +25,21 @@ public class MailLog {
 	private static Logger logger = LoggerFactory.getLogger(MailLog.class);
 	
 	public static void connect(SmtpSession session) {
-		logger.debug("connect from {} [{}]",
+		logger.debug("connect from {}[{}]",
 				session.getRemoteHost(), 
 				session.getRemoteIP());
 	}
 	
+	public static void disconnect(SmtpSession session) {
+		if (session != null) {
+			logger.debug("disconnect from {}[{}]",
+					session.getRemoteHost(), 
+					session.getRemoteIP());
+		}
+	}
+	
 	public static void reject(SmtpSession session, String message) {
-		logger.error("NOQUEUE: reject: CONNECT from {} [{}]; {};", 
+		logger.error("NOQUEUE: reject: CONNECT from {}[{}]; {};", 
 				session.getRemoteHost(), 
 				session.getRemoteIP(),
 				message);
@@ -39,7 +47,7 @@ public class MailLog {
 	
 	public static void reject(SmtpSession session, MailAddress sender,
 			String message) {
-		logger.error("NOQUEUE: reject: MAIL from {} [{}]; {}; from={}, proto={}, helo={}",
+		logger.error("NOQUEUE: reject: MAIL from {}[{}]; {}; from={}, proto={}, helo={}",
 				session.getRemoteHost(), 
 				session.getRemoteIP(),
 				message, 
@@ -50,7 +58,7 @@ public class MailLog {
 	
 	public static void reject(SmtpSession session, MailAddress from,
 			MailAddress to, String message) {
-		logger.error("NOQUEUE: reject: RCPT from {} [{}]; {}; from={}, to={}, proto={}, helo={}",
+		logger.error("NOQUEUE: reject: RCPT from {}[{}]; {}; from={}, to={}, proto={}, helo={}",
 				session.getRemoteHost(), 
 				session.getRemoteIP(),
 				message, 

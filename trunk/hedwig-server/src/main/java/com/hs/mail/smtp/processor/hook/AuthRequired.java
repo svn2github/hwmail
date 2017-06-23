@@ -13,11 +13,20 @@
  */
 package com.hs.mail.smtp.processor.hook;
 
+import com.hs.mail.smtp.SmtpException;
 import com.hs.mail.smtp.SmtpSession;
+import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.Recipient;
 import com.hs.mail.smtp.message.SmtpMessage;
 
-public class AuthRequired implements RcptHook {
+public class AuthRequired implements MailHook, RcptHook {
+
+	@Override
+	public HookResult doMail(SmtpSession session, MailAddress sender) {
+		return (session.getAuthID() > 0) 
+				? HookResult.DUNNO 
+				: HookResult.reject(SmtpException.AUTH_REQUIRED);
+	}
 
 	@Override
 	public HookResult doRcpt(SmtpSession session, SmtpMessage message,

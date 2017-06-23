@@ -18,7 +18,6 @@ package com.hs.mail.container.server.socket;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +46,14 @@ public class SocketConnection implements Runnable {
         try {
             handler.handleConnection(socket);
         } catch (Exception e) {
-        	logger.error(e.getMessage(), e);
+        	logger.error(e.getMessage());
         } finally {
+        	// Close the underlying socket
         	if (socket != null) {
         		try {
-        			IOUtils.closeQuietly(socket.getInputStream ());
-        			IOUtils.closeQuietly(socket.getOutputStream());
 					socket.close();
 				} catch (IOException e) {
+					logger.warn("Error shutting down connection", e);
 				}
         		socket = null;
         	}

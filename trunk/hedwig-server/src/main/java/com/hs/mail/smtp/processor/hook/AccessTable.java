@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,6 +30,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.smtp.message.MailAddress;
+import com.hs.mail.util.WildcardMatch;
 
 public class AccessTable {
 	
@@ -81,10 +83,24 @@ public class AccessTable {
 		}
 	}
 	
-	public Action findAction(String... patterns) {
-		for (String pattern : patterns) {
-			int i = binarySearch(pattern);
-			if (i >= 0) {
+	public Action findAction(InetAddress address) {
+		if (ArrayUtils.isNotEmpty(accesstable)) {
+			String ip = address.getHostAddress();
+			int i = binarySearch(ip);
+			if (i < 0) {
+				int j = -i - 2;
+				while (j >= 0) {
+					if (WildcardMatch.match(ip, accesstable[j].pattern)) {
+						return accesstable[j].action;
+					}
+					if (--j >= 0) {
+						int k = accesstable[j].pattern.indexOf(".*");
+						if (k < 0 || !ip.regionMatches(0, accesstable[j].pattern, 0, k)) {
+							break;
+						}
+					}
+				}
+			} else {
 				return accesstable[i].action;
 			}
 		}

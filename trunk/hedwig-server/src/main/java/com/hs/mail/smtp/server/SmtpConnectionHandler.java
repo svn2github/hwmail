@@ -53,37 +53,52 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 	}
 	
 	public void handleConnection(Socket soc) throws IOException {
-		TcpTransport trans = new TcpTransport();
-		trans.setChannel(new TcpSocketChannel(soc));
-		SmtpSession session = new SmtpSession(trans);
+		SmtpSession session = null;		
 
-		onConnect(session, trans);
+		try {
+			TcpTransport trans = new TcpTransport();
+			trans.setChannel(new TcpSocketChannel(soc));
+			session = new SmtpSession(trans);
 
-		while (!trans.isSessionEnded()) {
-			String line = trans.readLine();
-			if (line == null) {
-				break;
+			MailLog.connect(session);
+			
+			onConnect(session, trans);
+
+			while (!trans.isSessionEnded()) {
+				String line = trans.readLine();
+				if (line == null) {
+					break;
+				}
+				session.debug(line);
+				StringTokenizer st = new StringTokenizer(line);
+				if (!st.hasMoreTokens()) {
+					break;
+				}
+				String command = st.nextToken().trim();
+				try {
+					SmtpProcessor processor = SmtpProcessorFactory
+							.createSmtpProcessor(command);
+					processor.process(session, trans, st);
+				} catch (LookupException e) {
+					session.writeResponse("500 5.5.1 Unknown command \""
+							+ command + "\"");
+				}
 			}
-			session.debug(line);
-			StringTokenizer st = new StringTokenizer(line);
-			if (!st.hasMoreTokens()) {
-				break;
-			}
-			String command = st.nextToken().trim();
-			try {
-				SmtpProcessor processor = SmtpProcessorFactory
-						.createSmtpProcessor(command);
-				processor.process(session, trans, st);
-			} catch (LookupException e) {
-				session.writeResponse("500 5.5.1 Unknown command \"" + command 
-						+ "\"");
+		} finally {
+			MailLog.disconnect(session);
+			if (soc != null) {
+				try {
+					soc.close();
+				} catch (IOException e) {
+					// IGNORE
+				} finally {
+					soc = null;
+				}
 			}
 		}
 	}
 
 	protected void onConnect(SmtpSession session, TcpTransport trans) {
-		MailLog.connect(session);
-		
 		if (connectHandlers != null) {
 			for (ConnectHook cHandler : connectHandlers) {
 				HookResult hr = cHandler.onConnect(session, trans);
