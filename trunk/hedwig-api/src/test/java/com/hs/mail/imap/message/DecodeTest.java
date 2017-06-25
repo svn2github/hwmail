@@ -11,11 +11,11 @@ public class DecodeTest {
 		String[] strings = {
 				"=?EUC-KR?Q?=BF=AC(HB)20110805-003[hedwig]_SMTP=C1=D7=B4=C2=B9=AE=C1=A6?=",
 				"=?utf-8?B?UmU6Tm8gU3ViamVjdA==?=",
-				"=?EUC-KR?Q?=BF=AC(HB)20110916-003_[hed?= wig] ±‚ πÆ¿«ªÁ«◊ √≥∏Æ«ˆ»≤ π◊ ¿ÁπÆ¿«",
-				"=?EUC-KR?Q?=BF=AC(HB)20110922-002_Failed_to_l?= oad IMAP envelope ø° ¥Î«— πÆ¿«¿‘¥œ¥Ÿ.",
-				"JS1(HB)20120308-003 [»∏ =?EUC-KR?Q?=C0=C7]_3/8_=B8=DE=C0=CF=BC=BA=B4=C9?=  πÆ¡¶ µÓ - »∏¿«∑œ",
-				"[IRIS] [01]ø¨±∏º“_ªÁæ˜¡ˆ =?UTF-8?Q?=EC=9B=90=EC=8B=A4_>_PO=5F2013.12.13?=",
-				"[ZEUS] Commented: (SGBOARD-4588) 15 =?UTF-8?Q?=EB=85=84_=ED=95=98=EB=B0=98?= =?UTF-8?Q?=EA=B8=B0_=EC=A0=95=EB=B3=B4=EC=9D=B8?= =?UTF-8?Q?=ED=94=84=EB=9D=BC_=EB=8F=84=EC=9E=85_=EC=82=AC=EC=97=85_?= =?UTF-8?Q?=EC=9A=94=EA=B5=AC=EC=82=AC=ED=95=AD?=  ∞À≈‰ π◊ ¿Œ∑¬ ¡ÿ∫Ò ø‰√ª"};
+				"=?EUC-KR?Q?=BF=AC(HB)20110916-003_[hed?= wig] Í∏∞ Î¨∏ÏùòÏÇ¨Ìï≠ Ï≤òÎ¶¨ÌòÑÌô© Î∞è Ïû¨Î¨∏Ïùò",
+				"=?EUC-KR?Q?=BF=AC(HB)20110922-002_Failed_to_l?= oad IMAP envelope Ïóê ÎåÄÌïú Î¨∏ÏùòÏûÖÎãàÎã§.",
+				"JS1(HB)20120308-003 [Ìöå =?EUC-KR?Q?=C0=C7]_3/8_=B8=DE=C0=CF=BC=BA=B4=C9?=  Î¨∏Ï†ú Îì± - ÌöåÏùòÎ°ù",
+				"[IRIS] [01]Ïó∞Íµ¨ÏÜå_ÏÇ¨ÏóÖÏßÄ =?UTF-8?Q?=EC=9B=90=EC=8B=A4_>_PO=5F2013.12.13?=",
+				"[ZEUS] Commented: (SGBOARD-4588) 15 =?UTF-8?Q?=EB=85=84_=ED=95=98=EB=B0=98?= =?UTF-8?Q?=EA=B8=B0_=EC=A0=95=EB=B3=B4=EC=9D=B8?= =?UTF-8?Q?=ED=94=84=EB=9D=BC_=EB=8F=84=EC=9E=85_=EC=82=AC=EC=97=85_?= =?UTF-8?Q?=EC=9A=94=EA=B5=AC=EC=82=AC=ED=95=AD?=  Í≤ÄÌÜ† Î∞è Ïù∏Î†• Ï§ÄÎπÑ ÏöîÏ≤≠"};
 		for (String encoded : strings) {
 			String decoded = DecoderUtil.decodeEncodedWords(encoded, DecodeMonitor.SILENT);
 			System.out.println(decoded);
