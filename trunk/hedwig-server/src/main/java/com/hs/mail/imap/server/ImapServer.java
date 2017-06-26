@@ -138,10 +138,13 @@ public class ImapServer implements InitializingBean {
 		}
 		
 		// Set TCP parameters
+		bootstrap.setOption("reuseAddress", true);
+		bootstrap.setOption("tcpNoDelay", true);
+		bootstrap.setOption("keepAlive", true);
+
 		bootstrap.setOption("child.tcpNoDelay", true);
 		bootstrap.setOption("child.keepAlive", true);
 		bootstrap.setOption("child.reuseAddress", true);
-		bootstrap.setOption("reuseAddress", true);
 		
 		bootstrap.bind(endpoint);
 		

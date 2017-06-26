@@ -94,7 +94,7 @@ public class ImapServerHandler extends SimpleChannelUpstreamHandler {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		logger.warn("Exception from downstream.", e.getCause());
+		logger.warn("Exception from downstream. {}", e.getCause());
 		e.getChannel().close();
 	}
 
