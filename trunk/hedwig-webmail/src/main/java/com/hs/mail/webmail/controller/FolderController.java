@@ -76,7 +76,9 @@ public class FolderController {
 		String name = RequestUtils.getRequiredParameter(request, "name");
 		WmaStore store = session.getWmaStore();
 		String fullname = new StringBuilder()
-				.append((path == null) ? store.getPersonalArchive().getPath() : path)
+				.append((path == null)
+						? session.getPreferences().getPersonalFolder()
+						: path)
 				.append(store.getFolderSeparator())
 				.append(name)
 				.toString();
@@ -121,9 +123,8 @@ public class FolderController {
 			HttpServletRequest request) throws WmaException {
 		WmaSession session = new WmaSession(httpsession);
 		WmaStore store = session.getWmaStore();
-		WmaFolder personal = store.getPersonalArchive();
-		List<WmaFolder> folders = WmaFolderList.createSubfolderList(personal
-				.getFolder());
+		List<WmaFolder> folders = WmaFolderList
+				.createSubfolderList(store.getPersonalFolder());
 		model.addAttribute("store", store);
 		model.addAttribute("folders", folders);
 		return "mngfolders";

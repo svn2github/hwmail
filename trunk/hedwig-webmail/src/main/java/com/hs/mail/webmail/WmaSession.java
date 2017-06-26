@@ -14,7 +14,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.config.MailTransportAgent;
@@ -24,6 +23,7 @@ import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.model.WmaTransport;
+import com.hs.mail.webmail.model.impl.ManagedStore;
 import com.hs.mail.webmail.model.impl.WmaPreferencesImpl;
 import com.hs.mail.webmail.model.impl.WmaStoreImpl;
 import com.hs.mail.webmail.model.impl.WmaTransportImpl;
@@ -54,7 +54,7 @@ public class WmaSession implements Serializable {
 	}
 
 	public WmaStore getWmaStore() {
-		return (WmaStore) retrieveBean(WMA_STORE);
+		return ((ManagedStore) retrieveBean(WMA_STORE)).getWmaStore();
 	}
 	
 	public Store getStore() throws WmaException {
@@ -95,14 +95,6 @@ public class WmaSession implements Serializable {
 		return mailSession;
 	}
 
-	private void endMailSession() {
-		WmaStore wstore = getWmaStore();
-		if (wstore != null) {
-			wstore.close();
-			wstore = null;
-		}
-	}
-
 	protected Store connect(Session mailSession, String username, String password)
 			throws WmaException {
 		try {
@@ -128,7 +120,7 @@ public class WmaSession implements Serializable {
 		Store store = connect(initMailSession(authenticator), username,
 				password);
 		WmaStore wstore = WmaStoreImpl.createStore(this, store);
-		storeBean(WMA_STORE, wstore);
+		storeBean(WMA_STORE, new ManagedStore(wstore));
 		return wstore;
 	}
 	
@@ -180,7 +172,6 @@ public class WmaSession implements Serializable {
 	}
 
 	public void end() {
-		endMailSession();
 		if (httpsession != null) {
 			removeBean(WMA_AUTH);
 			removeBean(WMA_STORE);

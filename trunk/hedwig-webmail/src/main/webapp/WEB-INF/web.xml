@@ -80,8 +80,10 @@
   </servlet-mapping>
 
   <!-- Default session timeout (in minutes) -->
+  <!-- Note: the IMAP connection also has timeout, so set this value 
+       to be smaller then the IMAP timeout -->
   <session-config>
-    <session-timeout>1440</session-timeout>
+    <session-timeout>30</session-timeout>
   </session-config>
 
   <!-- Ensure that index.jsp and index.html is handled as index file -->

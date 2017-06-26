@@ -17,36 +17,32 @@ public interface WmaStore {
 	Store getStore();
 
 	char getFolderSeparator();
+	
+	/**
+	 * Prepare special folders 
+	 */
+	void prepare() throws WmaException;
 
 	/*** wma special folders **********************************/
 
 	Folder getRootFolder() throws MessagingException;
 
 	/**
-	 * Returns the <tt>WmaFolder</tt> instance that can be used to retrieve
-	 * information about the store's INBOX folder (i.e. where new messages
-	 * should be arriving).
-	 * 
-	 * @return the store's INBOX folder as <tt>WmaFolder</tt>.
-	 */
-	WmaFolder getInboxInfo();
-
-	/**
-	 * Returns the <tt>WmaFolder</tt> instance that can be used to retrieve
+	 * Returns the <tt>Folder</tt> instance that can be used to retrieve
 	 * information about the store's trash folder (i.e. where deleted messages
 	 * end up first).
 	 * 
-	 * @return the store's trash folder as <tt>WmaFolder</tt>.
+	 * @return the store's trash folder
 	 */
-	WmaFolder getTrashInfo();
+	Folder getTrashFolder() throws WmaException;
 
-	WmaFolder getDraftInfo();
+	Folder getDraftFolder() throws WmaException;
 
-	WmaFolder getSentMailArchive();
+	Folder getSentMailFolder() throws WmaException;
 
-	WmaFolder getToSendArchive();
+	Folder getToSendFolder() throws WmaException;
 
-	WmaFolder getPersonalArchive();
+	Folder getPersonalFolder() throws WmaException;
 
 	WmaFolder getWmaFolder(String fullname) throws WmaException;
 	

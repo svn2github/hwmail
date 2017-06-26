@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.hs.mail.webmail.WmaSession;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaFolder;
+import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaQuota;
 import com.hs.mail.webmail.model.WmaResource;
 import com.hs.mail.webmail.model.WmaStore;
@@ -31,14 +32,6 @@ public class WmaStoreImpl implements WmaStore {
 	private WmaSession session;
 	private Store store;
 	private char folderSeparator = '.';
-
-	// special folders
-	private WmaFolder inboxFolder;
-	private WmaFolder trashFolder;
-	private WmaFolder draftFolder;
-	private WmaFolder sentMailFolder;
-	private WmaFolder toSendFolder;
-	private WmaFolder personalFolder;
 
 	/**
 	 * Constructs a <tt>WmaStoreImpl</tt> instance.
@@ -79,115 +72,46 @@ public class WmaStoreImpl implements WmaStore {
 		return store.getDefaultFolder();
 	}
 
-	public WmaFolder getInboxInfo() {
-		return inboxFolder;
+	public Folder getInbox() throws WmaException {
+		return getFolder("INBOX");
 	}
 
-	public WmaFolder getTrashInfo() {
-		return trashFolder;
-	}
-
-	private Folder getTrashFolder() throws WmaException {
+	public Folder getTrashFolder() throws WmaException {
 		String name = session.getPreferences().getTrashFolder();
 		return getFolder(name);
 	}
 
-	private void setTrashFolder() throws WmaException, MessagingException {
-		Folder trash = getTrashFolder();
-		if (!trash.exists()) {
-			if (!trash.create(WmaFolderImpl.TYPE_MAILBOX)) {
+	private void setSpecialFolder(String name) throws WmaException, MessagingException {
+		Folder folder = getFolder(name);
+		if (!folder.exists()) {
+			if (!folder.create(WmaFolderImpl.TYPE_MAILBOX)) {
 				throw new WmaException("wma.store.createfolder.failed");
 			}
 		}
 		// ensure subscription
-		trash.setSubscribed(true);
-		trashFolder = WmaFolderImpl.createLight(trash);
+		folder.setSubscribed(true);
 	}
-
-	public WmaFolder getDraftInfo() {
-		return draftFolder;
-	}
-
-	private Folder getDraftFolder() throws WmaException {
+	
+	public Folder getDraftFolder() throws WmaException {
 		String name = session.getPreferences().getDraftFolder();
 		return getFolder(name);
 	}
 
-	private void setDraftFolder() throws WmaException, MessagingException {
-		Folder draft = getDraftFolder();
-		if (!draft.exists()) {
-			if (!draft.create(WmaFolderImpl.TYPE_MAILBOX)) {
-				throw new WmaException("wma.store.createfolder.failed");
-			}
-		}
-		// ensure subscription
-		draft.setSubscribed(true);
-		draftFolder = WmaFolderImpl.createLight(draft);
-	}
-
-	public WmaFolder getSentMailArchive() {
-		return sentMailFolder;
-	}
-
-	private Folder getSentMailFolder() throws WmaException {
+	public Folder getSentMailFolder() throws WmaException {
 		String name = session.getPreferences().getSentMailArchive();
 		return getFolder(name);
 	}
 	
-	private void setSentMailFolder() throws WmaException, MessagingException {
-		Folder sentMail = getSentMailFolder();
-		if (!sentMail.exists()) {
-			if (!sentMail.create(WmaFolderImpl.TYPE_MAILBOX)) {
-				throw new WmaException("wma.store.createfolder.failed");
-			}
-		}
-		// ensure subscription
-		sentMail.setSubscribed(true);
-		sentMailFolder = WmaFolderImpl.createLight(sentMail);
-	}
-
-	public WmaFolder getToSendArchive() {
-		return toSendFolder;
-	}
-
-	private Folder getToSendFolder() throws WmaException {
+	public Folder getToSendFolder() throws WmaException {
 		String name = session.getPreferences().getToSendFolder();
 		return getFolder(name);
 	}
 
-	private void setToSendFolder() throws WmaException, MessagingException {
-		Folder toSend = getToSendFolder();
-		if (!toSend.exists()) {
-			if (!toSend.create(WmaFolderImpl.TYPE_MAILBOX)) {
-				throw new WmaException("wma.store.createfolder.failed");
-			}
-		}
-		// ensure subscription
-		toSend.setSubscribed(true);
-		toSendFolder = WmaFolderImpl.createLight(toSend);
-	}
-
-	public WmaFolder getPersonalArchive() {
-		return personalFolder;
-	}
-
-	private Folder getPersonalFolder() throws WmaException {
+	public Folder getPersonalFolder() throws WmaException {
 		String name = session.getPreferences().getPersonalFolder();
 		return getFolder(name);
 	}
 
-	private void setPersonalFolder() throws WmaException, MessagingException {
-		Folder personal = getPersonalFolder();
-		if (!personal.exists()) {
-			if (!personal.create(WmaFolderImpl.TYPE_MIXED)) {
-				throw new WmaException("wma.store.createfolder.failed");
-			}
-		}
-		// ensure subscription
-		personal.setSubscribed(true);
-		personalFolder = WmaFolderImpl.createLight(personal);
-	}
-	
 	public void archiveMail(Folder archive, Message message)
 			throws WmaException {
 		archiveMail(archive, message, UIDFolder.LASTUID);
@@ -234,6 +158,8 @@ public class WmaStoreImpl implements WmaStore {
 	 * Closes the associated mail store.
 	 */
 	public void close() {
+		log.debug("Closing store {}", store.toString());
+
 		try {
 			store.close();
 		} catch (Exception mex) {
@@ -410,17 +336,19 @@ public class WmaStoreImpl implements WmaStore {
 	}
 
 	public boolean isSpecialFolder(String fullname) {
+		WmaPreferences prefs = session.getPreferences();
 		return ("".equals(fullname)
-				|| fullname.equals(inboxFolder.getPath())
-				|| fullname.equals(trashFolder.getPath())
-				|| fullname.equals(draftFolder.getPath())
-				|| fullname.equals(sentMailFolder.getPath())
-				|| fullname.equals(toSendFolder.getPath())
-				|| fullname.equals(personalFolder.getPath()));
+				|| fullname.equals("INBOX")
+				|| fullname.equals(prefs.getTrashFolder())
+				|| fullname.equals(prefs.getDraftFolder())
+				|| fullname.equals(prefs.getSentMailArchive())
+				|| fullname.equals(prefs.getToSendFolder())
+				|| fullname.equals(prefs.getPersonalFolder()));
 	}
 
-	private void prepare() throws WmaException {
+	public void prepare() throws WmaException {
 		try {
+			WmaPreferences prefs = session.getPreferences();
 			Folder root = getRootFolder();
 
 			if (!root.exists()) {
@@ -429,24 +357,20 @@ public class WmaStoreImpl implements WmaStore {
 			// set folder separator
 			setFolderSeparator(root.getSeparator());
 
-			// Inbox the folder that contains the incoming mail
-			// this has to exist, regarding to the IMAP specification
-			inboxFolder = getWmaFolder("INBOX");
-
 			// Trash
-			setTrashFolder();
+			setSpecialFolder(prefs.getTrashFolder());
 			
 			// Draft
-			setDraftFolder();
+			setSpecialFolder(prefs.getDraftFolder());
 			
-			// sent-mail archive
-			setSentMailFolder();
+			// Sent-Mail archive
+			setSpecialFolder(prefs.getSentMailArchive());
 			
-			// send-mail archive
-			setToSendFolder();
+			// Send-Mail reservation
+			setSpecialFolder(prefs.getToSendFolder());
 			
 			// Personal
-			setPersonalFolder();
+			setSpecialFolder(prefs.getPersonalFolder());
 		} catch (MessagingException ex) {
 			throw new WmaException("wma.store.prepare").setException(ex);
 		}
@@ -466,8 +390,6 @@ public class WmaStoreImpl implements WmaStore {
 	public static WmaStore createStore(WmaSession session, Store store)
 			throws WmaException {
 		WmaStoreImpl wstore = new WmaStoreImpl(session, store);
-		// prepare this store
-		wstore.prepare();
 		return wstore;
 	}
 	

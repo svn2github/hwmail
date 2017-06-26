@@ -29,6 +29,7 @@ public class SessionController {
 		WmaStore store = null;
 		try {
 			store = session.connect(username, password);
+			store.prepare();
 		} catch (WmaException e) {
 			model.addAttribute("error", e);
 			return "login";
