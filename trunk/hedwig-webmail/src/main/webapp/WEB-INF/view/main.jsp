@@ -277,34 +277,34 @@ $(function() {
       </div>
       <ul class="nav nav-stacked" id="side-menu">
         <li role="presentation">
-          <a data-target="${store.inboxInfo.path}">
+          <a data-target="INBOX">
             <i class="fa fa-inbox"></i> <fmt:message key="prefs.inbox" />
             <span id="inbox-unread" class="label label-warning pull-right"></span>
           </a>
         </li>
         <li role="presentation">
-          <a data-target="${store.sentMailArchive.path}">
-            <i class="fa fa-paper-plane-o"></i> ${store.sentMailArchive.name}
+          <a data-target="${prefs.sentMailArchive}">
+            <i class="fa fa-paper-plane-o"></i> ${prefs.sentMailArchive}
           </a>
         </li>
         <li role="presentation">
-          <a data-target="${store.toSendArchive.path}">
-            <i class="fa fa-clock-o"></i> ${store.toSendArchive.name}
+          <a data-target="${prefs.toSendFolder}">
+            <i class="fa fa-clock-o"></i> ${prefs.toSendFolder}
           </a>
         </li>
         <li id="trashInfo" role="presentation">
-          <a data-target="${store.trashInfo.path}">
-            <i class="fa fa-trash-o"></i> ${store.trashInfo.name}
+          <a data-target="${prefs.trashFolder}">
+            <i class="fa fa-trash-o"></i> ${prefs.trashFolder}
           </a>
         </li>
         <li role="presentation">
-          <a data-target="${store.draftInfo.path}">
-            <i class="fa fa-pencil-square-o"></i> ${store.draftInfo.name}
+          <a data-target="${prefs.draftFolder}">
+            <i class="fa fa-pencil-square-o"></i> ${prefs.draftFolder}
           </a>
         </li>
         <li id="personalArchive" role="presentation">
-          <a data-target="${store.personalArchive.path}">
-            <i class="fa fa-archive"></i> ${store.personalArchive.name}
+          <a data-target="${prefs.personalFolder}">
+            <i class="fa fa-archive"></i> ${prefs.personalFolder}
             <span class="fa arrow collapsed" data-toggle="collapse" data-target="#tree-container"></span>
           </a>
           <div class="sub-nav collapse" id="tree-container">
