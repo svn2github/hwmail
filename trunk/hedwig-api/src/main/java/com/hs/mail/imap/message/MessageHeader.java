@@ -176,6 +176,10 @@ public class MessageHeader {
 	}	
 	
 	private static int indexOf(ByteSequence bs, String str) {
+		if (bs == null || bs.length() == 0) {
+			return -1;
+		}
+		
 		int targetLength = str.length();
 		int max = bs.length() - targetLength;
 		char first = str.charAt(0);
