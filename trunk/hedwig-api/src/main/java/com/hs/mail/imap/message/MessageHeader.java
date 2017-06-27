@@ -152,6 +152,10 @@ public class MessageHeader {
     
 	private static String getNonAsciiValue(Field field) {
 		ByteSequence raw = field.getRaw();
+		if (raw == null || raw.length() == 0) {
+			return null;
+		}
+
 		if (indexOf(raw, "=?") == -1) {
 			// Raw text is not "encoded-word".
 			int len = raw.length();
@@ -176,10 +180,6 @@ public class MessageHeader {
 	}	
 	
 	private static int indexOf(ByteSequence bs, String str) {
-		if (bs == null || bs.length() == 0) {
-			return -1;
-		}
-		
 		int targetLength = str.length();
 		int max = bs.length() - targetLength;
 		char first = str.charAt(0);
