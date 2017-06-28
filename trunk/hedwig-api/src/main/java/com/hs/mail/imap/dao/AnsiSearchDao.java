@@ -209,7 +209,7 @@ abstract class AnsiSearchDao extends AbstractDao implements SearchDao {
 	
 	private List<Long> conjunctionQuery(UidToMsnMapper map, long mailboxID,
 			SearchKeyList key, boolean and) {
-		List<Long> list = new ArrayList<Long>();
+		List<Long> list = null;
 		List<Long> temp = null;
 		List<SearchKey> keys = key.getSearchKeys();
 		CompositeKey ck = null;

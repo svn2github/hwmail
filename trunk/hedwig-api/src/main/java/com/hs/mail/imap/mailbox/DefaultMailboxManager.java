@@ -150,6 +150,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 			return dao.sort(mailboxID, sortKeys.get(0));
 		} else {
 			List<Long> searched = dao.query(map, mailboxID, key);
+			if (CollectionUtils.isEmpty(searched)) {
+				return searched;
+			}
 			List<Long> result = new ArrayList<Long>(searched.size());
 			List<Long> sorted = dao.sort(mailboxID, sortKeys.get(0));
 			Iterator<Long> iterator = sorted.iterator();
