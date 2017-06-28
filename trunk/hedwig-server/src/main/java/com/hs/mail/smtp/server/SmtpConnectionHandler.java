@@ -25,6 +25,7 @@ import com.hs.mail.container.server.ConnectionHandler;
 import com.hs.mail.container.server.socket.TcpSocketChannel;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.exception.LookupException;
+import com.hs.mail.io.LineReader;
 import com.hs.mail.smtp.SmtpSession;
 import com.hs.mail.smtp.processor.SmtpProcessor;
 import com.hs.mail.smtp.processor.SmtpProcessorFactory;
@@ -84,6 +85,13 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 							+ command + "\"");
 				}
 			}
+		} catch (LineReader.TerminationException te) {
+			session.writeResponse("501 Syntax error."
+					+ " CR and LF must be CRLF paired."
+					+ "  See RFC 2821 #2.7.1.");
+		} catch (LineReader.LineLengthExceededException llee) {
+			session.writeResponse("500 Line length exceeded."
+					+ " See RFC 2821 #4.5.3.1.");
 		} finally {
 			MailLog.disconnect(session);
 			if (soc != null) {

@@ -6,6 +6,18 @@ import java.io.InputStreamReader;
 
 public class LineReader extends InputStreamReader {
 
+	public class TerminationException extends IOException {
+		public TerminationException(String s) {
+			super(s);
+		}
+	}
+
+	public class LineLengthExceededException extends IOException {
+		public LineLengthExceededException(String s) {
+			super(s);
+		}
+	}
+	
 	private int maxLineLen = 2048;
 
 	public LineReader(InputStream in) {
@@ -26,7 +38,7 @@ public class LineReader extends InputStreamReader {
 				// fall through
 			case '\n':
 				// LF without a preceding CR
-				throw new IOException("Bad line terminator");
+				throw new TerminationException("Bad line terminator");
 			case -1:
 				// premature EOF
 				return null;
@@ -34,7 +46,7 @@ public class LineReader extends InputStreamReader {
 				sb.append((char) iRead);
 			}
 		}
-		throw new IOException("Exceeded maximun line length");
+		throw new LineLengthExceededException("Exceeded maximun line length");
 	}
 
 }
