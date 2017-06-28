@@ -327,6 +327,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+			<!--
 	  		<plugin>
 	  			<groupId>org.apache.maven.plugins</groupId>
 	  			<artifactId>maven-jar-plugin</artifactId>
@@ -360,6 +361,7 @@
 					<scmDirectory>${basedir}/..</scmDirectory> 
 				</configuration>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 
