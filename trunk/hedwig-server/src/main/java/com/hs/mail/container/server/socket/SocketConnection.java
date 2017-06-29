@@ -46,7 +46,7 @@ public class SocketConnection implements Runnable {
         try {
             handler.handleConnection(socket);
         } catch (Exception e) {
-        	logger.error(e.getMessage());
+			logger.error(e.getMessage() + ":" + socket.getInetAddress());
         } finally {
         	// Close the underlying socket
         	if (socket != null) {

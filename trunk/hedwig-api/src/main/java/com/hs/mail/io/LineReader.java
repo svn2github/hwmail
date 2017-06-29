@@ -6,18 +6,20 @@ import java.io.InputStreamReader;
 
 public class LineReader extends InputStreamReader {
 
+	@SuppressWarnings("serial")
 	public class TerminationException extends IOException {
 		public TerminationException(String s) {
 			super(s);
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class LineLengthExceededException extends IOException {
 		public LineLengthExceededException(String s) {
 			super(s);
 		}
 	}
-	
+
 	private int maxLineLen = 2048;
 
 	public LineReader(InputStream in) {

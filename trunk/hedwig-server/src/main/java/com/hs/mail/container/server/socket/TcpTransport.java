@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 
+import com.hs.mail.io.InternetPrintWriter;
 import com.hs.mail.io.LineReader;
 
 /**
@@ -46,7 +47,7 @@ public class TcpTransport {
 		this.is = channel.getInputStream();
 		this.os = channel.getOutputStream();
 		this.reader = new LineReader(this.is);
-		this.writer = new PrintWriter(this.os, true);
+		this.writer = new InternetPrintWriter(this.os, true);
 	}
 	
 	public TcpSocketChannel getChannel() {
