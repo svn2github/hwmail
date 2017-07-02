@@ -111,6 +111,7 @@ public class EnvelopeBuilder {
 		// double quotation mark.
 		String name = StringUtils.strip(mailbox.getName());
 		if (name != null) {
+			// Encode the mailbox name
 			name = EncoderUtil.encodeAddressDisplayName(name);
 		}
 		String domain = mailbox.getDomain();
