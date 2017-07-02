@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.DomainList;
 import org.apache.james.mime4j.dom.address.Group;
@@ -108,7 +109,10 @@ public class EnvelopeBuilder {
 	private Address buildAddress(Mailbox mailbox) {
 		// JavaMail raises exception when personal name is surrounded with
 		// double quotation mark.
-		String name = StringUtils.strip(mailbox.getName(), "\"");
+		String name = StringUtils.strip(mailbox.getName());
+		if (name != null) {
+			name = EncoderUtil.encodeAddressDisplayName(name);
+		}
 		String domain = mailbox.getDomain();
 		DomainList route = mailbox.getRoute();
 		String atDomainList;
