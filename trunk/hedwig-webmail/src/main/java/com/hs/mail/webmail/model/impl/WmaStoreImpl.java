@@ -72,42 +72,55 @@ public class WmaStoreImpl implements WmaStore {
 		return store.getDefaultFolder();
 	}
 
-	public Folder getInbox() throws WmaException {
+    public WmaFolder getInboxInfo() throws WmaException {
+		return getWmaFolder(getInbox());
+	}    
+
+    public Folder getInbox() throws WmaException {
 		return getFolder("INBOX");
 	}
 
-	public Folder getTrashFolder() throws WmaException {
+	public WmaFolder getTrashInfo() throws WmaException {
+		return getWmaFolder(getTrashFolder());
+	}
+
+    public Folder getTrashFolder() throws WmaException {
 		String name = session.getPreferences().getTrashFolder();
 		return getFolder(name);
 	}
 
-	private void setSpecialFolder(String name) throws WmaException, MessagingException {
-		Folder folder = getFolder(name);
-		if (!folder.exists()) {
-			if (!folder.create(WmaFolderImpl.TYPE_MAILBOX)) {
-				throw new WmaException("wma.store.createfolder.failed");
-			}
-		}
-		// ensure subscription
-		folder.setSubscribed(true);
-	}
-	
-	public Folder getDraftFolder() throws WmaException {
+    public WmaFolder getDraftInfo() throws WmaException {
+		return getWmaFolder(getDraftFolder());
+    }
+
+    public Folder getDraftFolder() throws WmaException {
 		String name = session.getPreferences().getDraftFolder();
 		return getFolder(name);
 	}
 
-	public Folder getSentMailFolder() throws WmaException {
+    public WmaFolder getSentMailArchive() throws WmaException {
+    	return getWmaFolder(getSentMailFolder());
+    }
+
+    public Folder getSentMailFolder() throws WmaException {
 		String name = session.getPreferences().getSentMailArchive();
 		return getFolder(name);
 	}
-	
-	public Folder getToSendFolder() throws WmaException {
+
+    public WmaFolder getToSendArchive() throws WmaException {
+    	return getWmaFolder(getToSendFolder());
+    }
+
+    public Folder getToSendFolder() throws WmaException {
 		String name = session.getPreferences().getToSendFolder();
 		return getFolder(name);
 	}
 
-	public Folder getPersonalFolder() throws WmaException {
+    public WmaFolder getPersonalArchive() throws WmaException {
+    	return getWmaFolder(getPersonalFolder());
+    }
+
+    public Folder getPersonalFolder() throws WmaException {
 		String name = session.getPreferences().getPersonalFolder();
 		return getFolder(name);
 	}
@@ -177,9 +190,13 @@ public class WmaStoreImpl implements WmaStore {
 	 * @throws WmaException
 	 */
 	public WmaFolder getWmaFolder(String fullname) throws WmaException {
-		return WmaFolderImpl.createLight(getFolder(fullname));
+		return getWmaFolder(getFolder(fullname));
 	}
 
+	private WmaFolder getWmaFolder(Folder folder) throws WmaException {
+		return WmaFolderImpl.createLight(folder);
+	}
+	
 	public Folder getFolder(String fullname) throws WmaException {
 		try {
 			// FIXME: Microsoft Exchange returns "" as Default Folder, but
@@ -346,6 +363,17 @@ public class WmaStoreImpl implements WmaStore {
 				|| fullname.equals(prefs.getPersonalFolder()));
 	}
 
+	private void setSpecialFolder(String name) throws WmaException, MessagingException {
+		Folder folder = getFolder(name);
+		if (!folder.exists()) {
+			if (!folder.create(WmaFolderImpl.TYPE_MAILBOX)) {
+				throw new WmaException("wma.store.createfolder.failed");
+			}
+		}
+		// ensure subscription
+		folder.setSubscribed(true);
+	}
+	
 	public void prepare() throws WmaException {
 		try {
 			WmaPreferences prefs = session.getPreferences();

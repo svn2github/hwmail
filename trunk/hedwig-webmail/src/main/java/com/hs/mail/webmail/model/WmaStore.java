@@ -28,21 +28,30 @@ public interface WmaStore {
 	Folder getRootFolder() throws MessagingException;
 
 	/**
-	 * Returns the <tt>Folder</tt> instance that can be used to retrieve
+	 * Returns the <tt>WmaFolder</tt> instance that can be used to retrieve
+	 * information about the store's INBOX folder (i.e. where new messages
+	 * should be arriving).
+	 * 
+	 * @return the store's INBOX folder as <tt>WmaFolder</tt>.
+	 */
+	WmaFolder getInboxInfo() throws WmaException;
+
+	/**
+	 * Returns the <tt>WmaFolder</tt> instance that can be used to retrieve
 	 * information about the store's trash folder (i.e. where deleted messages
 	 * end up first).
 	 * 
-	 * @return the store's trash folder
+	 * @return the store's trash folder as <tt>WmaFolder</tt>.
 	 */
-	Folder getTrashFolder() throws WmaException;
+	WmaFolder getTrashInfo() throws WmaException;
 
-	Folder getDraftFolder() throws WmaException;
+	WmaFolder getDraftInfo() throws WmaException;
 
-	Folder getSentMailFolder() throws WmaException;
+	WmaFolder getSentMailArchive() throws WmaException;
 
-	Folder getToSendFolder() throws WmaException;
+	WmaFolder getToSendArchive() throws WmaException;
 
-	Folder getPersonalFolder() throws WmaException;
+	WmaFolder getPersonalArchive() throws WmaException;
 
 	WmaFolder getWmaFolder(String fullname) throws WmaException;
 	

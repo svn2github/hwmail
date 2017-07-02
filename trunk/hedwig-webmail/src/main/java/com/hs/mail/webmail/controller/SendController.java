@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.hs.mail.webmail.WmaSession;
 import com.hs.mail.webmail.exception.WmaException;
+import com.hs.mail.webmail.model.WmaFolder;
 import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.model.impl.WmaComposeMessage;
@@ -148,7 +149,8 @@ public class SendController {
 			message.send(session);
 			// Archive message if necessary
 			WmaStore store = session.getWmaStore();
-			store.archiveMail(store.getSentMailFolder(), message.getMessage());
+			store.archiveMail(store.getSentMailArchive().getFolder(),
+					message.getMessage());
 		} else {
 			message.send(session);
 		}
@@ -163,7 +165,7 @@ public class SendController {
 			message.setFlag(Flags.Flag.DRAFT, true);
 			// Archive message to draft
 			WmaStore store = session.getWmaStore();
-			store.archiveMail(store.getDraftFolder(),
+			store.archiveMail(store.getDraftInfo().getFolder(),
 					message.getMessage(), message.getUID());
 		} catch (MessagingException mex) {
 			throw new WmaException("wma.composemessage.draft.failed")
@@ -179,11 +181,11 @@ public class SendController {
 			// ensure that to send date is set
 			message.setSentDate(date);
 			WmaStore store = session.getWmaStore();
-			WmaPreferences prefs = session.getPreferences();
-			store.archiveMail(store.getToSendFolder(), message.getMessage());
-			WmaSendReservation.serialize(session, prefs.getToSendFolder(),
-					autoarchivesent ? prefs.getSentMailArchive() : null,
-					message, date);
+			WmaFolder tosend = store.getToSendArchive();
+			store.archiveMail(tosend.getFolder(), message.getMessage());
+			WmaSendReservation.serialize(session, tosend.getPath(),
+					autoarchivesent ? store.getSentMailArchive().getPath()
+							: null, message, date);
 		} catch (MessagingException mex) {
 			throw new WmaException("wma.composemessage.send.failed")
 					.setException(mex);

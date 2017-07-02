@@ -123,8 +123,9 @@ public class FolderController {
 			HttpServletRequest request) throws WmaException {
 		WmaSession session = new WmaSession(httpsession);
 		WmaStore store = session.getWmaStore();
-		List<WmaFolder> folders = WmaFolderList
-				.createSubfolderList(store.getPersonalFolder());
+		WmaFolder personal = store.getPersonalArchive();
+		List<WmaFolder> folders = WmaFolderList.createSubfolderList(personal
+				.getFolder());
 		model.addAttribute("store", store);
 		model.addAttribute("folders", folders);
 		return "mngfolders";

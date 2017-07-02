@@ -161,7 +161,7 @@ public class WmaFolderImpl implements WmaFolder {
 			// prepare messages
 			Message[] msgs = folder.getMessagesByUID(uids);
 			if (msgs.length > 0) {
-				Folder trash = wstore.getTrashFolder();
+				Folder trash = wstore.getTrashInfo().getFolder();
 				if (!folder.getFullName().equals(trash.getFullName()) && !purge) {
 					// if not the trash copy the messages to the trash
 					folder.copyMessages(msgs, trash);
