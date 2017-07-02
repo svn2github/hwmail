@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hs.mail.webmail.exception.WmaException;
+import com.hs.mail.webmail.exception.WmaSessionRequiredException;
 
 @ControllerAdvice
 public class ExceptionController {
@@ -27,4 +28,11 @@ public class ExceptionController {
 		return mav;
 	}
 	
+	@ExceptionHandler(WmaSessionRequiredException.class)
+	public ModelAndView handleException(WmaSessionRequiredException ex) {
+		ModelAndView mav = new ModelAndView("error/expired");
+		mav.addObject("error", ex);
+		return mav;
+	}
+
 }

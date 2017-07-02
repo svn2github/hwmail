@@ -20,6 +20,7 @@ import com.hs.mail.webmail.config.MailTransportAgent;
 import com.hs.mail.webmail.config.PostOffice;
 import com.hs.mail.webmail.dao.PreferencesDAO;
 import com.hs.mail.webmail.exception.WmaException;
+import com.hs.mail.webmail.exception.WmaSessionRequiredException;
 import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaStore;
 import com.hs.mail.webmail.model.WmaTransport;
@@ -164,7 +165,13 @@ public class WmaSession implements Serializable {
 	}
 	
 	public Object retrieveBean(String name) {
-		return httpsession.getAttribute(name);
+		Object bean = httpsession.getAttribute(name);
+		if (bean == null) {
+			// Invalid session, session expired!
+			throw new WmaSessionRequiredException("Your session has expired",
+					name);
+		}
+		return bean;
 	}
 	
 	public void removeBean(String name) {
