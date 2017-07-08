@@ -12,17 +12,6 @@
 	    </property>
 	</bean>
 
-	<bean id="log4jInitialization"
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
-		<property name="targetMethod" value="initLogging" />
-		<property name="arguments">
-			<list>
-				<value>file:${app.home}/conf/log4j.properties</value>
-			</list>
-		</property>
-	</bean>
-
 	<bean id="def.props"
 		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
     	<property name="location" value="file:${app.home}/conf/default.properties"/>
