@@ -1,0 +1,29 @@
+package com.hs.mail.webmail.test;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
+
+public class TestUtil {
+
+	public static String readResource(String resource, String charset)
+			throws IOException {
+
+		return IOUtils.toString(readResourceAsStream(resource), charset);
+	}
+
+	public static InputStream readResourceAsStream(String resource)
+			throws IOException {
+
+		return new BufferedInputStream(
+				TestUtil.class.getResource(resource).openStream());
+	}
+
+	public static File getResourceFile(String resource) {
+		return new File(TestUtil.class.getResource(resource).getPath());
+	}
+	
+}

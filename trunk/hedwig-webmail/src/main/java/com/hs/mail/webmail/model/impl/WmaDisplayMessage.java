@@ -25,6 +25,7 @@ import org.omg.CORBA.IntHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaMessagePart;
 import com.hs.mail.webmail.util.WmaUtils;
@@ -203,6 +204,7 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 	}
 	
 	private void setSafeBody(String body) {
+		//setBody(Configuration.getMessageProcessor().process(body));
 		setBody("text/html".equals(getContentType()) ? Jsoup.clean(body, Whitelist.relaxed()) : body);
 	}
 

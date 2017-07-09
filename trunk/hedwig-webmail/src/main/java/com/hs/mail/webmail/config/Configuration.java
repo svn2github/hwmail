@@ -12,6 +12,9 @@ import org.springframework.context.support.MessageSourceAccessor;
 
 import com.hs.mail.webmail.dao.PreferencesDAO;
 
+import net.wimpi.text.ProcessingKernel;
+import net.wimpi.text.Processor;
+
 public class Configuration implements InitializingBean, ApplicationContextAware {
 
 	private static Properties properties = new Properties();
@@ -20,6 +23,14 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 	
 	private static ApplicationContext appContext;
 	
+	private String defaultMessageProcessor;
+
+	private Properties textprops = null;
+
+	private static Processor messageProcessor; // default message processor
+
+	private static ProcessingKernel processingKernel; // processing kernel
+
 	public static ApplicationContext getApplicationContext() {
 		return appContext;
 	}
@@ -68,7 +79,15 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 	public static String getProperty(String key) {
 		return properties.getProperty(key);
 	}
-	
+
+	public void setDefaultMessageProcessor(String proc) {
+		this.defaultMessageProcessor = proc;
+	}
+
+	public void setTextprops(Properties props) {
+		this.textprops = props;
+	}
+
 	public static PreferencesDAO getPreferencesDAO() {
 		return (PreferencesDAO) getBean(PreferencesDAO.class);
 	}
@@ -100,8 +119,42 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 				System.setProperty(key, properties.getProperty(key));
 			}
 		}
+		if (textprops != null) {
+			// create processing kernel
+			processingKernel = ProcessingKernel.createProcessingKernel(textprops);
+			// lookup default message processing pipe
+			messageProcessor = getMessageProcessor(defaultMessageProcessor);
+		}
 	}
 
+	public static Processor getMessageProcessor() {
+		return messageProcessor;
+	}
+
+	public static Processor getMessageProcessor(String name) {
+		// shortcut for null name
+		if (name == null || name.length() == 0) {
+			return messageProcessor;
+		}
+		// Try to get a pipe with the specified name
+		Processor proc = processingKernel.getProcessingPipe(name);
+		if (null == proc) {
+			// try to get a processor with the specified name
+			proc = processingKernel.getProcessor(name);
+			if (null == proc) {
+				// set the default processor
+				proc = messageProcessor;
+			}
+		}
+		// return the pipe, the processor or the default
+		return proc;
+	}
+
+	public static String[] getMessageProcessors() {
+		// return just processing pipes for now
+		return processingKernel.listProcessingPipes();
+	}
+	
 	private static String getHost(String address) {
 		int index = address.lastIndexOf('@');
 		if (index != -1) {
