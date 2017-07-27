@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -11,21 +13,20 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.MessageSourceAccessor;
 
 import com.hs.mail.webmail.dao.PreferencesDAO;
-
-import net.wimpi.text.ProcessingKernel;
-import net.wimpi.text.Processor;
+import com.hs.mail.webmail.util.text.ProcessingKernel;
+import com.hs.mail.webmail.util.text.Processor;
 
 public class Configuration implements InitializingBean, ApplicationContextAware {
+	
+	private static Logger log = LoggerFactory.getLogger(Configuration.class);
 
 	private static Properties properties = new Properties();
 
 	private static MessageSourceAccessor messageSourceAccessor;
 	
 	private static ApplicationContext appContext;
-	
-	private String defaultMessageProcessor;
 
-	private Properties textprops = null;
+	private static String defaultMessageProcessor;
 
 	private static Processor messageProcessor; // default message processor
 
@@ -80,14 +81,6 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 		return properties.getProperty(key);
 	}
 
-	public void setDefaultMessageProcessor(String proc) {
-		this.defaultMessageProcessor = proc;
-	}
-
-	public void setTextprops(Properties props) {
-		this.textprops = props;
-	}
-
 	public static PreferencesDAO getPreferencesDAO() {
 		return (PreferencesDAO) getBean(PreferencesDAO.class);
 	}
@@ -119,16 +112,23 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 				System.setProperty(key, properties.getProperty(key));
 			}
 		}
-		if (textprops != null) {
-			// create processing kernel
-			processingKernel = ProcessingKernel.createProcessingKernel(textprops);
-			// lookup default message processing pipe
+		if (processingKernel != null) {
 			messageProcessor = getMessageProcessor(defaultMessageProcessor);
+			if (null == messageProcessor) {
+				log.error("Failed to load default message processing pipe.");
+			} else {
+				log.debug("default message processing pipe is {}",
+						defaultMessageProcessor);
+			}
 		}
 	}
 
-	public static Processor getMessageProcessor() {
-		return messageProcessor;
+    public void setDefaultMessageProcessor(String proc) {
+		defaultMessageProcessor = proc;
+	}
+
+	public void setProcessingKernel(ProcessingKernel kernel) {
+		processingKernel = kernel;
 	}
 
 	public static Processor getMessageProcessor(String name) {
@@ -150,11 +150,6 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 		return proc;
 	}
 
-	public static String[] getMessageProcessors() {
-		// return just processing pipes for now
-		return processingKernel.listProcessingPipes();
-	}
-	
 	private static String getHost(String address) {
 		int index = address.lastIndexOf('@');
 		if (index != -1) {

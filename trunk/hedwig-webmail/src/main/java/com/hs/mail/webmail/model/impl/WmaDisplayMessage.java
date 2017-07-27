@@ -19,8 +19,6 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
 import org.omg.CORBA.IntHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,8 +202,8 @@ public class WmaDisplayMessage extends WmaMessageInfoImpl {
 	}
 	
 	private void setSafeBody(String body) {
-		//setBody(Configuration.getMessageProcessor().process(body));
-		setBody("text/html".equals(getContentType()) ? Jsoup.clean(body, Whitelist.relaxed()) : body);
+		setBody(Configuration.getMessageProcessor(null).process(
+				getContentType(), body));
 	}
 
 	private void buildBodyText(Part part) throws Exception {

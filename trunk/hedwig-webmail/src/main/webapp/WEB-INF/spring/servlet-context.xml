@@ -81,11 +81,20 @@
 		<property name="location" value="/WEB-INF/default.properties" />
 	</bean>
 
+	<bean id="textproc"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location" value="/WEB-INF/textproc.properties" />
+	</bean>
+
+	<bean id="processingKernel" class="com.hs.mail.webmail.util.text.ProcessingKernel">
+		<property name="properties" ref="textproc" />
+	</bean>
+
 	<bean id="configuration" class="com.hs.mail.webmail.config.Configuration">
 		<property name="properties" ref="properties" />
-		<property name="messageSourceAccessor" >
-			<ref bean="messageSourceAccessor" />
-		</property>
+		<property name="messageSourceAccessor" ref="messageSourceAccessor" />
+		<property name="defaultMessageProcessor" value="cleanmessage"></property>
+		<property name="processingKernel" ref="processingKernel" />
 	</bean>
 	
 	<bean class="com.hs.mail.webmail.dao.std.SimplePreferencesDAO" />

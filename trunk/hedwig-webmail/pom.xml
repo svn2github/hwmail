@@ -72,7 +72,12 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang3-version}</version>
 		</dependency>
-		
+		<dependency>
+		    <groupId>oro</groupId>
+		    <artifactId>oro</artifactId>
+		    <version>2.0.8</version>
+		</dependency>
+
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>

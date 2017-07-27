@@ -183,7 +183,7 @@ public class WmaMessagePartImpl implements WmaMessagePart {
 				partinfo.setSize(size);
 				Message msg = (Message) part.getContent();
 				partinfo.setName(WmaUtils.prepareString(WmaUtils.getHeader(msg,
-						"Subject")));
+						"Subject")) + ".msg");
 			} else {
 				// correct size of encoded parts
 				String[] encoding = part.getHeader("Content-Transfer-Encoding");
