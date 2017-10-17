@@ -19,8 +19,8 @@
 CREATE SEQUENCE sq_hw_alias INCREMENT BY 1 START WITH 1;
 CREATE TABLE hw_alias (
   aliasid number NOT NULL,
-  alias varchar(100) NOT NULL,
-  deliver_to varchar(100) NOT NULL
+  alias varchar2(100) NOT NULL,
+  deliver_to varchar2(100) NOT NULL
 );
 CREATE UNIQUE INDEX pk_hw_alias ON hw_alias (aliasid);
 CREATE UNIQUE INDEX ux_hw_alias_1 ON hw_alias (alias ASC, deliver_to);
@@ -33,11 +33,11 @@ ALTER TABLE hw_alias ADD CONSTRAINT pk_hw_alias PRIMARY KEY (aliasid);
 CREATE SEQUENCE sq_hw_user INCREMENT BY 1 START WITH 1;
 CREATE TABLE hw_user (
   userid number NOT NULL,
-  loginid varchar(100) NOT NULL,
-  passwd varchar(34) NOT NULL,
-  name varchar(60) NULL,
+  loginid varchar2(100) NOT NULL,
+  passwd varchar2(34) NOT NULL,
+  name varchar2(60) NULL,
   maxmail_size number DEFAULT 0 NOT NULL,
-  forward varchar(100) NULL
+  forward varchar2(100) NULL
 );
 CREATE UNIQUE INDEX pk_hw_user ON hw_user (userid);
 CREATE UNIQUE INDEX ux_hw_user_1 ON hw_user (loginid);
@@ -50,7 +50,7 @@ CREATE SEQUENCE sq_hw_mailbox INCREMENT BY 1 START WITH 1;
 CREATE TABLE hw_mailbox (
   mailboxid number NOT NULL,
   ownerid number NOT NULL,
-  name varchar(255) NOT NULL,
+  name varchar2(255) NOT NULL,
   noinferiors_flag char(1) DEFAULT 'N' NOT NULL,
   noselect_flag char(1) DEFAULT 'N' NOT NULL,
   readonly_flag char(1) DEFAULT 'N' NOT NULL,
@@ -69,7 +69,7 @@ ALTER TABLE hw_mailbox ADD CONSTRAINT pk_hw_mailbox PRIMARY KEY (mailboxid);
 CREATE TABLE hw_subscription (
   mailboxid number NOT NULL,
   userid number NOT NULL,
-  name varchar(255) NOT NULL 
+  name varchar2(255) NOT NULL 
 );
 CREATE UNIQUE INDEX pk_hw_subscription ON hw_subscription (userid ASC, name ASC);
 ALTER TABLE hw_subscription ADD CONSTRAINT pk_hw_subscription PRIMARY KEY (userid, name);
@@ -83,9 +83,9 @@ CREATE TABLE hw_physmessage (
   physmessageid number NOT NULL,
   rfcsize number NOT NULL,
   internaldate timestamp NOT NULL,
-  subject varchar(500) NULL,
+  subject varchar2(500) NULL,
   sentdate timestamp NULL,
-  fromaddr varchar(100) DEFAULT ''
+  fromaddr varchar2(100) DEFAULT ''
 );
 CREATE UNIQUE INDEX pk_hw_phymessage ON hw_physmessage (physmessageid);
 ALTER TABLE hw_physmessage ADD CONSTRAINT pk_hw_phymessage PRIMARY KEY (physmessageid);
@@ -123,7 +123,7 @@ END;
 CREATE SEQUENCE sq_hw_headername INCREMENT BY 1 START WITH 1;
 CREATE TABLE hw_headername (
   headernameid number NOT NULL,
-  headername varchar(100) NOT NULL
+  headername varchar2(100) NOT NULL
 );
 CREATE UNIQUE INDEX pk_hw_headername ON hw_headername (headernameid);
 ALTER TABLE hw_headername ADD CONSTRAINT PK_hw_headername PRIMARY KEY (headernameid);
@@ -137,7 +137,7 @@ CREATE TABLE hw_headervalue (
   headervalueid number NOT NULL,
   physmessageid number NOT NULL,
   headernameid number NOT NULL,
-  headervalue varchar(4000)
+  headervalue varchar2(4000 char)
 );
 CREATE UNIQUE INDEX pk_hw_headervalue ON hw_headervalue (headervalueid);
 CREATE INDEX ix_hw_headervalue_1 ON hw_headervalue (headernameid);
@@ -173,6 +173,6 @@ ALTER TABLE hw_acl ADD CONSTRAINT pk_hw_acl PRIMARY KEY (userid, mailboxid);
 --
 CREATE TABLE hw_keyword (
   messageid number NOT NULL,
-  keyword varchar(255) NOT NULL 
+  keyword varchar2(255) NOT NULL 
 );
 CREATE INDEX ix_hw_keyword_1 ON hw_keyword (messageid);
