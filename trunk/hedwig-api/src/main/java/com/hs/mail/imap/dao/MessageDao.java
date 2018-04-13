@@ -23,6 +23,7 @@ import javax.mail.Flags;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageHeader;
+import com.hs.mail.imap.message.MessageMetaData;
 import com.hs.mail.imap.message.PhysMessage;
 
 /**
@@ -33,6 +34,8 @@ import com.hs.mail.imap.message.PhysMessage;
  */
 public interface MessageDao extends DaoSupport {
 
+	public List<MessageMetaData> getMessageMetaData(long mailboxID);
+	
 	public List<Long> getMessageIDList(long mailboxID);
 
 	public void copyMessage(long messageID, long mailboxID);

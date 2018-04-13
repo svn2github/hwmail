@@ -37,6 +37,7 @@ import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageHeader;
+import com.hs.mail.imap.message.MessageMetaData;
 import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.util.CaseInsensitiveMap;
 
@@ -49,6 +50,20 @@ import com.hs.mail.util.CaseInsensitiveMap;
 @SuppressWarnings("unchecked")
 abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 
+	public List<MessageMetaData> getMessageMetaData(long mailboxID) {
+		String sql = "SELECT m.messageid, p.rfcsize FROM hw_message m, hw_physmessage p WHERE m.mailboxid = ? AND m.physmessageid = p.physmessageid";
+		return getJdbcTemplate().query(sql,
+				new Object[] { new Long(mailboxID) },
+				new RowMapper<MessageMetaData>() {
+					public MessageMetaData mapRow(ResultSet rs, int rowNum)
+							throws SQLException {
+						long uid = rs.getLong("messageid");
+						long size = rs.getLong("rfcsize");
+						return new MessageMetaData(uid, size);
+					}
+				});
+	}
+	
 	public List<Long> getMessageIDList(long mailboxID) {
 		String sql = "SELECT messageid FROM hw_message WHERE mailboxid = ? ORDER BY messageid";
 		return (List<Long>) getJdbcTemplate().queryForList(sql,
@@ -94,7 +109,7 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 		}
 		return fd;
 	}
-	
+
 	public void deleteMessage(long messageID) {
 		String[] sqls = { "DELETE FROM hw_keyword WHERE messageid = ?",
 				"DELETE FROM hw_message WHERE messageid = ?" };

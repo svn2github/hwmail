@@ -53,6 +53,7 @@ import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.mailbox.MailboxACL.MailboxACLEntry;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
+import com.hs.mail.imap.message.MessageMetaData;
 import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.search.SearchKey;
@@ -300,6 +301,11 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getFlags(uid);
 	}
 
+	public List<MessageMetaData> getMessageMetaData(long mailboxID) {
+		MessageDao dao = DaoFactory.getMessageDao();
+		return dao.getMessageMetaData(mailboxID);
+	}
+	
 	public List<Long> getMessageIDList(long mailboxID) {
 		MessageDao dao = DaoFactory.getMessageDao();
 		return dao.getMessageIDList(mailboxID);
@@ -368,6 +374,29 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 							dao.addMessage(mailboxID, message, message.getFlags());
 							eventDispatcher.added(mailboxID);
 							return message.getPhysMessageID();
+						} catch (DataAccessException ex) {
+							status.setRollbackOnly();
+							throw ex;
+						}
+					}
+				});
+	}
+	
+	public void deleteMessages(final List<Long> uidList) {
+		if (fdCache != null) {
+			for (long uid : uidList) {
+				fdCache.remove(uid);
+			}
+		}
+		getTransactionTemplate().execute(
+				new TransactionCallbackWithoutResult() {
+					public void doInTransactionWithoutResult(
+							TransactionStatus status) {
+						try {
+							MessageDao dao = DaoFactory.getMessageDao();
+							for (long uid : uidList) {
+								dao.deleteMessage(uid);
+							}
 						} catch (DataAccessException ex) {
 							status.setRollbackOnly();
 							throw ex;

@@ -28,6 +28,7 @@ import com.hs.mail.imap.event.EventListener;
 import com.hs.mail.imap.mailbox.MailboxACL.EditMode;
 import com.hs.mail.imap.message.FetchData;
 import com.hs.mail.imap.message.MailMessage;
+import com.hs.mail.imap.message.MessageMetaData;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
 
@@ -204,6 +205,15 @@ public interface MailboxManager {
 	public Flags getFlags(long uid);
 
 	/**
+	 * Returns all the {@link MessageMetaData} stored in the given mailbox.
+	 * 
+	 * @param mailboxID
+	 *            ID of the mailbox
+	 * @return list of {@link MessageMetaData}
+	 */
+	public List<MessageMetaData> getMessageMetaData(long mailboxID);
+
+	/**
 	 * Returns all the ID of the messages stored in the given mailbox.
 	 * 
 	 * @param mailboxID
@@ -234,7 +244,15 @@ public interface MailboxManager {
 	 */
 	public MailMessage appendMessage(long mailboxID, Date internalDate,
 			Flags flags, File file) throws IOException;
-	
+
+	/**
+	 * Deletes the given messages.
+	 * 
+	 * @param uidList
+	 *            List of message ID to delete
+	 */
+	public void deleteMessages(final List<Long> uidList);
+
 	/**
 	 * Deletes the given message.
 	 * 
