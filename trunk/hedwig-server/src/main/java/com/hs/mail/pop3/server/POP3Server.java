@@ -43,7 +43,7 @@ public class POP3Server extends DefaultServer implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// Configure the server
-		connectionTimeout = (int) Config.getNumberProperty("pop3d_timeout", 60000); 
+		connectionTimeout = (int) Config.getNumberProperty("pop3d_timeout", 300000); 
 
 		serverSocketFactory = (isUseTLS()) 
 				? new TLSServerSocketFactory(Config.getSSLContext())

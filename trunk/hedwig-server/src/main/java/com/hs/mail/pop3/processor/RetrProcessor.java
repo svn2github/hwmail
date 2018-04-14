@@ -80,19 +80,9 @@ public class RetrProcessor extends AbstractPOP3Processor {
 					.append(data.getSize())
 					.append(" octets");
 			session.writeResponse(responseBuffer.toString());
-			
-			OutputStream out = session.getTransport().getOutputStream();
-			try {
-				ExtraDotOutputStream edouts = new ExtraDotOutputStream(out);
-				IOUtils.copy(content, edouts);
-				edouts.checkCRLFTerminator();
-				edouts.flush();
-			} finally {
-				IOUtils.closeQuietly(content);
-				out.write(".\r\n".getBytes());
-				out.flush();
-			}
-					
+
+			writeMessageContentTo(session, content);
+
 		} catch (IOException ioe) {
 			StringBuilder responseBuffer = new StringBuilder(64)
 					.append("Error while retrieving message.");
@@ -115,6 +105,21 @@ public class RetrProcessor extends AbstractPOP3Processor {
 			}
 		}
 		return null;
+	}
+
+	protected void writeMessageContentTo(POP3Session session,
+			InputStream content) throws IOException {
+		OutputStream out = session.getTransport().getOutputStream();
+		try {
+			ExtraDotOutputStream edouts = new ExtraDotOutputStream(out);
+			IOUtils.copy(content, edouts);
+			edouts.checkCRLFTerminator();
+			edouts.flush();
+		} finally {
+			IOUtils.closeQuietly(content);
+			out.write(".\r\n".getBytes());
+			out.flush();
+		}
 	}
 	
 }

@@ -17,14 +17,10 @@ package com.hs.mail.pop3.processor;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.StringTokenizer;
-
-import org.apache.commons.io.IOUtils;
 
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.imap.message.MessageMetaData;
-import com.hs.mail.io.ExtraDotOutputStream;
 import com.hs.mail.pop3.POP3Exception;
 import com.hs.mail.pop3.POP3Session;
 
@@ -74,20 +70,10 @@ public class TopProcessor extends RetrProcessor {
 					.append(" ")
 					.append("Top of message follows");
 			session.writeResponse(responseBuffer.toString());
-
-			OutputStream out = session.getTransport().getOutputStream();
-			InputStream in = new CountingBodyInputStream(content, num);
-			try {
-				ExtraDotOutputStream edouts = new ExtraDotOutputStream(out);
-				IOUtils.copy(in, edouts);
-				edouts.checkCRLFTerminator();
-				edouts.flush();
-			} finally {
-				IOUtils.closeQuietly(in);
-				out.write(".\r\n".getBytes());
-				out.flush();
-			}
 			
+			writeMessageContentTo(session,
+					new CountingBodyInputStream(content, num));
+
 		} catch (IOException ioe) {
 			StringBuilder responseBuffer = new StringBuilder(64)
 					.append("Error while retrieving message.");
