@@ -231,7 +231,7 @@
 
 	<!-- Use the following to enable SSL/TLS for POP3 -->
 	<!-- 
-	<bean id="smtps.server" class="com.hs.mail.pop3.server.POP3Server" depends-on="config">
+	<bean id="pop3s.server" class="com.hs.mail.pop3.server.POP3Server" depends-on="config">
 		<property name="useTLS" value="true"/>
 		<property name="port" value="995"/>
 		<property name="taskExecutor" ref="smtp.taskExecutor"/>
