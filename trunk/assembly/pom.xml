@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.hs</groupId>
 		<artifactId>hedwig-parent</artifactId>
-		<version>0.6</version>
+		<version>0.7</version>
 	</parent>
 	<artifactId>hedwig</artifactId>
 	<name>Hedwig::Assembly</name>
