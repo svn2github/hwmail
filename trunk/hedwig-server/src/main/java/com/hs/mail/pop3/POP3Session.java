@@ -59,8 +59,8 @@ public class POP3Session {
     private TcpTransport transport;
 	private State state = State.AUTHORIZATION;
 	private String user = null;
-	private long authID = -1;
 	private long mailboxID = -1;
+	private int errorCount = 0;
 	private List<MessageMetaData> uidList;
 	private List<Long> deletedUidList;
 
@@ -88,20 +88,17 @@ public class POP3Session {
 		this.user = user;
 	}
 
-	public long getAuthID() {
-		return authID;
-	}
-
-	public void setAuthID(long authID) {
-		this.authID = authID;
-	}
-
 	public long getMailboxID() {
 		return mailboxID;
 	}
 
 	public void setMailboxID(long mailboxID) {
 		this.mailboxID = mailboxID;
+	}
+
+	public int incErrorCount() {
+		errorCount++;
+		return errorCount;
 	}
 
 	public List<MessageMetaData> getUidList() {

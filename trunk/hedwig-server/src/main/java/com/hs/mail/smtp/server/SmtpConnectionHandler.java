@@ -16,6 +16,7 @@
 package com.hs.mail.smtp.server;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.Socket;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -92,6 +93,10 @@ public class SmtpConnectionHandler implements ConnectionHandler {
 		} catch (LineReader.LineLengthExceededException llee) {
 			session.writeResponse("500 Line length exceeded."
 					+ " See RFC 2821 #4.5.3.1.");
+		} catch (InterruptedIOException ie) {
+			// The socket is still connected event though TIMEOUT expires
+			session.writeResponse("421 Session timeout,"
+					+ "closing transmission channel.");
 		} finally {
 			MailLog.disconnect(session);
 			if (soc != null) {

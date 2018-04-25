@@ -34,16 +34,22 @@ import com.hs.mail.pop3.POP3Session;
  */
 public abstract class AbstractPOP3Processor implements POP3Processor {
 
+	private static final int MAX_ERRORS = 3; 
+	
 	@Override
 	public void process(POP3Session session, TcpTransport trans,
 			StringTokenizer st) {
 		try {
 			doProcess(session, trans, st);
 		} catch (Exception ex) {
-			if (StringUtils.isNotEmpty(ex.getMessage()))
+			if (session.incErrorCount() > MAX_ERRORS) {
+				session.writeResponse(ERR_RESPONSE + " Too many errors");
+				trans.endSession();
+			} else if (StringUtils.isNotEmpty(ex.getMessage())) {
 				session.writeResponse(ERR_RESPONSE + " " + ex.getMessage());
-			else
+			} else {
 				session.writeResponse(ERR_RESPONSE);
+			}
 		}
 	}
 

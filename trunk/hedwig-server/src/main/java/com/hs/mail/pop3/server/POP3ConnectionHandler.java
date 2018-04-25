@@ -16,6 +16,7 @@
 package com.hs.mail.pop3.server;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
@@ -81,6 +82,12 @@ public class POP3ConnectionHandler implements ConnectionHandler {
 					.append(" CR and LF must be CRLF paired.")
 					.append(" See RFC 1939 #3.");
 			session.writeResponse(responseBuffer.toString());
+		} catch (InterruptedIOException ie) {
+			// The socket is still connected event though TIMEOUT expires
+			StringBuilder responseBuffer = new StringBuilder(64)
+					.append(POP3Processor.ERR_RESPONSE)
+					.append(" Session timeout.");
+			session.writeResponse(responseBuffer.toString());
 		} finally {
 			if (soc != null) {
 				try {
@@ -100,5 +107,5 @@ public class POP3ConnectionHandler implements ConnectionHandler {
 				.append(" POP3 server ready");
 		session.writeResponse(responseBuffer.toString());
 	}
-	
+
 }

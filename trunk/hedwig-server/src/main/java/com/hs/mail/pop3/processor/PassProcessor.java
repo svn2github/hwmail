@@ -58,13 +58,12 @@ public class PassProcessor extends RsetProcessor {
 	private void doPASS(POP3Session session, TcpTransport trans, String pass) {
 		try {
 			UserManager manager = getUserManager();
-			long authID = manager.login(session.getUser(), pass);
-			session.setAuthID(authID);
+			long userID = manager.login(session.getUser(), pass);
 			session.setState(POP3Session.State.TRANSACTION);
 
 			MailboxManager mailboxManager = getMailboxManager();
 			final String inboxName = ImapConstants.INBOX_NAME;
-			Mailbox inbox = mailboxManager.getMailbox(authID, inboxName);
+			Mailbox inbox = mailboxManager.getMailbox(userID, inboxName);
 			if (inbox != null) {
 				session.setMailboxID(inbox.getMailboxID());
 			}
