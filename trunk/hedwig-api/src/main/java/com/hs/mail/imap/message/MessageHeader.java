@@ -21,11 +21,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.internet.InternetAddress;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.MimeIOException;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
+import org.apache.james.mime4j.codec.EncoderUtil;
+import org.apache.james.mime4j.codec.EncoderUtil.Usage;
 import org.apache.james.mime4j.dom.Header;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.MailboxList;
@@ -43,9 +49,9 @@ import org.apache.james.mime4j.parser.AbstractContentHandler;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.Field;
 import org.apache.james.mime4j.stream.MimeConfig;
+import org.apache.james.mime4j.stream.RawField;
 import org.apache.james.mime4j.util.ByteSequence;
 import org.apache.james.mime4j.util.CharsetUtil;
-import org.apache.james.mime4j.util.MimeUtil;
 
 /**
  * 
@@ -54,6 +60,21 @@ import org.apache.james.mime4j.util.MimeUtil;
  *
  */
 public class MessageHeader {
+	
+	private static String[] ADDRESS_FIELDS = { 
+			FieldName.FROM.toLowerCase(),
+			FieldName.RESENT_FROM.toLowerCase(),
+			FieldName.SENDER.toLowerCase(),
+			FieldName.RESENT_SENDER.toLowerCase(), 
+			FieldName.TO.toLowerCase(),
+			FieldName.RESENT_TO.toLowerCase(), 
+			FieldName.CC.toLowerCase(),
+			FieldName.RESENT_CC.toLowerCase(), 
+			FieldName.BCC.toLowerCase(),
+			FieldName.RESENT_BCC.toLowerCase(),
+			FieldName.REPLY_TO.toLowerCase() 
+	};
+	
 	private Header header = new HeaderImpl();
 
 	public MessageHeader(InputStream is) throws MimeIOException, IOException {
@@ -65,8 +86,7 @@ public class MessageHeader {
 			}
 			@Override
 			public void field(Field field) throws MimeException {
-				ParsedField parsedField = LenientFieldParser
-						.parse(field.getRaw(), DecodeMonitor.SILENT);
+				ParsedField parsedField = parseField(field);
 				header.addField(parsedField);
 			}
 		});
@@ -106,8 +126,7 @@ public class MessageHeader {
 		if (field == null)
 			return null;
 
-		String value = getNonAsciiValue(field);
-		return (value != null) ? value : field.getValue();
+		return field.getValue();
 	}
 
     public Date getDate() {
@@ -123,11 +142,8 @@ public class MessageHeader {
 		if (field == null)
 			return null;
 
-		String value = getNonAsciiValue(field);
-		if (value == null)
-			value = DecoderUtil.decodeEncodedWords(field.getBody(),
-					DecodeMonitor.SILENT);
-		
+		String value = DecoderUtil.decodeEncodedWords(field.getBody(),
+				DecodeMonitor.SILENT);
 		return unquoteName(value);
 	}
 	
@@ -150,41 +166,12 @@ public class MessageHeader {
 		return field.getAddressList();
 	}
     
-	private static String getNonAsciiValue(Field field) {
-		ByteSequence raw = field.getRaw();
-		if (raw == null || raw.length() == 0) {
-			return null;
-		}
-
-		if (indexOf(raw, "=?") == -1) {
-			// Raw text is not "encoded-word".
-			int len = raw.length();
-			int off = field.getName().length() + 1;
-			if (len > off + 1
-					&& (CharsetUtil.isWhitespace((char) raw.byteAt(off)))) {
-				// Skip white spaces
-				off++;
-			}
-			for (int i = off; i < len; i++) {
-				if (!CharsetUtil.isASCII((char) raw.byteAt(i))) {
-					// Non-ascii text found, treat this text "as is".
-					byte[] b = new byte[len - off];  
-					for (int j = 0; j < b.length; j++) {
-						b[j] = raw.byteAt(off + j);
-					}
-					return MimeUtil.unfold(new String(b));
-				}
-			}
-		}
-		return null;
-	}	
-	
 	private static int indexOf(ByteSequence bs, String str) {
 		int targetLength = str.length();
 		int max = bs.length() - targetLength;
 		char first = str.charAt(0);
 		for (int i = 0; i < max; i++) {
-			// Loook for the first character
+			// Look for the first character
 			if ((char) bs.byteAt(i) != first) {
 				while (++i < max && ((char) bs.byteAt(i) != first));
 			}
@@ -246,6 +233,58 @@ public class MessageHeader {
 		return dst.toString();
 	}
 
+	/*
+	 * Some poor mail client creates messages with NON-ASCII headers. 
+	 * Mime4j cannot parse these messages correctly.
+	 * Encode field body if the field contains NON-ASCII character.
+	 */
+	ParsedField parseField(Field field) throws MimeException {
+		ByteSequence raw = field.getRaw();
+		if (raw != null && raw.length() > 0) {
+			if (indexOf(raw, "=?") == -1) {
+				// Raw text is not "encoded-word".
+				int len = raw.length();
+				int off = field.getName().length() + 1;
+				if (len > off + 1
+						&& (CharsetUtil.isWhitespace((char) raw.byteAt(off)))) {
+					// Skip white spaces
+					off++;
+				}
+				for (int i = off; i < len; i++) {
+					if (!CharsetUtil.isASCII((char) raw.byteAt(i))) {
+						// Non-ASCII text found, treat this text "as is".
+						byte[] b = new byte[len - off];  
+						for (int j = 0; j < b.length; j++) {
+							b[j] = raw.byteAt(off + j);
+						}
+						String rawStr = new String(b);
+						if (ArrayUtils.contains(ADDRESS_FIELDS, field.getName().toLowerCase())) {
+							try {
+								InternetAddress[] addresslist = InternetAddress.parse(rawStr, false);
+								for (int k = 0; k < addresslist.length; k++) {
+									String pers = addresslist[k].getPersonal();
+									if (pers != null
+											&& !CharsetUtil.isASCII(pers)) {
+										addresslist[k] = new InternetAddress(addresslist[k].getAddress(), pers, "UTF-8");
+									}
+								}
+								rawStr = StringUtils.join(addresslist, ", ");
+							} catch (Exception e) {
+								// IGNORE
+								break;
+							}
+						} else {
+							rawStr = EncoderUtil.encodeEncodedWord(rawStr, Usage.TEXT_TOKEN, 0);
+						}
+						RawField rawField = new RawField(field.getName(), rawStr); 
+						return LenientFieldParser.getParser().parse(rawField, DecodeMonitor.SILENT);
+					}
+				}
+			}
+		}
+		return LenientFieldParser.parse(field.getRaw(), DecodeMonitor.SILENT);
+	}
+	
 	<F extends Field> F obtainField(String fieldName) {
 		if (header == null)
 			return null;
