@@ -16,9 +16,7 @@
 package com.hs.mail.deliver;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -30,7 +28,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.james.mime4j.dom.address.Address;
 import org.apache.james.mime4j.dom.address.AddressList;
@@ -176,10 +173,8 @@ public class Deliver {
 		if (from == null || rcpts == null) {
 			// If sender or recipients address was not specified, get the
 			// addresses from the message header.
-			InputStream is = null;
 			try {
-				is = new FileInputStream(file);
-				MessageHeader header = new MessageHeader(is);
+				MessageHeader header = new MessageHeader(file);
 				if (from == null) {
 					from = header.getFromAddress();
 				}
@@ -189,8 +184,6 @@ public class Deliver {
 			} catch (IOException ex) {
 				logger.error(ex.getMessage(), ex);
 				System.exit(EX_TEMPFAIL);
-			} finally {
-				IOUtils.closeQuietly(is);
 			}
 		}
 		

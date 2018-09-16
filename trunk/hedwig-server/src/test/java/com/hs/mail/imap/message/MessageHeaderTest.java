@@ -1,11 +1,12 @@
 package com.hs.mail.imap.message;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
-import org.junit.*;
+import org.junit.Ignore;
 
 import com.hs.mail.test.TestUtil;
 
@@ -13,8 +14,8 @@ public class MessageHeaderTest {
 
 	@Ignore
 	public void test() throws IOException {
-		InputStream is = TestUtil.readResourceAsStream("/quotedPrintableWithAttach.eml");
-		MessageHeader header = new MessageHeader(is);
+		File source = TestUtil.getResourceFile("/quotedPrintableWithAttach.eml");
+		MessageHeader header = new MessageHeader(source);
 		assertNotNull(header);
 		assertEquals(header.getSubject(), "연(HB)20110922-002 Failed to load IMAP envelope 에 대한 문의입니다.");
 		assertEquals(header.getFrom(), "김준기 <highbase@secuace.co.kr>");
@@ -58,8 +59,8 @@ public class MessageHeaderTest {
 
 	private static MessageHeader newMessageHeader(String resource)
 			throws IOException {
-		InputStream is = TestUtil.readResourceAsStream(resource);
-		return new MessageHeader(is);
+		File source = TestUtil.getResourceFile(resource);
+		return new MessageHeader(source);
 	}
 
 }

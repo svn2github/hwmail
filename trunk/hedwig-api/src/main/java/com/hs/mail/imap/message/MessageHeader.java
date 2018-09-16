@@ -15,8 +15,11 @@
  */
 package com.hs.mail.imap.message;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +27,7 @@ import java.util.List;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.MimeException;
@@ -53,6 +57,8 @@ import org.apache.james.mime4j.stream.RawField;
 import org.apache.james.mime4j.util.ByteSequence;
 import org.apache.james.mime4j.util.CharsetUtil;
 
+import com.hs.mail.util.FileUtils;
+
 /**
  * 
  * @author Won Chul Doh
@@ -76,8 +82,21 @@ public class MessageHeader {
 	};
 	
 	private Header header = new HeaderImpl();
+	private String charset = null;
+	private File source = null;
 
-	public MessageHeader(InputStream is) throws MimeIOException, IOException {
+	public MessageHeader(File source) throws IOException {
+		this.source = source;
+		InputStream input = null;
+		try {
+			input = new FileInputStream(source);
+			parse(input);
+		} finally {
+			IOUtils.closeQuietly(input);
+		}
+	}
+	
+	private void parse(InputStream is) throws IOException {
 		final MimeStreamParser parser = createMimeParser();
 		parser.setContentHandler(new AbstractContentHandler() {
 			@Override
@@ -257,7 +276,15 @@ public class MessageHeader {
 						for (int j = 0; j < b.length; j++) {
 							b[j] = raw.byteAt(off + j);
 						}
-						String rawStr = new String(b);
+						if (charset == null) {
+							charset = FileUtils.guessEncoding(source);
+						}
+						String rawStr = null;
+						try {
+							rawStr = new String(b, charset);
+						} catch (UnsupportedEncodingException ex) {
+							rawStr = new String(b);
+						}
 						if (ArrayUtils.contains(ADDRESS_FIELDS, field.getName().toLowerCase())) {
 							try {
 								InternetAddress[] addresslist = InternetAddress.parse(rawStr, false);

@@ -32,6 +32,13 @@
 			<artifactId>ehcache</artifactId>
 		</dependency>
 
+		<!-- File encoding detection -->
+		<dependency>
+		   <groupId>org.apache.any23</groupId>
+		   <artifactId>apache-any23-encoding</artifactId>
+		   <version>2.1</version>
+		</dependency>
+
 		<!-- Apache commons -->
 		<dependency>
 			<groupId>commons-collections</groupId>

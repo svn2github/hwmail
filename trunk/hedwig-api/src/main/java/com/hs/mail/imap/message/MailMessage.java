@@ -94,19 +94,13 @@ public class MailMessage extends FetchData {
 	public static MailMessage createMailMessage(File file, Date internalDate,
 			Flags flags) throws IOException {
 		MailMessage message = new MailMessage(file);
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(file);
-			MessageHeader header = new MessageHeader(fis);
-			message.setPhysMessageID(0);
-			message.setHeader(header);
-			message.setSize(file.length());
-			message.setInternalDate(internalDate);
-			message.setFlags(flags);
-			return message;
-		} finally {
-			IOUtils.closeQuietly(fis);
-		}
+		MessageHeader header = new MessageHeader(file);
+		message.setPhysMessageID(0);
+		message.setHeader(header);
+		message.setSize(file.length());
+		message.setInternalDate(internalDate);
+		message.setFlags(flags);
+		return message;
 	}
 
 }
