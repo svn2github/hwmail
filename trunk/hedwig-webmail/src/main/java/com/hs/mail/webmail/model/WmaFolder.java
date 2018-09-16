@@ -126,7 +126,7 @@ public interface WmaFolder {
 			throws WmaException;
 	
 	void writeMessagePart(HttpServletRequest request,
-			HttpServletResponse response, long uid, int part)
+			HttpServletResponse response, long uid, int part, String cid)
 			throws WmaException;
 	
 	void writeMimeMessage(HttpServletResponse response, long uid, String filename)

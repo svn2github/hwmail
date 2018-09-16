@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.hs.mail.webmail.WmaSession;
+import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.exception.WmaException;
 import com.hs.mail.webmail.model.WmaFolder;
 import com.hs.mail.webmail.model.WmaStore;
@@ -40,6 +41,8 @@ public class MessageController {
 		boolean print = RequestUtils.getParameterBool(request, "print", false);
 		WmaStore store = session.getWmaStore();
 		WmaFolder folder = store.getWmaFolder(path);
+		Configuration.local
+				.set(request.getRequestURI() + "?" + request.getQueryString());
 		WmaDisplayMessage message = folder.getWmaMessageByUID(uid);
 		model.addAttribute("message", message);
 		return print ? "printmsg" : "message";
@@ -141,7 +144,19 @@ public class MessageController {
 		String path = RequestUtils.getRequiredParameter(request, "path");
 		WmaStore store = session.getWmaStore();
 		WmaFolder folder = store.getWmaFolder(path);
-		folder.writeMessagePart(request, response, uid, part);
+		folder.writeMessagePart(request, response, uid, part, null);
+	}
+	
+	@RequestMapping(value = "/message/cid")
+	public void cid(@RequestParam(value = "uid") long uid,
+			@RequestParam(value = "cid") String cid, 
+			HttpSession httpsession, HttpServletRequest request, 
+			HttpServletResponse response) throws Exception {
+		WmaSession session = new WmaSession(httpsession);
+		String path = RequestUtils.getRequiredParameter(request, "path");
+		WmaStore store = session.getWmaStore();
+		WmaFolder folder = store.getWmaFolder(path);
+		folder.writeMessagePart(request, response, uid, 0, cid);
 	}
 
 	@RequestMapping(value = "/message/recipients")

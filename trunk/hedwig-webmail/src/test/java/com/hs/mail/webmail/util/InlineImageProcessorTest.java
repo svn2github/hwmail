@@ -15,13 +15,13 @@ import com.hs.mail.webmail.test.TestUtil;
 public class InlineImageProcessorTest {
 
 	private static final String URL_PATTERN = 
-			"(?s).*<\\s*img\\s+[^>]*src\\s*=\\s*['|\"](cid:)([^'\">]+)['|\"].*>";
+			"<\\s*img\\s+[^>]*src\\s*=\\s*['|\"](cid:)([^'\">]+)['|\"].*?>";
 
 	static Pattern pattern;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		pattern = Pattern.compile(URL_PATTERN);
+		pattern = Pattern.compile(URL_PATTERN, Pattern.DOTALL);
 	}
 
 	@Test

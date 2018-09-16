@@ -18,6 +18,8 @@ import com.hs.mail.webmail.util.text.Processor;
 
 public class Configuration implements InitializingBean, ApplicationContextAware {
 	
+	public static ThreadLocal<String> local = new ThreadLocal<String>();
+
 	private static Logger log = LoggerFactory.getLogger(Configuration.class);
 
 	private static Properties properties = new Properties();

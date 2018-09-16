@@ -308,12 +308,12 @@ public class WmaFolderImpl implements WmaFolder {
 	}
 
 	public void writeMessagePart(HttpServletRequest request,
-			HttpServletResponse response, long uid, int part)
+			HttpServletResponse response, long uid, int part, String cid)
 			throws WmaException {
 		try {
 			folder.open(Folder.READ_ONLY);
 			Message msg = folder.getMessageByUID(uid);
-			WmaMessagePart wpart = WmaDisplayMessage.getWmaMessagePart(msg, part, null);
+			WmaMessagePart wpart = WmaDisplayMessage.getWmaMessagePart(msg, part, cid);
 			writeMessagePart(request, response, wpart, Part.INLINE);
 		} catch (Exception ex) {
 			log.error(ex.getMessage(), ex);
