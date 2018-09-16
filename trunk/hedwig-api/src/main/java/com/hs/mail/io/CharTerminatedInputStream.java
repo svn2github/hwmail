@@ -159,5 +159,22 @@ public class CharTerminatedInputStream
         pos--;
         return b;
     }
+
+    /**
+	 * Close this input stream and release any system resources associated with
+	 * the stream.
+	 */
+    public void close() throws IOException {
+		if (in == null) {
+			return;
+		}
+
+		in.close();
+		in = null;
+		
+		buffer = null;
+		match = null;
+	}
+
 }
 

@@ -23,6 +23,8 @@ import javax.mail.Message;
 import javax.mail.internet.MimeUtility;
 import javax.mail.search.ComparisonTerm;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hs.mail.imap.message.SequenceRange;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.SearchRequest;
@@ -47,7 +49,6 @@ import com.hs.mail.imap.parser.ParseException;
 import com.hs.mail.imap.parser.Token;
 import com.hs.mail.imap.server.codec.DecoderUtils;
 import com.hs.mail.imap.server.codec.ImapMessage;
-import com.hs.mail.util.MailUtils;
 
 /**
  * 
@@ -222,7 +223,8 @@ public class SearchRequestBuilder extends AbstractUidRequestBuilder {
 	private static String decode(String s, String charset) {
 		if (charset != null) {
 			try {
-				if (!MailUtils.isAscii(s) && !"UTF-8".equals(charset)) {
+				if (!StringUtils.isAsciiPrintable(s)
+						&& !"UTF-8".equals(charset)) {
 					return new String(s.getBytes("UTF-8"), charset);
 				}
 			} catch (UnsupportedEncodingException e) {

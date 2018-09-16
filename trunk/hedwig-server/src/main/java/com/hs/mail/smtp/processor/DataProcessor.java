@@ -64,7 +64,7 @@ public class DataProcessor extends AbstractSmtpProcessor {
 		session.writeResponse("354 Start mail input; end with <CRLF>.<CRLF>");
 		
 		long maxMessageSize = Config.getMaxMessageSize();
-		InputStream msgIn = null;
+		InputStream msgIn = null, input = null;
 		try {
 			String received = new StringBuilder()
 					.append("Received: from ")
@@ -83,6 +83,7 @@ public class DataProcessor extends AbstractSmtpProcessor {
 				// If message size limit has been set, wrap msgIn with a
 				// SizeLimitedInputStream
 				msgIn = new SizeLimitedInputStream(msgIn, maxMessageSize);
+				input = msgIn; 
 			}
 			msgIn = new CharTerminatedInputStream(msgIn, DATA_TERMINATOR);
             // Removes the dot stuffing
@@ -108,7 +109,7 @@ public class DataProcessor extends AbstractSmtpProcessor {
 						.append(") exceeding system maximum message size of ")
 						.append(maxMessageSize);
 				logger.error(errorBuffer.toString());
-				receiveJunkData((SizeLimitedInputStream) msgIn);
+				receiveJunkData((SizeLimitedInputStream) input);
 				throw new SmtpException("552 5.3.4 Error processing message: "
 						+ e.getMessage());
 			} else {

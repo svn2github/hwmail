@@ -18,15 +18,6 @@ public class MailUtils {
 			return BASE64MailboxEncoder.encode(name);
 	}
 
-	public static boolean isAscii(String s) {
-		int l = s.length();
-		for (int i = 0; i < l; i++) {
-			if ((int) s.charAt(i) > 0177) // non-ascii
-				return false;
-		}
-		return true;
-	}
-	
 	public static void main(String[] args) throws Exception {
 		for (int i = 0; i < args.length; i++) {
 			System.out.println(decodeMailbox(args[i]));
