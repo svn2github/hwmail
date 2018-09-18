@@ -139,7 +139,7 @@ public class FileUtils {
 			input = new CharTerminatedInputStream(new FileInputStream(file),
 					DATA_TERMINATOR);
 			return new TikaEncodingDetector().guessEncoding(input);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return Config.getProperty("mime.file.encoding", "EUC-KR");
 		} finally {
 			IOUtils.closeQuietly(input);
