@@ -58,6 +58,15 @@
 		<a id="attach" class="btn btn-default btn-sm">
 			<i class="fa fa-paperclip"></i>
 		</a>
+		<span class="form-inline from-group pull-right">
+			<label>
+				<input type="checkbox" name="reserve" value="true"> <fmt:message key="compose.send.later"/>
+			</label>
+			<input type="text" id="reserve-d" name="date" class="form-control input-sm"/>
+			<select id="reserve-h" name="hour" class="form-control input-sm"></select>
+			<strong>:</strong>
+			<select id="reserve-m" name="minute" class="form-control input-sm"></select>
+		</span>
 	</div>
 	<div class="mail-content">
 		<div class="mail-body">
@@ -121,15 +130,6 @@
 	</c:otherwise>
 </c:choose>
 	</div><!-- /.mail-content -->
-	<div class="form-inline from-group">
-		<label>
-			<input type="checkbox" name="reserve" value="true"> <fmt:message key="compose.reserve.tosend"/>
-		</label>
-		<input type="text" id="reserve-d" name="date" class="form-control input-sm"/>
-		<select id="reserve-h" name="hour" class="form-control input-sm"></select>
-		<strong>:</strong>
-		<select id="reserve-m" name="minute" class="form-control input-sm"></select>
-	</div>
 </form>
 <div class="hidden">
 <c:choose>
