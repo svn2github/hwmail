@@ -26,13 +26,14 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.any23.encoding.TikaEncodingDetector;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.io.CharTerminatedInputStream;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 /**
  * 
@@ -134,15 +135,19 @@ public class FileUtils {
 	private final static char[] DATA_TERMINATOR = { '\r', '\n', '\r', '\n' };
 	
 	public static String guessEncoding(File file) {
-		InputStream input = null;
+		InputStream is = null;
 		try {
-			input = new CharTerminatedInputStream(new FileInputStream(file),
+			is = new CharTerminatedInputStream(new FileInputStream(file),
 					DATA_TERMINATOR);
-			return new TikaEncodingDetector().guessEncoding(input);
+	        CharsetDetector charsetDetector = new CharsetDetector();
+	        charsetDetector.setText( is instanceof BufferedInputStream ? is : new BufferedInputStream(is) );
+	        charsetDetector.enableInputFilter(true);
+	        CharsetMatch cm = charsetDetector.detect();
+	        return cm.getName();
 		} catch (Throwable e) {
 			return Config.getProperty("mime.file.encoding", "EUC-KR");
 		} finally {
-			IOUtils.closeQuietly(input);
+			IOUtils.closeQuietly(is);
 		}
 	}
 	

@@ -33,10 +33,11 @@
 		</dependency>
 
 		<!-- File encoding detection -->
+		<!-- https://mvnrepository.com/artifact/com.ibm.icu/icu4j -->
 		<dependency>
-		   <groupId>org.apache.any23</groupId>
-		   <artifactId>apache-any23-encoding</artifactId>
-		   <version>2.1</version>
+		    <groupId>com.ibm.icu</groupId>
+		    <artifactId>icu4j</artifactId>
+		    <version>4.8</version>
 		</dependency>
 
 		<!-- Apache commons -->
