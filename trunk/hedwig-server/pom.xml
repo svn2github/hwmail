@@ -44,12 +44,6 @@
     		<artifactId>apache-jsieve</artifactId>
     	</dependency>
 
-		<!-- DNS -->
-		<dependency>
-			<groupId>dnsjava</groupId>
-			<artifactId>dnsjava</artifactId>
-		</dependency>
-
 		<!-- Netty -->
 		<dependency>
 			<groupId>io.netty</groupId>

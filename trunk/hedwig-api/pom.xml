@@ -17,6 +17,12 @@
 			<artifactId>mail</artifactId>
 		</dependency>
 	
+		<!-- DNS -->
+		<dependency>
+			<groupId>dnsjava</groupId>
+			<artifactId>dnsjava</artifactId>
+		</dependency>
+
 		<!-- Apache JAMES Mime4j -->
 		<dependency>
 			<groupId>org.apache.james</groupId>
