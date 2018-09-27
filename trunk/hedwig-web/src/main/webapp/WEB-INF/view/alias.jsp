@@ -11,9 +11,12 @@
 	
 	<spring:bind path="aliasName">
 		<div class="form-group ${status.error ? 'has-error' : ''}">
-			<label class="col-sm-3 control-label">Alias</label>
-			<div class="col-sm-9">
-				<form:input path="aliasName" showPassword="true" class="form-control" placeholder="Alias" />
+			<label class="col-sm-2 control-label">Alias</label>
+			<div class="col-sm-10">
+				<div class="input-group">
+					<form:input path="aliasName" showPassword="true" class="form-control" placeholder="Alias" />
+					<div class="input-group-addon">@${userForm.domain}</div>
+				</div>
 				<form:errors path="aliasName" class="control-label" />
 			</div>
 		</div>

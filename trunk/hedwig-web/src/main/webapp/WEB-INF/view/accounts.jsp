@@ -28,7 +28,8 @@
 				<tr>
 					<th><input type="checkbox"/></th>
 					<th>Address</th>
-					<th>Quota</th>
+					<th>Forward</th>
+					<th class="text-right">Quota</th>
 					<th>&nbsp;</th>
 				</tr>
 			</thead>
@@ -38,7 +39,8 @@
 				<tr>
 					<td><input type="checkbox" name="ID" value="<c:out value='${user.ID}'/>"/></td>
 					<td><a href="#"><c:out value="${user.userID}"/></a></td>
-					<td><c:out value="${user.quota}"/> MB</td>
+					<td><c:out value="${user.forwardTo}"/></td>
+					<td align="right"><c:out value="${user.quota}"/> MB</td>
 					<td>&nbsp;</td>
 				</tr>
 			   </c:forEach>

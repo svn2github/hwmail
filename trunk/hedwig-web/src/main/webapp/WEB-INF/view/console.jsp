@@ -88,9 +88,9 @@ $(function() {
 						</li>
 						<li id="utils" class="expanded unselectable folder">Utilities
 							<ul>
-								<li>MX-query</li>
+								<li id="mx-query">MX-query</li>
 								<li>Server sendout</li>
-								<li>Diagnostics</li>
+								<li id="cleanup">Cleanup</li>
 							</ul>
 						</li>
 					</ul>

@@ -1,6 +1,7 @@
 package com.hs.mail.imap.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
@@ -35,5 +36,9 @@ public interface HwUserDao extends DaoSupport {
 	public PublicFolder getPublicFolder(String namespace, long mailboxID);
 	
 	public List<PublicFolder> getPublicFolders(long ownerid, final String namespace);
+
+	public List<Map<String, Object>> getHeaderCounts();
+
+	public int deleteHeaderValues(String headerNameID);
 
 }

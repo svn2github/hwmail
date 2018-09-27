@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -94,6 +95,11 @@ public class MySqlHwUserDao extends AnsiHwUserDao implements HwUserDao {
 		return getJdbcTemplate().query(sql,
 				new Object[] { ownerid, new StringBuilder(prefix).append('%').toString() },
 				new PublicFolderRowMapper(namespace, prefix));
+	}
+
+	public List<Map<String, Object>> getHeaderCounts() {
+		// TODO
+		throw new UnsupportedOperationException();
 	}
 	
 }

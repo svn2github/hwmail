@@ -1,21 +1,27 @@
 package com.hs.mail.web.controller;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.dns.DnsServer;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
@@ -23,6 +29,7 @@ import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
 import com.hs.mail.security.login.BasicCallbackHandler;
 import com.hs.mail.web.WebSession;
+import com.hs.mail.web.model.HostAddress;
 import com.hs.mail.web.model.PublicFolder;
 import com.hs.mail.web.service.HwUserManager;
 import com.hs.mail.web.util.MailUtils;
@@ -37,7 +44,10 @@ public class WebConsole {
 	@Autowired
 	private HwUserManager userManager;
 
-	@RequestMapping("/login")
+	@Autowired
+	private DnsServer dnsServer;
+	
+	@RequestMapping(value = "/login")
 	public ModelAndView login(
 			@RequestParam(value = "username") String username,
 			@RequestParam(value = "password") String password,
@@ -59,7 +69,7 @@ public class WebConsole {
 		}
 	}
 
-	@RequestMapping("/logout")
+	@RequestMapping(value = "/logout")
 	public String logout(WebRequest request) {
 		try {
 			LoginContext lc = (LoginContext) request.getAttribute(WebSession.LOGIN_CONTEXT, WebRequest.SCOPE_SESSION);
@@ -125,6 +135,43 @@ public class WebConsole {
 		mav.addObject("namespace", namespace);
 		mav.addObject("folders", folders);
 		return mav;
+	}
+
+	@RequestMapping(value = "/utils/mx-query")
+	public ModelAndView mxQuery() {
+		ModelAndView mav = new ModelAndView("mx-query");
+		return mav;
+	}
+
+	@RequestMapping(value = "/utils/mx-query/resolve", produces = "application/json")
+	@ResponseBody
+	public List<HostAddress> findMXRecords(
+			@RequestParam(value = "domain") String domain) {
+		Collection<String> records = dnsServer.findMXRecords(domain);
+		return userManager.findMXRecords(records);
+	}
+
+	@RequestMapping(value = "/utils/cleanup")
+	public ModelAndView diagnostics() {
+		List<Map<String, Object>> counts = userManager.getHeaderCounts();
+		ModelAndView mav = new ModelAndView("cleanup");
+		mav.addObject("counts", counts);
+		return mav;
+	}
+
+	@RequestMapping(value = "/utils/cleanup/messages")
+	@ResponseBody
+	public ResponseEntity<String> clean() {
+		mailboxManager.purgeMessages();
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/utils/cleanup/header/{headerNameID}")
+	@ResponseBody
+	public ResponseEntity<String> deleteHeader(
+			@PathVariable("headernameId") String headerNameID) {
+		userManager.deleteHeaderValues(headerNameID);
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}
 
 }

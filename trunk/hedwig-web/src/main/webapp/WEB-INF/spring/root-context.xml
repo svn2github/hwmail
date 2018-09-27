@@ -23,6 +23,8 @@
 	<bean id="jaasLoginConfig" class="com.hs.mail.security.config.JaasLoginSupport">
 		<property name="location" value="WEB-INF/login.config" />
 	</bean>
+
+	<bean id="dnsServer" class="com.hs.mail.dns.DnsServer" />
 	
 	<!-- Root Context: defines shared resources visible to all other web components -->
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

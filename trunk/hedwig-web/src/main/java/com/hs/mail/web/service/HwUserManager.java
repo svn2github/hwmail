@@ -1,6 +1,11 @@
 package com.hs.mail.web.service;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
@@ -12,12 +17,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.hs.mail.container.config.Config;
+import com.hs.mail.dns.DnsServer;
 import com.hs.mail.imap.dao.DaoFactory;
 import com.hs.mail.imap.dao.HwDaoFactory;
 import com.hs.mail.imap.dao.HwUserDao;
 import com.hs.mail.imap.dao.MailboxDao;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
+import com.hs.mail.web.model.HostAddress;
 import com.hs.mail.web.model.PublicFolder;
 
 public class HwUserManager {
@@ -247,4 +254,28 @@ public class HwUserManager {
 		}
 	}
 	
+	public List<HostAddress> findMXRecords(Collection<String> records) {
+ 		List<HostAddress> result = new ArrayList<HostAddress>();
+		for (String record : records) {
+			try {
+				final InetAddress[] addresses = DnsServer.getAllByName(record);
+				for (InetAddress address : addresses) {
+					result.add(new HostAddress(address));
+				}
+			} catch (UnknownHostException e) {
+			}
+		}
+		return result;
+	}
+	
+	public List<Map<String, Object>> getHeaderCounts() {
+		HwUserDao dao = HwDaoFactory.getHwUserDao();
+		return dao.getHeaderCounts();
+	}
+
+	public int deleteHeaderValues(String headerNameID) {
+		HwUserDao dao = HwDaoFactory.getHwUserDao();
+		return dao.deleteHeaderValues(headerNameID);
+	}
+
 }

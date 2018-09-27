@@ -68,6 +68,11 @@ abstract class AnsiHwUserDao extends AbstractDao implements HwUserDao {
 		return getJdbcTemplate().update(sql, new Object[] { new Long(id) });
 	}
 
+	public int deleteHeaderValues(String headerNameID) {
+		final String sql = "DELETE FROM hw_headervalue WHERE headernameid = ?";
+		return getJdbcTemplate().update(sql, headerNameID);
+	}
+
 	class PublicFolderRowMapper implements RowMapper<PublicFolder> {
 
 		private String namespace;
