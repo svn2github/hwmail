@@ -145,7 +145,7 @@ public class FileUtils {
 	        CharsetMatch cm = charsetDetector.detect();
 	        return cm.getName();
 		} catch (Throwable e) {
-			return Config.getProperty("mime.file.encoding", "EUC-KR");
+			return Config.getProperty("mime_file_encoding", "EUC-KR");
 		} finally {
 			IOUtils.closeQuietly(is);
 		}
