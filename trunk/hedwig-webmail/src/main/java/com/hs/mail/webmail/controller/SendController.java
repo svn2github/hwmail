@@ -7,6 +7,8 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -120,6 +122,20 @@ public class SendController {
 		return msg;
 	}
 	
+	private void reply(WmaComposeMessage msg, MimeMessage orgmsg)
+			throws MessagingException {
+		String msgId = orgmsg.getMessageID();
+		if (msgId != null) {
+			MimeMessage message = msg.getMessage();
+			message.setHeader("In-Reply-To", msgId);
+			// Set the References header as described in RFC 2822:
+			String refs = orgmsg.getHeader("References", " ");
+			message.setHeader("References", (refs == null)
+					? msgId
+					: MimeUtility.unfold(refs) + " " + msgId);
+		}
+	}
+
 	private void handleOriginalMessage(WmaSession session, String path,
 			long uid, WmaComposeMessage msg, int[] partnums)
 			throws ServletException {
@@ -131,10 +147,12 @@ public class SendController {
 			// Handle original message's flags
 			if (msg.isReply()) {
 				message.setFlag(Flags.Flag.ANSWERED, true);
+				reply(msg, (MimeMessage) message);
 			}
 			if (partnums != null) {
 				// Handle original message's attachments
-				WmaDisplayMessage actualmsg = WmaDisplayMessage.createWmaDisplayMessage(uid, message);
+				WmaDisplayMessage actualmsg = WmaDisplayMessage
+						.createWmaDisplayMessage(uid, message);
 				msg.addAttachments(actualmsg, partnums);
 			}
 			folder.close(false);
