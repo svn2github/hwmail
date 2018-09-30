@@ -137,10 +137,10 @@
 	<span id="subject"><c:out value="${actualmsg.subject}"/></span>
 	</c:when>
 	<c:when test="${message.reply}">
-	<span id="subject"><fmt:message key="compose.subject.reply"><fmt:param value="${actualmsg.subject}"/></fmt:message></span>
+	<span id="subject">Re: <c:out value="${actualmsg.subject}"/></span>
 	</c:when>
 	<c:when test="${message.forward}">
-	<span id="subject"><fmt:message key="compose.subject.forward"><fmt:param value="${actualmsg.subject}"/></fmt:message></span>
+	<span id="subject">Fw: <c:out value="${actualmsg.subject}"/></span>
 	</c:when>
 	<c:otherwise>
 	<span id="subject"></span>

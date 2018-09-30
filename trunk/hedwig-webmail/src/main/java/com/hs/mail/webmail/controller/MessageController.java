@@ -85,7 +85,8 @@ public class MessageController {
 		if (draft || reply || replyall || forward) {
 			String path = RequestUtils.getParameter(request, "path");
 			long uid = RequestUtils.getParameterLong(request, "uid");
-			return compose(session, path, uid, to, draft, reply, replyall, forward, model);
+			return compose(session, path, uid, to, draft, reply || replyall,
+					replyall, forward, model);
 		} else {
 			return compose(session, null, -1, to, false, false, false, false, model);
 		}
