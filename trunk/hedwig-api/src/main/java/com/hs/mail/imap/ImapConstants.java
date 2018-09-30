@@ -51,6 +51,8 @@ public interface ImapConstants {
 	public static final String RFC822_MESSAGE_ID = "Message-ID";
 	
 	public static final String RFC822_RETURN_PATH = "Return-Path";
+	
+	public static final String RFC822_REFERENCES = "References";
 
 	public static final String ANYONE = "anyone";
 

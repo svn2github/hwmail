@@ -31,6 +31,7 @@ import com.hs.mail.imap.message.MailMessage;
 import com.hs.mail.imap.message.MessageMetaData;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
+import com.hs.mail.imap.message.thread.Threadable;
 
 /**
  * 
@@ -378,5 +379,19 @@ public interface MailboxManager {
 	 * @return true if the user has right on the mailbox, otherwise false
 	 */
 	public boolean hasRight(long userID, String mailboxName, char right);
+
+	/**
+	 * Searches for the messages matching the given query.
+	 * 
+	 * @param map
+	 *            UID to MSN converting map
+	 * @param mailboxID
+	 *            ID of mailbox to search
+	 * @param key
+	 *            the search query
+	 * @return list of <code>Threadables</code> of messages searched
+	 */
+	public List<Threadable> searchThread(UidToMsnMapper map, long mailboxID,
+			SearchKey key);
 
 }

@@ -27,8 +27,6 @@ import java.util.Set;
 
 import javax.mail.Flags;
 
-import net.sf.ehcache.Ehcache;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +56,12 @@ import com.hs.mail.imap.message.PhysMessage;
 import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.search.SearchKey;
 import com.hs.mail.imap.message.search.SortKey;
+import com.hs.mail.imap.message.thread.Threadable;
+import com.hs.mail.imap.message.thread.ThreadableMessage;
 import com.hs.mail.util.CaseInsensitiveMap;
 import com.hs.mail.util.EhCacheWrapper;
+
+import net.sf.ehcache.Ehcache;
 
 /**
  * 
@@ -648,4 +650,21 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.hasRight(userID, mailboxName, right);
 	}
 	
+	public List<Threadable> searchThread(UidToMsnMapper map,
+			long mailboxID, SearchKey key) {
+		List<Threadable> result = null;
+		SearchDao searchDao = DaoFactory.getSearchDao();
+		List<Long> uids = searchDao.query(map, mailboxID, key);
+		if (CollectionUtils.isNotEmpty(uids)) {
+			result = new ArrayList<Threadable>(uids.size());
+			MessageDao dao = DaoFactory.getMessageDao();
+			for (long uid : uids) {
+				Map<String, String> header = dao.getHeaderByUID(uid,
+						ThreadableMessage.WANTED_FIELDS);
+				result.add(new ThreadableMessage(uid, header));
+			}
+		}
+		return result;
+	}
+
 }

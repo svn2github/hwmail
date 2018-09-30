@@ -239,7 +239,10 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 //-------------------------------------------------------------------------
 
 	public Map<String, String> getHeader(long physMessageID) {
-		String sql = "SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid";
+		String sql = 
+				"SELECT headername, headervalue "
+				+ "FROM hw_headername n, hw_headervalue v "
+				+ "WHERE v.physmessageid = ? AND v.headernameid = n.headernameid";
 		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql,
 				new Object[] { new Long(physMessageID) });
 		Map<String, String> results = new CaseInsensitiveMap<String, String>();
@@ -251,17 +254,35 @@ abstract class AnsiMessageDao extends AbstractDao implements MessageDao {
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields) {
 		StringBuilder sql = new StringBuilder(256)
-				.append("SELECT headername, headervalue FROM hw_headername n, hw_headervalue v WHERE v.physmessageid = ? AND v.headernameid = n.headernameid AND UPPER(n.headername) IN ");
-		Object[] param = new Object[fields.length + 1];
-		param[0] = new Long(physMessageID);
+				.append("SELECT headername, headervalue "
+						+ "FROM hw_headername n, hw_headervalue v "
+						+ "WHERE v.physmessageid = ? AND v.headernameid = n.headernameid "
+						+   "AND UPPER(n.headername) IN ");
+		return getHeader(sql, fields, new Long(physMessageID));
+	}
 
-		System.arraycopy(fields, 0, param, 1, fields.length);
+	public Map<String, String> getHeaderByUID(long uid, String[] fields) {
+		StringBuilder sql = new StringBuilder(256)
+				.append("SELECT headername, headervalue "
+						+ "FROM hw_headername n, hw_headervalue v "
+						+ "WHERE v.physmessageid = (SELECT physmessageid FROM hw_message WHERE messageid = ?) "
+						+   "AND v.headernameid = n.headernameid "
+						+   "AND UPPER(n.headername) IN ");
+		return getHeader(sql, fields, new Long(uid));
+	}
+	
+	private Map<String, String> getHeader(StringBuilder sql, String[] fields,
+			Object param) {
+		Object[] params = new Object[fields.length + 1];
+		params[0] = param;
+
+		System.arraycopy(fields, 0, params, 1, fields.length);
 		sql.append("(")
 				.append(StringUtils.repeat("UPPER(?)", ",", fields.length))
 				.append(")");
 
 		Map<String, String> results = new CaseInsensitiveMap<String, String>();
-		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql.toString(), param);
+		SqlRowSet rs = getJdbcTemplate().queryForRowSet(sql.toString(), params);
 		while (rs.next()) {
 			results.put(rs.getString(1), rs.getString(2));
 		}

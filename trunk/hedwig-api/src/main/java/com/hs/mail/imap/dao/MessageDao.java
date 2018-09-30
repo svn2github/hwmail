@@ -59,6 +59,8 @@ public interface MessageDao extends DaoSupport {
 	public Map<String, String> getHeader(long physMessageID);
 	
 	public Map<String, String> getHeader(long physMessageID, String[] fields);
+	
+	public Map<String, String> getHeaderByUID(long uid, String[] fields);
 
 	public void addHeader(long physMessageID, MessageHeader header);
 
@@ -73,7 +75,7 @@ public interface MessageDao extends DaoSupport {
 
 	interface PhysMessageCallback {
 
-		public void processPhysMessage(PhysMessage pm);
+	public void processPhysMessage(PhysMessage pm);
 
 	}
 
