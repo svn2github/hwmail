@@ -108,6 +108,8 @@ public class ImapRequestFactory {
 				new com.hs.mail.imap.message.builder.ext.SetQuotaRequestBuilder());
 		commandMap.put("sort",
 				new com.hs.mail.imap.message.builder.ext.SortRequestBuilder());
+		commandMap.put("thread", 
+				new com.hs.mail.imap.message.builder.ext.ThreadRequestBuilder());
 		commandMap.put("xrevoke", 
 				new com.hs.mail.imap.message.builder.custom.XRevokeRequestBuilder());
 	}

@@ -1,4 +1,4 @@
-package com.hs.mail.imap.processor.ext.thread;
+package com.hs.mail.imap.processor.ext;
 
 import com.hs.mail.imap.message.thread.Threadable;
 

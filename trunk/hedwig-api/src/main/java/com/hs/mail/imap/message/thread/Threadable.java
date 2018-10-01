@@ -1,12 +1,33 @@
+/*
+ * Copyright 2010 the original author or authors.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package com.hs.mail.imap.message.thread;
 
 import java.util.Enumeration;
 
+/**
+ * 
+ * @author Won Chul Doh
+ * @since Sep 30, 2018
+ *
+ */
 public interface Threadable {
 
 	/**
 	 * Returns each subsequent element in the set of messages of which this
-	 * IThreadable is the root. Order is unimportant.
+	 * Threadable is the root. Order is unimportant.
 	 */
 	Enumeration<Threadable> allElements();
 
@@ -58,12 +79,13 @@ public interface Threadable {
 	 */
 	void setNext(Threadable next);
 	void setChild(Threadable kid);
-	void setUID(long uid);
-	
-	long getUID();
+
 	Threadable getNext();
 	Threadable getChild();
 
+	void setUID(long uid);
+	long getUID();
+	
 	/**
 	 * Creates a dummy parent object.
 	 * <P>
@@ -72,7 +94,7 @@ public interface Threadable {
 	 * not present in the set: for example, when two messages share a common
 	 * ancestor, but that ancestor is not in the set. This method is used to
 	 * make a placeholder for those sorts of ancestors. It should return an
-	 * object which is also a IThreadable. The setNext() and setChild() methods
+	 * object which is also a Threadable. The setNext() and setChild() methods
 	 * will be used on this placeholder, as either the object or the argument,
 	 * just as for other elements of the tree.
 	 */

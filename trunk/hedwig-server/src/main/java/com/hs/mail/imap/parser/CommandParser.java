@@ -437,7 +437,8 @@ public class CommandParser extends AbstractImapCommandParser {
 	}
 
 	private boolean thread() {
-		if (!kw("THREAD") || !sp() || !thread_alg() || !sp())
+		if (!kw("THREAD") || !sp() || !thread_alg() || !sp() || !astring()
+				|| !sp())
 			return false;
 		do
 			if (!search_key())
