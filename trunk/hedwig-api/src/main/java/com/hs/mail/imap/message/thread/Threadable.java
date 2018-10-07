@@ -26,6 +26,12 @@ import java.util.Enumeration;
 public interface Threadable {
 
 	/**
+	 * Returns each child element in the set of messages of which this
+	 * Threadable is the parent. Order is unimportant.
+	 */
+	Enumeration<Threadable> children();
+
+	/**
 	 * Returns each subsequent element in the set of messages of which this
 	 * Threadable is the root. Order is unimportant.
 	 */

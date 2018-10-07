@@ -18,6 +18,8 @@ package com.hs.mail.imap.message.thread;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
 
@@ -63,30 +65,59 @@ class ThreadableMeta {
 		return reply;
 	}
 
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this,
+				ToStringStyle.SHORT_PREFIX_STYLE);
+	}
+
 	private String simplifySubject(String subject) {
 		String value = subject;
 		if (value != null) {
 			value = DecoderUtil.decodeEncodedWords(subject,
 					DecodeMonitor.SILENT);
-			int strLen = value.length();
-			int i = 0;
-			if (strLen > i && (value.charAt(i) == '[' || value.charAt(i) == '('
-					|| Character.isWhitespace(value.charAt(i)))) {
-				i++;
-			}
-			if (strLen > 2 + i
-					&& (value.charAt(i) == 'r' || value.charAt(i) == 'R')
-					&& (value.charAt(i + 1) == 'e'
-							|| value.charAt(i + 1) == 'E')) {
-				if (value.charAt(i + 2) == ':' || value.charAt(i + 2) == ']'
-						|| value.charAt(i + 2) == ')') {
+			return stripRe(value);
+		}
+		return value;
+	}
+	
+	private String stripRe(String str) {
+		int strLen = str.length();
+		int start = 0;
+		boolean done = false;
+		while (!done) {
+			done = true;
+
+			// Skip white spaces.
+			while (start < strLen && Character.isWhitespace(str.charAt(start)))
+				start++;
+			
+			if (start < strLen && (str.charAt(start) == '[' || str.charAt(start) == '('))
+				start++;
+		
+			if (start < (strLen - 2) 
+					&& (str.charAt(start) == 'r' || str.charAt(start) == 'R')
+					&& (str.charAt(start + 1) == 'e' || str.charAt(start + 1) == 'E')) {
+				if (str.charAt(start + 2) == ':' 
+						|| str.charAt(start + 2) == ']' || str.charAt(start + 2) == ')') {
+					// Skip over Re:
+					start += 3;
 					this.reply = true;
-					return StringUtils.trim(value.substring(i + 3));
+					done = false;	// Keep going
 				}
 			}
 		}
-		return StringUtils.trim(value);
-	}	
+		
+		int end = strLen;
+		// Strip tailing white spaces.
+		while (end > start && Character.isWhitespace(str.charAt(end - 1)))
+			end--;
+	
+		if (start == 0 && end == strLen)
+			return str;
+		else
+			return str.substring(start, end);
+	}
 	
 	private String getMessageID(String messageID) {
 		String tmp = StringUtils.trim(messageID);

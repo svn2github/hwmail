@@ -88,15 +88,16 @@ public class ThreadProcessor extends AbstractImapProcessor {
 	private Threadable buildThread(List<Threadable> threadables) {
 		Threadable first = null, last = null;
 		for (Threadable t : threadables) {
-			if (first == null) {
+			if (first == null)
 				first = t;
-			} else {
+			else
 				last.setNext(t);
-			}
 			last = t;
 		}
-		last = null;
-		return new Threader().thread(first);
+		
+		first =  new Threader().thread(first);
+		ThreadSorter s = new ThreadSorter();
+		return s.sort(first);
 	}
 
 }

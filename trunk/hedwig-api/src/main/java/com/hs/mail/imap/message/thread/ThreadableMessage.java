@@ -53,8 +53,13 @@ public class ThreadableMessage implements Threadable {
 	}
 
 	@Override
+	public Enumeration<Threadable> children() {
+		return new AllEnumerator(this, false);
+	}
+
+	@Override
 	public Enumeration<Threadable> allElements() {
-		return new AllEnumerator(this);
+		return new AllEnumerator(this, true);
 	}
 
 	@Override
@@ -119,16 +124,18 @@ public class ThreadableMessage implements Threadable {
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(meta,
-				ToStringStyle.SHORT_PREFIX_STYLE);
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+				.append("UID", uid).append(meta).toString();
 	}
 
 	class AllEnumerator implements Enumeration<Threadable>  {
 		Threadable tail;
 		Enumeration<Threadable> kids;
+		boolean recursive;
 		
-		AllEnumerator(Threadable thread) {
-			tail = thread;
+		AllEnumerator(Threadable thread, boolean recursive) {
+			this.recursive = recursive;
+			tail = recursive ? thread : thread.getChild();
 		}
 		
 		@Override
@@ -142,8 +149,8 @@ public class ThreadableMessage implements Threadable {
 
 			} else if (tail != null) {
 				Threadable result = tail;
-				if (tail.getChild() != null) {
-					kids = new AllEnumerator(tail.getChild());
+				if (recursive && tail.getChild() != null) {
+					kids = new AllEnumerator(tail.getChild(), true);
 				}
 				tail = tail.getNext();
 				return result;
