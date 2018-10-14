@@ -64,10 +64,7 @@ public class OrderedSubjectThreader extends AbstractThreader {
 				// Split messages with the same base subject text. 
 				if (comparator1.compare(prev, threadable) == 0) {
 					if (first) {
-						// The top level or "root" in ORDEREDSUBJECT threading
-						// contains the first message of every thread.
 						prev.setChild(threadable);
-						root.add(prev);
 						first = false;
 					} else {
 						prev.setNext(threadable);
@@ -76,6 +73,11 @@ public class OrderedSubjectThreader extends AbstractThreader {
 					first = true;
 				}
 			}
+			// The top level or "root" in ORDEREDSUBJECT threading
+			// contains the first message of every thread.
+			if (first)
+				root.add(threadable);
+
 			prev = threadable;
 		}
 		if (first && prev != null) {
