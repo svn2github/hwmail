@@ -40,10 +40,15 @@ class ThreadableMeta {
 
 	public ThreadableMeta(Map<String, String> header) {
 		this.subject = simplifySubject(header.get(ImapConstants.RFC822_SUBJECT));
-		this.threadID = getMessageID(header.get(ImapConstants.RFC822_MESSAGE_ID));
+		String messageID = header.get(ImapConstants.RFC822_MESSAGE_ID);
+		if (messageID == null) {
+			return;
+		}
+		this.threadID = getMessageID(messageID);
 		String refs = header.get(ImapConstants.RFC822_REFERENCES);
 		if (refs == null) {
-			// Only examine the In-Reply-To header if there is no References header.
+			// Only examine the In-Reply-To header if there is no References
+			// header.
 			refs = header.get(ImapConstants.RFC822_IN_REPLY_TO);
 		}
 		this.threadReferences = splitReferences(refs);

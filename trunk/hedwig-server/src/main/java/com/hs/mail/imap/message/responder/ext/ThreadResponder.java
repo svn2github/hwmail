@@ -46,7 +46,9 @@ public class ThreadResponder extends DefaultImapResponder {
 			if (split) {
 				openParen("(");
 			}
-			message(thread.getUID());
+			if (!thread.isDummy()) {
+				message(thread.getUID());
+			}
 			Threadable child = thread.getChild();
 			if (child != null) {
 				composeThread(child, (child.getNext() != null));

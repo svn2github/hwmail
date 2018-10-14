@@ -650,7 +650,7 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.hasRight(userID, mailboxName, right);
 	}
 	
-	public List<Threadable> searchThread(UidToMsnMapper map,
+	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,
 			long mailboxID, SearchKey key) {
 		List<Threadable> result = null;
 		SearchDao searchDao = DaoFactory.getSearchDao();
@@ -658,9 +658,11 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		if (CollectionUtils.isNotEmpty(uids)) {
 			result = new ArrayList<Threadable>(uids.size());
 			MessageDao dao = DaoFactory.getMessageDao();
+			String[] fields = refs
+					? ThreadableMessage.WANTED_FIELDS
+					: new String[]{ThreadableMessage.WANTED_FIELDS[0]};
 			for (long uid : uids) {
-				Map<String, String> header = dao.getHeaderByUID(uid,
-						ThreadableMessage.WANTED_FIELDS);
+				Map<String, String> header = dao.getHeaderByUID(uid, fields);
 				result.add(new ThreadableMessage(uid, header));
 			}
 		}

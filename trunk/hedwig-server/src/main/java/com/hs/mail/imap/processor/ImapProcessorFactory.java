@@ -56,7 +56,7 @@ import com.hs.mail.imap.processor.ext.GetQuotaRootProcessor;
 import com.hs.mail.imap.processor.ext.NamespaceProcessor;
 import com.hs.mail.imap.processor.ext.SetQuotaProcessor;
 import com.hs.mail.imap.processor.ext.SortProcessor;
-import com.hs.mail.imap.processor.ext.ThreadProcessor;
+import com.hs.mail.imap.processor.ext.thread.ThreadProcessor;
 import com.hs.mail.imap.processor.fetch.FetchProcessor;
 
 /**

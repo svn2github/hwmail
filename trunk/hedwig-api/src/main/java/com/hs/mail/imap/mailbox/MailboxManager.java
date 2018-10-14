@@ -383,6 +383,9 @@ public interface MailboxManager {
 	/**
 	 * Searches for the messages matching the given query.
 	 * 
+	 * @param refs
+	 *            true if fetch "References" field, false if fetch "Subject"
+	 *            field only
 	 * @param map
 	 *            UID to MSN converting map
 	 * @param mailboxID
@@ -391,7 +394,7 @@ public interface MailboxManager {
 	 *            the search query
 	 * @return list of <code>Threadables</code> of messages searched
 	 */
-	public List<Threadable> searchThread(UidToMsnMapper map, long mailboxID,
-			SearchKey key);
+	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,
+			long mailboxID, SearchKey key);
 
 }

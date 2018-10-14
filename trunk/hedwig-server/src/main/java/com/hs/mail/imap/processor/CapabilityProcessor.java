@@ -39,6 +39,7 @@ public class CapabilityProcessor extends AbstractImapProcessor {
 			"NAMESPACE",	// RFC2342
 			"QUOTA", 		// RFC2087
 			"SORT",			// RFC5256
+			"THREAD=ORDEREDSUBJECT",// RFC5256
 			"THREAD=REFERENCES", 	// RFC5256
 			"XREVOKE"		// CUSTOM 
 	};
