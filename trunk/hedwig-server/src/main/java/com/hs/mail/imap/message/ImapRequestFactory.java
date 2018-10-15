@@ -72,6 +72,8 @@ public class ImapRequestFactory {
 				new com.hs.mail.imap.message.builder.ExpungeRequestBuilder());
 		commandMap.put("fetch",
 				new com.hs.mail.imap.message.builder.FetchRequestBuilder());
+		commandMap.put("id", 
+				new com.hs.mail.imap.message.builder.ext.IdRequestBuilder());
 		commandMap.put("list",
 				new com.hs.mail.imap.message.builder.ListRequestBuilder());
 		commandMap.put("login",

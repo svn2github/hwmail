@@ -64,7 +64,7 @@ public class CommandParser extends AbstractImapCommandParser {
 	}
 	
 	private boolean command_any() {
-		return kw("CAPABILITY") || kw("LOGOUT") || kw("NOOP");
+		return kw("CAPABILITY") || kw("LOGOUT") || kw("NOOP") || id();
 	}
 
 	private boolean command_auth() {
@@ -198,6 +198,23 @@ public class CommandParser extends AbstractImapCommandParser {
 		}
 		return true;
 	}
+
+    private boolean id() {
+    	return kw("ID") && sp() && id_params_list();
+    }
+
+    private boolean id_params_list() {
+		if (nil())
+			return true;
+    	if (!lparen())
+    		return false;
+    	while (!rparen()) {
+    		sp();
+    		if (!string() || !sp() || !nstring())
+    			return false;
+    	}
+    	return true;
+    }
     
     private boolean list() {
 		return kw("LIST") && sp() && mailbox() && sp() && list_mailbox();

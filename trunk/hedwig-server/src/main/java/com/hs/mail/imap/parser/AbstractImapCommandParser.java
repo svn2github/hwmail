@@ -196,6 +196,17 @@ public class AbstractImapCommandParser {
 		return true;
 	}
 
+	protected boolean nil() {
+		if (!_kw("NIL"))
+			return false;
+		newToken(Token.Type.NIL);
+		return true;
+	}
+    
+	protected boolean nstring() {
+		return string() || nil();
+	}
+    
     protected boolean number() {
 		return number(0, true);
 	}

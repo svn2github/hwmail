@@ -13,34 +13,39 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.hs.mail.imap.parser;
+package com.hs.mail.imap.message.request.ext;
+
+import java.util.Map;
+
+import com.hs.mail.imap.ImapSession.State;
+import com.hs.mail.imap.message.request.ImapRequest;
 
 /**
  * 
  * @author Won Chul Doh
- * @since Jan 12, 2010
+ * @since Oct 15, 2018
  *
  */
-public class Token {
-	
-	public static enum Type {
-		ASTRING, ATOM, CRLF, DATE, DATE_TIME, KEYWORD, LIST_MAILBOX, LITERAL, LITERAL_SYNC, LPAREN, MAILBOX, NIL, NSTRING, NUMBER, NZ_NUMBER, QUOTED, RPAREN, SEQ_NUMBER, SEQ_RANGE, SP, STRING, TAG
-	};
+public class IdRequest extends ImapRequest {
 
-	public Type type;
-	public String value;
-
-	public Token(Type type, String value) {
-        this.type = type;
-        this.value = value;
-	}
+	private Map<String, String> params;
 	
-	public String toString() {
-		return type + "=\"" + value + "\"";
+	public IdRequest(String tag, String command, Map<String, String> params) {
+		super(tag, command);
+		this.params = params;
 	}
 
-	public boolean isLiteral() {
-		return (type == Type.LITERAL || type == Type.LITERAL_SYNC);
+	public IdRequest(String tag, String command) {
+		this(tag, command, null);
 	}
-	
+
+	public Map<String, String> getParameters() {
+		return params;
+	}
+
+	@Override
+	public boolean validForState(State state) {
+		return true;
+	}
+
 }
