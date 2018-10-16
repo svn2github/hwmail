@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.message.builder.ext;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ public class IdRequestBuilder extends ImapRequestBuilder {
 		LinkedList<Token> tokens = message.getTokens();
 		Token token = tokens.peek();
 		if (token.type == Token.Type.LPAREN) {
-			Map<String, String> params = new HashMap<String, String>();
+			Map<String, String> params = new LinkedHashMap<String, String>();
 			tokens.remove(); // consume '('
 			do {
 				token = tokens.remove();

@@ -15,40 +15,49 @@
  */
 package com.hs.mail.imap.processor.ext;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.netty.channel.Channel;
 
-import com.hs.mail.container.config.Config;
+import com.hs.mail.container.config.HedwigVersion;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.message.request.ImapRequest;
-import com.hs.mail.imap.message.request.ext.NamespaceRequest;
+import com.hs.mail.imap.message.request.ext.IdRequest;
 import com.hs.mail.imap.message.responder.Responder;
-import com.hs.mail.imap.message.responder.ext.NamespaceResponder;
+import com.hs.mail.imap.message.responder.ext.IdResponder;
 import com.hs.mail.imap.processor.AbstractImapProcessor;
 
 /**
  * 
  * @author Won Chul Doh
- * @since Apr 23, 2010
+ * @since Oct 16, 2018
  *
  */
-public class NamespaceProcessor extends AbstractImapProcessor {
+public class IdProcessor extends AbstractImapProcessor {
 
-	private static final String[] PERSONAL_NAMESPACES = { "" };
-	
 	@Override
-	protected void doProcess(ImapSession session, ImapRequest message, Responder responder) throws Exception {
-		doProcess(session, (NamespaceRequest) message, (NamespaceResponder) responder);
+	protected void doProcess(ImapSession session, ImapRequest message,
+			Responder responder) throws Exception {
+		doProcess(session, (IdRequest) message, (IdResponder) responder);
 	}
-	
-	protected void doProcess(ImapSession session, NamespaceRequest request, NamespaceResponder responder)
-			throws Exception {
-		responder.respond(PERSONAL_NAMESPACES, null, Config.getNamespaces());
+
+	private void doProcess(ImapSession session, IdRequest request,
+			IdResponder responder) {
+		Map<String, String> params = new LinkedHashMap<String, String>();
+		params.put("name", "Hedwig");
+		params.put("version", HedwigVersion.getVERSION());
+		params.put("os", SystemUtils.OS_NAME);
+		params.put("os-version", SystemUtils.OS_VERSION);
+		
+		responder.respond(params);
 		responder.okCompleted(request);
 	}
-	
+
 	@Override
 	protected Responder createResponder(Channel channel, ImapRequest request) {
-		return new NamespaceResponder(channel, request);
+		return new IdResponder(channel, request);
 	}
-	
+
 }

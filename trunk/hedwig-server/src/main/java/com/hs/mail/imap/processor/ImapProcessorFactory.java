@@ -15,7 +15,7 @@
  */
 package com.hs.mail.imap.processor;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.hs.mail.exception.LookupException;
@@ -46,6 +46,7 @@ import com.hs.mail.imap.message.request.UnsubscribeRequest;
 import com.hs.mail.imap.message.request.custom.XRevokeRequest;
 import com.hs.mail.imap.message.request.ext.GetQuotaRequest;
 import com.hs.mail.imap.message.request.ext.GetQuotaRootRequest;
+import com.hs.mail.imap.message.request.ext.IdRequest;
 import com.hs.mail.imap.message.request.ext.NamespaceRequest;
 import com.hs.mail.imap.message.request.ext.SetQuotaRequest;
 import com.hs.mail.imap.message.request.ext.SortRequest;
@@ -53,6 +54,7 @@ import com.hs.mail.imap.message.request.ext.ThreadRequest;
 import com.hs.mail.imap.processor.custom.XRevokeProcessor;
 import com.hs.mail.imap.processor.ext.GetQuotaProcessor;
 import com.hs.mail.imap.processor.ext.GetQuotaRootProcessor;
+import com.hs.mail.imap.processor.ext.IdProcessor;
 import com.hs.mail.imap.processor.ext.NamespaceProcessor;
 import com.hs.mail.imap.processor.ext.SetQuotaProcessor;
 import com.hs.mail.imap.processor.ext.SortProcessor;
@@ -82,6 +84,7 @@ public class ImapProcessorFactory {
 		registerProcess(ExamineRequest.class, new ExamineProcessor());
 		registerProcess(ExpungeRequest.class, new ExpungeProcessor());
 		registerProcess(FetchRequest.class, new FetchProcessor());
+		registerProcess(IdRequest.class, new IdProcessor());
 		registerProcess(ListRequest.class, new ListProcessor());
 		registerProcess(LoginRequest.class, new LoginProcessor());
 		registerProcess(LogoutRequest.class, new LogoutProcessor());
@@ -112,10 +115,11 @@ public class ImapProcessorFactory {
 		ImapProcessor processor = processorMap
 				.get(request.getClass().getName());
 		if (null == processor)
-			throw new LookupException("");
+			throw new LookupException(request.getCommand()
+					+ " command is not supported");
 		return processor;
 	}
 	
-	private static Map<String, ImapProcessor> processorMap = new Hashtable<String, ImapProcessor>();
+	private static Map<String, ImapProcessor> processorMap = new HashMap<String, ImapProcessor>();
 	
 }

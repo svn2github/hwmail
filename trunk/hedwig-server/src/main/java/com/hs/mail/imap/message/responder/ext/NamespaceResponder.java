@@ -19,7 +19,7 @@ public class NamespaceResponder extends AbstractImapResponder {
 		super(channel, request);
 	}
 	
-	public void responde(String[] personal, String[] others, String[] shared) {
+	public void respond(String[] personal, String[] others, String[] shared) {
 		untagged(request.getCommand());
 		composeNamespaces(personal);
 		composeNamespaces(others);
