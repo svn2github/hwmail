@@ -1,6 +1,7 @@
 package com.hs.mail.webmail.model;
 
 import java.util.Date;
+import java.util.List;
 
 public interface WmaMessageInfo {
 	/**
@@ -132,5 +133,7 @@ public interface WmaMessageInfo {
 	 * @return size of message in bytes as <tt>int</tt>.
 	 */
 	public int getSize();
+
+	public List<WmaMessageInfo> getConversations();
 
 }

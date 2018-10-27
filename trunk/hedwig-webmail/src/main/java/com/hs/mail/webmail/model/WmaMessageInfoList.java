@@ -33,7 +33,7 @@ public class WmaMessageInfoList {
 	/**
 	 * Constructs a new <tt>WmaMessageInfoList</tt>.
 	 */
-	private WmaMessageInfoList() {
+	protected WmaMessageInfoList() {
 	}
 
 	public List<WmaMessageInfo> getMessageInfos() {
@@ -78,7 +78,7 @@ public class WmaMessageInfoList {
 		}
 	}
 
-	private void addMessageInfo(WmaMessageInfo msginfo) {
+	protected void addMessageInfo(WmaMessageInfo msginfo) {
 		if (msginfo != null) {
 			this.messageInfos.add(msginfo);
 		}

@@ -21,6 +21,8 @@ import com.hs.mail.webmail.model.WmaFolderList;
 import com.hs.mail.webmail.model.WmaMessageInfoList;
 import com.hs.mail.webmail.model.WmaPreferences;
 import com.hs.mail.webmail.model.WmaStore;
+import com.hs.mail.webmail.model.WmaThreadInfoList;
+import com.hs.mail.webmail.model.impl.HwFolder;
 import com.hs.mail.webmail.search.Query;
 import com.hs.mail.webmail.util.Pager;
 import com.hs.mail.webmail.util.RequestUtils;
@@ -29,7 +31,8 @@ import com.hs.mail.webmail.util.RequestUtils;
 public class FolderController {
 	
 	@RequestMapping(value = "/folder/messages", method = RequestMethod.GET)
-	public String folder(
+	public String messages(
+			@RequestParam(value = "thread", required = false) String thread,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			Model model, HttpSession httpsession, HttpServletRequest request)
 			throws Exception {
@@ -38,13 +41,18 @@ public class FolderController {
 		String path = RequestUtils.getRequiredParameter(request, "path");
 		String term = RequestUtils.getParameter(request, "term");
 		int pageSize = RequestUtils.getParameterInt(request, "pageSize", prefs.getPageSize());
-		WmaStore store = session.getWmaStore();
 		Query query = session.getQuery(request);
+
+		WmaStore store = session.getWmaStore();
 		Pager pager = new Pager(page, pageSize, query.isAscending());
 		Folder folder = store.getFolder(path);
-		WmaMessageInfoList msglist = WmaMessageInfoList
-				.createWmaMessageInfoList(folder, query.getSearchTerm(),
-						query.getSortTerm(), pager);
+		WmaMessageInfoList msglist = (thread == null)
+				? WmaMessageInfoList.createWmaMessageInfoList(folder,
+						query.getSearchTerm(), query.getSortTerm(), pager)
+				: WmaThreadInfoList.createWmaThreadInfoList(
+						HwFolder.createLight(folder), thread,
+						query.getSearchTerm(), pager);
+
 		if ("INBOX".equals(path)) {
 			model.addAttribute("unread", folder.getUnreadMessageCount());
 		}
@@ -55,7 +63,7 @@ public class FolderController {
 		model.addAttribute("prefs", prefs);
 		return "messagelist";
 	}
-	
+
 	@RequestMapping(value = "/folder/tree", method = RequestMethod.GET)
 	@ResponseBody
 	public FancytreeNode[] foldertree(HttpSession httpsession,
@@ -92,7 +100,7 @@ public class FolderController {
 		WmaSession session = new WmaSession(httpsession);
 		String path = RequestUtils.getRequiredParameter(request, "path");
 		WmaStore store = session.getWmaStore();
-		// TODO - delete sub folders and move messages to thrash
+		// TODO - delete sub folders and move messages to trash
 		store.deleteFolder(path);
 		return true;
 	}

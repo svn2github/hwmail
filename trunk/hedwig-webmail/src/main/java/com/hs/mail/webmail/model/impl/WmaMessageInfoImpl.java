@@ -1,6 +1,7 @@
 package com.hs.mail.webmail.model.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -282,6 +283,10 @@ public class WmaMessageInfoImpl implements WmaMessageInfo {
 	 */
 	public void setSize(int bytes) {
 		this.size = bytes;
+	}
+	
+	public List<WmaMessageInfo> getConversations() {
+		return null;
 	}
 
 	protected void prepare(Message msg) throws Exception {

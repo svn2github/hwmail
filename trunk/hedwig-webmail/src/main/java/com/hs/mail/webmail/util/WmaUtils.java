@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
 import com.hs.mail.webmail.exception.WmaException;
+import com.sun.mail.imap.IMAPFolder;
 
 public class WmaUtils {
 	
@@ -169,6 +170,33 @@ public class WmaUtils {
 		fp.add("X-Priority");
 		fp.add("X-Secure");
 		return fp;
+	}
+
+	public static Message[] getMessagesByUID(IMAPFolder f, long[] uids, int mod)
+			throws MessagingException {
+		int len = uids.length;
+		if (len < mod) {
+			return f.getMessagesByUID(uids);
+		}
+
+		Message[] msgs = new Message[len];
+		long[] utmp = new long[mod];
+		int sz = len / mod;
+		for (int i = 0; i < sz; i++) {
+			System.arraycopy(uids, i * mod, utmp, 0, mod);
+			Message[] temp = f.getMessagesByUID(utmp);
+			System.arraycopy(temp, 0, msgs, i * mod, mod);
+		}
+
+		int rest = len % mod;
+		if (rest > 0) {
+			utmp = new long[rest];
+			System.arraycopy(uids, sz * mod, utmp, 0, rest);
+			Message[] temp = f.getMessagesByUID(utmp);
+			System.arraycopy(temp, 0, msgs, sz * mod, rest);
+		}
+
+		return msgs;
 	}
 	
 	static private Map<String, Flags> flagMap = new Hashtable<String, Flags>();

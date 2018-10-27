@@ -34,6 +34,22 @@
 			</div>
 		</div>
 		<a id="refresh" class="btn btn-default btn-sm"><i class="fa fa-refresh"></i></a>
+<c:if test="${path == 'INBOX'}">
+		<div class="btn-group" data-toggle="buttons">
+	<c:choose>
+		<c:when test="${not empty param['thread']}">
+			<label class="btn btn-default btn-sm active">
+				<input id="thread" name="thread" value="REFERENCES" type="checkbox" checked><i class="fa fa-comments"></i>
+			</label>
+		</c:when>
+		<c:otherwise>
+			<label class="btn btn-default btn-sm">
+				<input id="thread" name="thread" value="REFERENCES" type="checkbox"><i class="fa fa-comments"></i>
+			</label>
+		</c:otherwise>
+	</c:choose>
+		</div>
+</c:if>
 <c:if test="${path != prefs.trashFolder}">
 		<a id="purge" class="btn btn-default btn-sm"><fmt:message key="menu.purge"/></a>
 </c:if>
@@ -45,7 +61,7 @@
 		<a id="revoke" class="btn btn-default btn-sm"><fmt:message key="menu.revoke"/></a>
 </c:if>
 <c:if test="${path == 'INBOX'}">
-	<a id="upload" class="btn btn-default btn-sm"><fmt:message key="menu.upload.eml"/></a>
+		<a id="upload" class="btn btn-default btn-sm"><fmt:message key="menu.upload.eml"/></a>
 </c:if>
 <c:if test="${path != prefs.draftFolder}">
 		<div class="btn-group">
@@ -57,7 +73,7 @@
 	<table id="msg-table" class="table table-hover table-condensed">
 		<thead>
 			<tr>
-				<th><input type="checkbox" id="checkall"/></th>
+				<th class="chk"><input type="checkbox" id="checkall"/></th>
 				<th class="star"></th>
 <c:choose>
 	<c:when test="${path == prefs.draftFolder || path == prefs.sentMailArchive || path == prefs.toSendFolder}">
@@ -100,7 +116,8 @@
 				<td><a href="#from"><wma:address value="${msg.from}"/></a></td>
 			</c:otherwise>
 		</c:choose>
-				<td>
+				<td class="title">
+					<c:if test="${not empty msg.conversations}"><i class="fa fa-plus-square"></i></c:if>
 					<c:if test="${msg.answered}"><i class="fa fa-reply"></i></c:if>
 					<a href="#open"><c:out value="${msg.subject}"/></a>
 				</td>
@@ -120,6 +137,20 @@
 		</c:choose>
 				</td>
 			</tr>
+	
+		<c:if test="${not empty msg.conversations}">		
+			<c:forEach var="cv" items="${msg.conversations}">
+			<tr class="reply" style="display: none;">
+				<td><input type="checkbox" name="uids" value="${cv.UID}"/></td>
+				<td class="star"><i class="fa fa-lg fa-star<c:if test='${not cv.flagged}'>-o</c:if>"></i></td>
+				<td><a href="#from"><wma:address value="${cv.from}"/></a></td>
+				<td class="title"><i class="fa fa-caret-right"></i> <a href="#open"><c:out value="${cv.subject}"/></a></td>
+				<td class="text-right"></td>
+				<td class="text-right"><wma:date value="${cv.receivedDate}"/></td>
+			</tr>
+			</c:forEach>
+		</c:if>
+			
 	</c:forEach>
 </c:if>
 <c:forEach begin="${fn:length(messages) + 1}" end="${pager.pageSize}">
@@ -186,6 +217,11 @@ $(function() {
 	if ($unread.length == 1)
 		$('#side-menu').find('#inbox-unread').text($unread.val());
 
+	if ($('#thread').is(':checked'))
+		$('#thread').parent().addClass('active');
+	$('#thread').on('change', function() {
+		$form.submit();
+	});
 	$('select[name=criteria]').val($('input[name=_criteria]').val());
 	$('input[name=term]').val($('input[name=_term]').val());
 	$('select[name=criteria]').on('change', function() {
@@ -308,6 +344,17 @@ $(function() {
 		if ($('#order').val() == order) $('#asc').val($('#asc').val() != 'true');
 		else $('#order').val(id.substring(n + 1));
 		refresh();
+	}).on('click', '.fa-plus-square, .fa-minus-square-o', function() {
+		var that = $(this);
+		    tr = that.closest('tr').next();
+		if (that.hasClass('fa-plus-square')) 
+			that.removeClass('fa-plus-square').addClass('fa-minus-square-o');
+		else
+			that.removeClass('fa-minus-square-o').addClass('fa-plus-square');
+		while (tr.hasClass('reply')) {
+			tr.toggle();
+			tr = tr.next()
+		}
 	});
 	$('#upload-form').on('change', ':file', function(event) {
 		$.ajax({

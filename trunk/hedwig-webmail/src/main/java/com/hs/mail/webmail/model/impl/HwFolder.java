@@ -10,18 +10,21 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.search.SearchTerm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hs.mail.webmail.exception.WmaException;
 import com.sun.mail.iap.Argument;
+import com.sun.mail.iap.BadCommandException;
 import com.sun.mail.iap.ParsingException;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.iap.Response;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.protocol.IMAPProtocol;
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.sun.mail.imap.protocol.SearchSequence;
 
 public class HwFolder extends WmaFolderImpl {
 	
@@ -84,6 +87,8 @@ public class HwFolder extends WmaFolderImpl {
 				@Override
 				public Object doCommand(IMAPProtocol p)
 						throws ProtocolException {
+					if (!p.hasCapability("XREVOKE"))
+						throw new BadCommandException("XREVOKE not supported");
 					Argument args = new Argument();
 					args.writeString(n);
 					args.writeString(f);
@@ -122,6 +127,137 @@ public class HwFolder extends WmaFolderImpl {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Threadable> thread(final boolean uid, final String algorithm,
+			final SearchTerm term) throws MessagingException {
+		return (List<Threadable>) folder
+				.doCommand(new IMAPFolder.ProtocolCommand() {
+
+			@Override
+			public Object doCommand(IMAPProtocol p)
+					throws ProtocolException {
+				if (!p.hasCapability("THREAD=" + algorithm))
+					throw new BadCommandException("THREAD=" + algorithm + " not supported");
+				Argument args = new Argument();
+				args.writeAtom(algorithm);
+				args.writeAtom("UTF-8");	// charset specification
+				if (term != null)
+					try {
+						SearchSequence searchSequence = new SearchSequence();
+						args.append(searchSequence
+								.generateSequence(term, "UTF-8"));
+					} catch (Exception ex) {
+						// should never happen
+						throw new ProtocolException(ex.toString(),
+								ex);
+					}
+				else
+					args.writeAtom("ALL");
+				
+				Response[] r = (uid) 
+						? p.command("UID THREAD", args) 
+						: p.command("THREAD", args);
+				Response response = r[r.length-1];
+				List<Threadable> matches = null;
+				if (response.isOK()) { // command successful
+				    for (int i = 0, len = r.length; i < len; i++) {
+						if (!(r[i] instanceof IMAPResponse))
+						    continue;
+
+						IMAPResponse ir = (IMAPResponse)r[i];
+						if (ir.keyEquals("THREAD")) {
+							matches = parseThread(ir);
+							r[i] = null;
+						}
+				    }
+				}
+				p.handleResult(response);
+				return matches;
+			}
+
+		});
+	}
+	
+	private List<Threadable> parseThread(IMAPResponse r)
+			throws ParsingException {
+		List<Threadable> matches = new ArrayList<Threadable>();
+		Threadable thread = null;
+		boolean b = true;
+		int i = 0;
+		int j = 0;
+
+		r.skipSpaces();
+		byte c = r.peekByte();
+		if (c != 0) {
+			if ((char) c != '(')
+				throw new ParsingException("parse error in THREAD");
+			while (c != 0) {
+				if (Character.isDigit((char) c)) {
+					b = false;
+					int number = r.readNumber();
+					if (j == 0)
+						thread.number = number;
+					else
+						thread.add(new Threadable(number, j));
+				} else {
+					r.readByte();
+					if ((char) c == '(') {
+						if (i == 0) {
+							thread = new Threadable();
+							matches.add(thread);
+							b = true;
+							j = 0;
+						} else if (b) {
+							j++;
+						}
+						i++;
+					} else if ((char) c == ')') {
+						i--;
+					} else {
+						j++;
+					}
+				}
+				c = r.peekByte();
+			}
+		}
+		return matches;
+	}
+	
+	public static class Threadable {
+		private int number;
+		private int depth;
+		private List<Threadable> children;
+
+		public Threadable() {
+			number = -1;
+			depth  = 0;
+		}
+
+		public Threadable(int number, int depth) {
+			this.number = number;
+			this.depth = depth;
+		}
+		
+		public int getNumber() {
+			return number;
+		}
+
+		public int getDepth() {
+			return depth;
+		}
+
+		public List<Threadable> getChildren() {
+			return children;
+		}
+
+		public void add(Threadable c) {
+			if (children == null) {
+				children = new ArrayList<Threadable>();
+			}
+			children.add(c);
+		}
+	}
+	
 	private List<WmaRecipient> createWmaRecipientList(Message msg)
 			throws MessagingException, WmaException {
 		List<WmaRecipient> recipients = new ArrayList<WmaRecipient>();
