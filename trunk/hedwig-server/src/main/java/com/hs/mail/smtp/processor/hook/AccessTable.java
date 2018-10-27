@@ -28,11 +28,19 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.util.WildcardMatch;
 
 public class AccessTable {
+	
+	private static Logger logger = LoggerFactory.getLogger(AccessTable.class);
+	
+	private final File config;
+
+	private long tstamp;
 	
     /**
      * The lists of patterns to be checked to limit spam
@@ -46,44 +54,14 @@ public class AccessTable {
     }
     
 	AccessTable(File config, Action defaultAction) throws IOException {
+		this.config = config;
+		this.tstamp = config.lastModified();
 		this.defaultAction = defaultAction;
-		readLines(config);
-		Arrays.sort(accesstable, new Comparator<Access>() {
-			@Override
-			public int compare(Access o1, Access o2) {
-				return o1.pattern.compareTo(o2.pattern);
-			}
-		});
-	}
-	
-	private void readLines(File config) throws IOException {
-		BufferedReader reader = null;
-		try {
-			InputStream in = new FileInputStream(config);
-			reader = new BufferedReader(new InputStreamReader(in));
-			List<Access> accesslist = new ArrayList<Access>();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				String str = line.trim();
-				if (StringUtils.isNotBlank(str)) {
-					char ch = line.charAt(0);
-					if (ch != '#') {
-						String[] tokens = StringUtils.split(line);
-						String pattern = tokens[0];
-						Action action = (tokens.length < 2)
-								? defaultAction
-								: Action.lookup(tokens[1]);
-						accesslist.add(new Access(pattern.toLowerCase(), action));
-					}
-				}
-			}
-			this.accesstable = accesslist.toArray(new Access[accesslist.size()]);
-		} finally {
-			IOUtils.closeQuietly(reader);
-		}
+		reload();
 	}
 	
 	public Action findAction(InetAddress address) {
+		validate();
 		if (ArrayUtils.isNotEmpty(accesstable)) {
 			String ip = address.getHostAddress();
 			int i = binarySearch(ip);
@@ -109,6 +87,7 @@ public class AccessTable {
 	
 	public Action findAction(MailAddress address) {
 		int i = -1;
+		validate();
 		if (ArrayUtils.isNotEmpty(accesstable)) {
 			if ((i = binarySearch(address.getMailbox())) < 0) {
 				if ((i = binarySearch(address.getHost())) < 0) {
@@ -127,6 +106,57 @@ public class AccessTable {
 						return ((Access) o1).pattern.compareTo((String) o2);
 					}
 				});
+	}
+	
+	private void validate() {
+		if (config.lastModified() > tstamp) {
+			synchronized (config) {
+				try {
+					tstamp = config.lastModified();
+					reload();
+				} catch (IOException ex) {
+					// Use previous access table
+					logger.error("Failed to reload " + config);
+				}
+			}
+		}
+	}
+	
+	private void reload() throws IOException {
+		readLines();
+		Arrays.sort(accesstable, new Comparator<Access>() {
+			@Override
+			public int compare(Access o1, Access o2) {
+				return o1.pattern.compareTo(o2.pattern);
+			}
+		});
+	}
+	
+	private void readLines() throws IOException {
+		BufferedReader reader = null;
+		try {
+			InputStream in = new FileInputStream(config);
+			reader = new BufferedReader(new InputStreamReader(in));
+			List<Access> accesslist = new ArrayList<Access>();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String str = line.trim();
+				if (StringUtils.isNotBlank(str)) {
+					char ch = line.charAt(0);
+					if (ch != '#') {
+						String[] tokens = StringUtils.split(line);
+						String pattern = tokens[0];
+						Action action = (tokens.length < 2)
+								? defaultAction
+								: Action.lookup(tokens[1]);
+						accesslist.add(new Access(pattern.toLowerCase(), action));
+					}
+				}
+			}
+			this.accesstable = accesslist.toArray(new Access[accesslist.size()]);
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
 	}
 	
 	public static enum Action {
