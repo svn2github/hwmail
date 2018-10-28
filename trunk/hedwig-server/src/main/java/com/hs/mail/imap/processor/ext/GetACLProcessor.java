@@ -46,7 +46,7 @@ public class GetACLProcessor extends AbstractACLProcessor {
 			} else {
 				MailboxACL acl = mailboxManager.getACL(mailbox.getMailboxID());
 				acl.setMailbox(request.getMailbox());
-				responder.responde(new ACLResponse(acl));
+				responder.respond(new ACLResponse(acl));
 				responder.okCompleted(request);
 			}
 		}

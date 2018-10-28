@@ -19,7 +19,7 @@ public class ListRightsResponder extends DefaultImapResponder {
 		super(channel, request);
 	}
 	
-	public void responde(ListRightsResponse response) {
+	public void respond(ListRightsResponse response) {
 		untagged("LISTRIGHTS");
 		message(response.getMailbox());
 		message(response.getIdentifier());

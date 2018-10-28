@@ -21,7 +21,7 @@ public class ACLResponder extends DefaultImapResponder {
 		super(channel, request);
 	}
 	
-	public void responde(ACLResponse response) {
+	public void respond(ACLResponse response) {
 		MailboxACL acl = response.getACL();
 		untagged("ACL");
 		message(acl.getMailbox());

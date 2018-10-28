@@ -327,7 +327,6 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<!--
 	  		<plugin>
 	  			<groupId>org.apache.maven.plugins</groupId>
 	  			<artifactId>maven-jar-plugin</artifactId>
@@ -337,11 +336,12 @@
 	  						<Implementation-Title>Hedwig Mail Server</Implementation-Title>
 	  						<Implementation-Version>${project.version}</Implementation-Version>
 	  						<Build-Time>${maven.build.timestamp}</Build-Time>
-	  						<Implementation-Build>${buildNumber}</Implementation-Build>
+	  						<!-- <Implementation-Build>${buildNumber}</Implementation-Build> -->
 	  					</manifestEntries>
 	  				</archive>
 	  			</configuration>
 	  		</plugin>
+			<!--
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>

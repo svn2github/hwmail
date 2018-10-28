@@ -66,7 +66,7 @@ public class ThreadProcessor extends AbstractImapProcessor {
 				getMessageNumbers(map, results);
 			}
 			Threadable thread = buildThread(algorithm, results);
-			responder.response(thread);
+			responder.respond(thread);
 		}
 		responder.okCompleted(request);
 	}

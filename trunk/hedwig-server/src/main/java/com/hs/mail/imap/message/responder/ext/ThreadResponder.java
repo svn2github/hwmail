@@ -33,7 +33,7 @@ public class ThreadResponder extends DefaultImapResponder {
 		super(channel, request);
 	}
 
-	public void response(Threadable thread) {
+	public void respond(Threadable thread) {
 		untagged(request.getCommand());
 		composeThread(thread, true);
 		end();

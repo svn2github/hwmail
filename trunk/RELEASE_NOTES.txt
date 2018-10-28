@@ -1,0 +1,27 @@
+
+              HEDWIG MAIL SERVER 0.7
+                  RELEASE NOTES
+
+Changes in this version include:
+
+New features
+============
+o HEDWIG-252:  IMAP server supports RFC 2971 IMAP4 ID extension
+o HEDWIG-248:  IMAP server supports RFC 5256 ORDEREDSUBJECT threading algorithm.
+o HEDWIG-246:  IMAP server supports RFC 5256 REFERENCES threading algorithm.
+o HEDWIG-237:  WebAdmin MX-query, Cleanup menu.
+o HEDWIG-230:  Webmail client shows CID images.
+o HEDWIG-228:  POP3, SMTP session timout.
+               POP3 hard error limits.
+o HEDWIG-224:  Hedwig mail server supports the POP3 protocol.
+
+Fixed Bugs
+==========
+o HEDWIG-241:  When reply, Webmail client adds "In-Reply-To" and "References" header as described in
+               RFC 2822.
+o HEDWIG-231:  Closes CharTerminatedInputStream.
+o HEDWIG-229:  If message header contains NON-ASCII value, then auto detect the file encoding and treats
+               the NON-ASCII field text "as is".
+
+Other changes
+=============

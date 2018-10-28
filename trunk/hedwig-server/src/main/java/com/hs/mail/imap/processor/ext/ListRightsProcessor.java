@@ -32,7 +32,7 @@ public class ListRightsProcessor extends AbstractACLProcessor {
 			ListRightsResponder responder) throws Exception {
 		Mailbox mailbox = getAuthorizedMailbox(session, request);
 		String rights = listRights(request.getIdentifier(), mailbox);
-		responder.responde(new ListRightsResponse(request.getMailbox(), request
+		responder.respond(new ListRightsResponse(request.getMailbox(), request
 				.getIdentifier(), rights));
 		responder.okCompleted(request);
 	}

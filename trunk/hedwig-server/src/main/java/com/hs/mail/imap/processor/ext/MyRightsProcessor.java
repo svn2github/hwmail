@@ -52,7 +52,7 @@ public class MyRightsProcessor extends AbstractACLProcessor {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
-		responder.reponde(new MyRightsResponse(request.getMailbox(), rights));
+		responder.repond(new MyRightsResponse(request.getMailbox(), rights));
 		responder.okCompleted(request);
 	}
 	
