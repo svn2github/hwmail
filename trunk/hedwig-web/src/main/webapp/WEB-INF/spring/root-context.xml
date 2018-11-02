@@ -6,17 +6,17 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="locations">
-	        <value>WEB-INF/default.properties</value>
-	    </property>
+		<property name="locations">
+			<value>WEB-INF/default.properties</value>
+		</property>
 	</bean>
 
-	<bean id="def.props" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-    	<property name="location" value="WEB-INF/default.properties"/>
-    </bean>
+	<bean id="props" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location" value="file:${app.home}/conf/default.properties"/>
+	</bean>
 
 	<bean id="config" class="com.hs.mail.container.config.Config">
-		<property name="properties" ref="def.props" />
+		<property name="properties" ref="props" />
 		<property name="initData" value="false" />
 	</bean>
 
@@ -25,13 +25,13 @@
 	</bean>
 
 	<bean id="dnsServer" class="com.hs.mail.dns.DnsServer" />
-	
+
 	<!-- Root Context: defines shared resources visible to all other web components -->
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="${jdbc.driver}"/>
-        <property name="url" value="${jdbc.url}"/>
-        <property name="username" value="${jdbc.user}"/>
-        <property name="password" value="${jdbc.password}"/>
+		<property name="driverClassName" value="#{props['jdbc.driver']}"/>
+		<property name="url" value="#{props['jdbc.url']}"/>
+		<property name="username" value="#{props['jdbc.user']}"/>
+		<property name="password" value="#{props['jdbc.password']}"/>
 	</bean>
 
 	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
