@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 
@@ -36,11 +37,18 @@ public class ListProcessor extends AbstractListProcessor {
 		MailboxManager manager = getMailboxManager();
 		List<Mailbox> children = manager.getChildren(userID, ownerID,
 				mailboxName, false);
+		List<Long> granted = null;
+		if (userID != ownerID) {
+			granted = manager.getGrantedMailboxes(userID,
+					MailboxACL.l_Lookup_RIGHT);
+		}
 		List<Mailbox> results = new ArrayList<Mailbox>();
 		for (Mailbox child : children) {
 			if (query.match(child.getName())) {
-				child.setHasChildren(manager.hasChildren(child));
-				results.add(child);
+				if (granted == null || granted.contains(child.getMailboxID())) {
+					child.setHasChildren(manager.hasChildren(child));
+					results.add(child);
+				}
 			}
 		}
 		return results;
