@@ -373,12 +373,12 @@ public interface MailboxManager {
 	 * @param userID
 	 *            the ID of user to check right
 	 * @param mailboxName
-	 *            name of the mailbox to check right
+	 *            the ID of mailbox to check right
 	 * @param right
 	 *            the right to check
 	 * @return true if the user has right on the mailbox, otherwise false
 	 */
-	public boolean hasRight(long userID, String mailboxName, char right);
+	public boolean hasRight(long userID, long mailboxID, char right);
 
 	public List<Long> getGrantedMailboxes(long userID, char right);
 

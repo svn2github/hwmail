@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 
 /**
@@ -32,36 +32,18 @@ import com.hs.mail.imap.mailbox.MailboxQuery;
 public class ListProcessor extends AbstractListProcessor {
 
 	@Override
-	protected List<Mailbox> listMailbox(long userID, long ownerID,
-			String mailboxName, MailboxQuery query) {
+	protected List<Mailbox> listMailbox(long userID, MailboxPath path,
+			MailboxQuery query) {
 		MailboxManager manager = getMailboxManager();
-		List<Mailbox> children = manager.getChildren(userID, ownerID,
-				mailboxName, false);
-		List<Long> granted = null;
-		if (userID != ownerID) {
-			granted = manager.getGrantedMailboxes(userID,
-					MailboxACL.l_Lookup_RIGHT);
-		}
+		List<Mailbox> children = listMailbox(userID, path, false);
 		List<Mailbox> results = new ArrayList<Mailbox>();
 		for (Mailbox child : children) {
 			if (query.match(child.getName())) {
-				if (granted == null || granted.contains(child.getMailboxID())) {
-					child.setHasChildren(manager.hasChildren(child));
-					results.add(child);
-				}
+				child.setHasChildren(manager.hasChildren(child));
+				results.add(child);
 			}
 		}
 		return results;
-	}
-
-	@Override
-	protected Mailbox getMailbox(long ownerID, String mailboxName) {
-		MailboxManager manager = getMailboxManager();
-		Mailbox result = manager.getMailbox(ownerID, mailboxName);
-		if (result != null) {
-			result.setHasChildren(manager.hasChildren(result));
-		}
-		return result;
 	}
 
 }

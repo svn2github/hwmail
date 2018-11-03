@@ -17,7 +17,9 @@ package com.hs.mail.imap.processor;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.SubscribeRequest;
 import com.hs.mail.imap.message.responder.Responder;
@@ -35,12 +37,22 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) {
 		SubscribeRequest request = (SubscribeRequest) message;
-		String mailboxName = request.getMailbox();
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
-		Mailbox mailbox = manager.getMailbox(session.getUserID(), mailboxName);
+		Mailbox mailbox = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
+			if (path.getNamespace() != null) {
+				// RFC 4314 - "l" right is required only if the server checks
+				// for mailbox existence when performing SUBSCRIBE.
+				if (!manager.hasRight(session.getUserID(),
+						mailbox.getMailboxID(), MailboxACL.l_Lookup_RIGHT)) {
+					responder.taggedNo(request,
+							HumanReadableText.INSUFFICIENT_RIGHTS);
+					return;
+				}
+			}
 			manager.addSubscription(session.getUserID(),
 					mailbox.getMailboxID(), mailbox.getName());
 			responder.okCompleted(request);

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.imap.ImapConstants;
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.user.Alias;
@@ -44,10 +45,14 @@ public class ValidRcptHook implements RcptHook {
 				for (Alias alias : expanded) {
 					if (alias.getDeliverTo().startsWith(ImapConstants.NAMESPACE_PREFIX)) {
 						// Aliased mailbox is a public folder.
-						if (session.getAuthID() < 0
+						Mailbox mailbox = getMailboxManager().getMailbox(
+								ImapConstants.ANYONE_ID, alias.getDeliverTo());
+						if (mailbox == null) {
+							return HookResult.reject(SmtpException.NO_SUCH_USER);
+						} else if (session.getAuthID() < 0	// anonymous
 								|| !getMailboxManager().hasRight(
 										session.getAuthID(),
-										alias.getDeliverTo(),
+										mailbox.getMailboxID(),
 										MailboxACL.p_Post_RIGHT)) {
 							// User does not have right to post to the folder.
 							return HookResult.reject(SmtpException.RECIPIENT_REJECTED);

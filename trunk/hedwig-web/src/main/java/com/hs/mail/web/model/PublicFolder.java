@@ -65,14 +65,14 @@ public class PublicFolder {
 	}
 
 	public String getFullName() {
-		return new StringBuilder(ImapConstants.NAMESPACE_PREFIX).append(namespace).append(Mailbox.folderSeparator)
-				.append(name).toString();
+		return new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+				.append(namespace).append(Mailbox.folderSeparator).append(name)
+				.toString();
 	}
 	
 	public Mailbox getMailbox() {
-		Mailbox mailbox = new Mailbox(getFullName());
+		Mailbox mailbox = new Mailbox(getFullName(), 0);
 		mailbox.setMailboxID(getMailboxID());
-		mailbox.setOwnerID(0);
 		return mailbox;
 	}
 

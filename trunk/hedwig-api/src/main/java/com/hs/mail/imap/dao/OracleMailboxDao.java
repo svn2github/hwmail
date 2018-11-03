@@ -68,58 +68,19 @@ public class OracleMailboxDao extends AnsiMailboxDao {
 	@Override
 	public List<Mailbox> getChildren(long userID, long ownerID,
 			String mailboxName) {
-		/*if (userID != ownerID) {
-			if (StringUtils.isEmpty(mailboxName)) {
-				String sql = 
-					  "SELECT * "
-					+   "FROM hw_mailbox "
-					+  "WHERE ownerid = ? "
-					+    "AND mailboxid "
-					+     "IN (SELECT mailboxid "
-					+           "FROM hw_acl "
-					+          "WHERE (userid = ? OR userid = 0) "
-					+            "AND lookup_flag = 'Y') "
-					+  "ORDER BY name";
-				return getJdbcTemplate().query(sql,
-						new Object[] { ownerID, userID }, mailboxRowMapper);
-			} else {
-				String sql = 
-					  "SELECT * "
-					+   "FROM hw_mailbox "
-					+  "WHERE ownerid = ? "
-					+    "AND name LIKE ? "
-					+    "AND mailboxid "
-					+     "IN (SELECT mailboxid "
-					+           "FROM hw_acl "
-					+          "WHERE (userid = ? OR userid = 0) "
-					+            "AND lookup_flag = 'Y') "
-					+  "ORDER BY name";
-				return getJdbcTemplate().query(
-						sql,
-						new Object[] {
-								ownerID,
-								new StringBuilder(escape(mailboxName))
-										.append(Mailbox.folderSeparator)
-										.append('%').toString(), userID },
-						mailboxRowMapper);
-			}
-		} else {*/
-			if (StringUtils.isEmpty(mailboxName)) {
-				String sql = "SELECT * FROM hw_mailbox WHERE ownerid = ? ORDER BY name";
-				return getJdbcTemplate().query(sql, new Object[] { ownerID },
-						mailboxRowMapper);
-			} else {
-				String sql = "SELECT * FROM hw_mailbox WHERE ownerid = ? AND name LIKE ? ORDER BY name";
-				return getJdbcTemplate().query(
-						sql,
-						new Object[] {
-								ownerID,
-								new StringBuilder(escape(mailboxName))
-										.append(Mailbox.folderSeparator)
-										.append('%').toString() },
-						mailboxRowMapper);
-			}
-		/*}*/
+		if (StringUtils.isEmpty(mailboxName)) {
+			String sql = "SELECT * FROM hw_mailbox WHERE ownerid = ? ORDER BY name";
+			return getJdbcTemplate().query(sql, new Object[]{ownerID},
+					mailboxRowMapper);
+		} else {
+			String sql = "SELECT * FROM hw_mailbox WHERE ownerid = ? AND name LIKE ? ORDER BY name";
+			return getJdbcTemplate().query(sql,
+					new Object[]{ownerID,
+							new StringBuilder(escape(mailboxName))
+									.append(Mailbox.folderSeparator).append('%')
+									.toString()},
+					mailboxRowMapper);
+		}
 	}
 	
 	public int getChildCount(long ownerID, String mailboxName) {

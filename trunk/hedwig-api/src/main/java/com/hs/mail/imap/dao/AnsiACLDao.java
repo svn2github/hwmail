@@ -101,11 +101,11 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return acl;
 	}
 	
-	public boolean hasRight(long userID, String mailboxName, char right) {
+	public boolean hasRight(long userID, long mailboxID, char right) {
 		int i = indexOfRight(right);
-		final String sql = "SELECT userid FROM hw_acl WHERE mailboxid = (SELECT mailboxid FROM hw_mailbox WHERE name = ?) AND "
+		final String sql = "SELECT userid FROM hw_acl WHERE mailboxid = ? AND "
 				+ flagArray[i] + " = 'Y'";
-		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class, mailboxName);
+		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class, mailboxID);
 		if (CollectionUtils.isNotEmpty(list)) {
 			// TODO - Resolve group membership
 			if (list.contains(userID) || list.contains(ImapConstants.ANYONE_ID)) {

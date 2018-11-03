@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.processor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,8 @@ import org.jboss.netty.channel.Channel;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
+import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 import com.hs.mail.imap.message.request.AbstractListRequest;
@@ -91,27 +94,65 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		return new ListResponder(channel, request);
 	}
 
-	protected abstract List<Mailbox> listMailbox(long userID, long ownerID,
-			String mailboxName, MailboxQuery query);
+	protected abstract List<Mailbox> listMailbox(long userID, MailboxPath path,
+			MailboxQuery query);
 	
-	protected abstract Mailbox getMailbox(long ownerID, String mailboxName);
-
 	protected void doList(ImapSession session, ListResponder responder,
 			MailboxPath path) {
 		MailboxQuery query = new MailboxQuery(path.getFullName());
 		if (query.containsWildcard()) {
-			List<Mailbox> mailboxes = listMailbox(session.getUserID(),
-					path.getUserID(), path.getBaseName(), query);
+			List<Mailbox> mailboxes = listMailbox(session.getUserID(), path,
+					query);
 			for (Mailbox mailbox : mailboxes) {
 				responder.respond(new ListResponse(mailbox));
 			}
 		} else {
 			// Expression is an absolute mailbox name.
-			Mailbox mailbox = getMailbox(path.getUserID(), path.getFullName());
+			Mailbox mailbox = getMailbox(session.getUserID(), path);
 			if (mailbox != null) {
 				responder.respond(new ListResponse(mailbox));
 			}
 		}
 	}
 	
+	protected List<Mailbox> listMailbox(long userID, MailboxPath path,
+			boolean subscribed) {
+		MailboxManager manager = getMailboxManager();
+		List<Mailbox> children = manager.getChildren(userID, path.getUserID(),
+				path.getBaseName(), subscribed);
+		if (path.getNamespace() == null) {
+			return children;
+		}
+		
+		// LIST - "l" right is required.
+		List<Long> granted = manager.getGrantedMailboxes(userID,
+				MailboxACL.l_Lookup_RIGHT);
+		List<Mailbox> results = new ArrayList<Mailbox>();
+		for (Mailbox child : children) {
+			if (granted.contains(child.getMailboxID())) {
+				// Unlike other commands (e.g., SELECT) the server MUST NOT
+				// return a NO response if it can’t list a mailbox.
+				results.add(child);
+			}
+		}
+		return results;
+	}
+
+	protected Mailbox getMailbox(long userID, MailboxPath path) {
+		MailboxManager manager = getMailboxManager();
+		Mailbox result = manager.getMailbox(path.getUserID(), path.getFullName());
+		if (result != null) {
+			if ((path.getNamespace() != null)
+					&& (path.getNamespace() != path.getFullName())) {	// Top level public mailbox
+				// LIST - "l" right is required.
+				if (!manager.hasRight(userID, result.getMailboxID(),
+						MailboxACL.l_Lookup_RIGHT)) {
+					return null;
+				}
+			}
+			result.setHasChildren(manager.hasChildren(result));
+		}
+		return result;
+	}
+
 }

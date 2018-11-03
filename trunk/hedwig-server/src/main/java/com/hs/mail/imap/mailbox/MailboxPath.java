@@ -14,8 +14,6 @@ import com.hs.mail.imap.ImapSession;
  */
 public class MailboxPath {
 
-	public static final String PERSONAL_NAMESPACE = "";
-
 	private String namespace;
 	private String fullname;
 	private long userID;
@@ -31,7 +29,7 @@ public class MailboxPath {
 			}
 			userID = ImapConstants.ANYONE_ID;
 		} else {
-			namespace = PERSONAL_NAMESPACE;
+			namespace = null;	// Personal namespace
 			userID = session.getUserID();
 		}
 	}

@@ -20,7 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.CreateRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.Responder;
@@ -38,25 +40,36 @@ public class CreateProcessor extends AbstractImapProcessor {
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) {
 		CreateRequest request = (CreateRequest) message;
-		String mailboxName = request.getMailbox();
-		mailboxName = StringUtils.removeEnd(mailboxName, Mailbox.folderSeparator);
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		String mailboxName = StringUtils.removeEnd(path.getFullName(),
+				Mailbox.folderSeparator);
+
 		if (ImapConstants.INBOX_NAME.equalsIgnoreCase(mailboxName)) {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_CREATE_INBOX);
-		} else {
-			MailboxManager manager = getMailboxManager();
-			if (manager.mailboxExists(session.getUserID(), mailboxName)) {
-				responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
-			} else if (mailboxName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
-				// Thunderbird 3.1
+			return;
+		}
+		
+		MailboxManager manager = getMailboxManager();
+		if (manager.mailboxExists(path.getUserID(), mailboxName)) {
+			responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
+			return;
+		}
+
+		if (mailboxName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
+			Mailbox mailbox = manager.getMailbox(path.getUserID(),
+					Mailbox.getParent(mailboxName));
+			if (mailbox == null || !manager.hasRight(session.getUserID(),
+					mailbox.getMailboxID(), MailboxACL.k_CreateMailbox_RIGHT)) {
 				responder.taggedNo(request,
-						HumanReadableText.NAMESPACE_NOT_EXIST);
-			} else {
-				// TODO Check for \Noinferiors flag
-				manager.createMailbox(session.getUserID(), mailboxName);
-				responder.okCompleted(request);
+						HumanReadableText.INSUFFICIENT_RIGHTS);
+				return;
 			}
 		}
+		
+		// TODO Check for \NoInferiors flag
+		manager.createMailbox(path.getUserID(), mailboxName);
+		responder.okCompleted(request);
 	}
 
 }

@@ -54,9 +54,10 @@ public class Mailbox {
 		super();
 	}
 
-	public Mailbox(String name) {
+	public Mailbox(String name, long ownerID) {
 		super();
 		this.name = name;
+		this.ownerID = ownerID;
 	}
 
 	public long getMailboxID() {
@@ -217,9 +218,7 @@ public class Mailbox {
 	 * hierarchy.
 	 */
 	public static Mailbox getDefaultMailbox(long ownerID) {
-		Mailbox mailbox = new Mailbox("");
-		mailbox.setOwnerID(ownerID);
-		return mailbox;
+		return new Mailbox("", ownerID);
 	}
 
 }

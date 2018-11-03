@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
 
 /**
@@ -31,11 +32,10 @@ import com.hs.mail.imap.mailbox.MailboxQuery;
 public class LsubProcessor extends AbstractListProcessor {
 
 	@Override
-	protected List<Mailbox> listMailbox(long userID, long ownerID,
-			String mailboxName, MailboxQuery query) {
+	protected List<Mailbox> listMailbox(long userID, MailboxPath path,
+			MailboxQuery query) {
 		MailboxManager manager = getMailboxManager();
-		List<Mailbox> children = manager.getChildren(userID, ownerID,
-				mailboxName, true);
+		List<Mailbox> children = listMailbox(userID, path, true);
 		List<Mailbox> results = new ArrayList<Mailbox>();
 		for (Mailbox child : children) {
 			addSubscription(manager, children, query, child, false, results);
@@ -44,14 +44,14 @@ public class LsubProcessor extends AbstractListProcessor {
 	}
 
 	@Override
-	protected Mailbox getMailbox(long ownerID, String mailboxName) {
-		MailboxManager manager = getMailboxManager();
-		Mailbox result = manager.getMailbox(ownerID, mailboxName);
+	protected Mailbox getMailbox(long userID, MailboxPath path) {
+		Mailbox result = super.getMailbox(userID, path);
 		if (result != null
-				&& manager.isSubscribed(ownerID, result.getName())) {
-			result.setHasChildren(manager.hasChildren(result));
+				&& getMailboxManager().isSubscribed(userID, result.getName())) {
+			return result;
+		} else {
+			return null;
 		}
-		return result;
 	}
 	
 	private void addSubscription(MailboxManager manager,
@@ -66,8 +66,9 @@ public class LsubProcessor extends AbstractListProcessor {
 		} else {
 			String parentName = Mailbox.getParent(mailbox.getName());
 			if (!"".equals(parentName) && !results.contains(parentName)) {
-				addSubscription(manager, subscriptions, query, new Mailbox(
-						parentName), true, results);
+				addSubscription(manager, subscriptions, query,
+						new Mailbox(parentName, mailbox.getOwnerID()), true,
+						results);
 			}
 		}
 	}
