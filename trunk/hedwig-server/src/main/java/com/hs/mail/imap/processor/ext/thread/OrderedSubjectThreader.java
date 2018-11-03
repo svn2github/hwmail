@@ -33,6 +33,7 @@ import com.hs.mail.imap.message.thread.Threadable;
  */
 public class OrderedSubjectThreader extends AbstractThreader {
 
+	@SuppressWarnings("unchecked")
 	public Threadable thread(List<Threadable> threadables) {
 
 		Comparator<Threadable> comparator1 = new Comparator<Threadable>() {

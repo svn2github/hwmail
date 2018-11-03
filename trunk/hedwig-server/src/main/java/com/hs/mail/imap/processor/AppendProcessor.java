@@ -67,8 +67,6 @@ public class AppendProcessor extends AbstractImapProcessor {
 				writeMessage(buffer, temp);
 				manager.appendMessage(mailbox.getMailboxID(),
 						request.getDatetime(), request.getFlags(), temp);
-				// FIXME - cache body structure or not!!!
-				// builder.build(msg.getInternalDate(), msg.getPhysMessageID());
 			} catch (Exception ex) {
 				forceDelete(temp);
 				throw ex;
