@@ -115,6 +115,16 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return false;
 	}
 
+	public List<Long> getGrantedMailboxes(long userID, char right) {
+		int i = indexOfRight(right);
+		final String sql = 
+				"SELECT mailboxid "
+				+ "FROM hw_acl "
+				+ "WHERE (userid = ? OR userid = 0) "
+				+   "AND " + flagArray[i] + " = 'Y'";
+		return getJdbcTemplate().queryForList(sql, Long.class, userID);
+	}
+
 	private static Object[] buildParams(String rights) {
 		Object[] params = new Object[flagArray.length];
 		Arrays.fill(params, "N");

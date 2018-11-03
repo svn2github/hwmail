@@ -380,6 +380,8 @@ public interface MailboxManager {
 	 */
 	public boolean hasRight(long userID, String mailboxName, char right);
 
+	public List<Long> getGrantedMailboxes(long userID, char right);
+
 	/**
 	 * Searches for the messages matching the given query.
 	 * 

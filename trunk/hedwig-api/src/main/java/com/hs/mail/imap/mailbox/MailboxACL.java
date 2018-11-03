@@ -4,6 +4,9 @@ import java.util.List;
 
 public class MailboxACL {
 	
+	/**
+	 * RFC 4314 - Standard Rights
+	 */
 	public static final String STD_RIGHTS = "lrswipkxtea";
 
 	public static char l_Lookup_RIGHT         = 'l';

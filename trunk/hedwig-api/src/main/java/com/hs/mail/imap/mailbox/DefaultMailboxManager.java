@@ -649,6 +649,11 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		ACLDao dao = DaoFactory.getACLDao();
 		return dao.hasRight(userID, mailboxName, right);
 	}
+
+	public List<Long> getGrantedMailboxes(long userID, char right) {
+		ACLDao dao = DaoFactory.getACLDao();
+		return dao.getGrantedMailboxes(userID, right);
+	}
 	
 	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,
 			long mailboxID, SearchKey key) {

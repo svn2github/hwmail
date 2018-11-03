@@ -68,7 +68,7 @@ public class OracleMailboxDao extends AnsiMailboxDao {
 	@Override
 	public List<Mailbox> getChildren(long userID, long ownerID,
 			String mailboxName) {
-		if (userID != ownerID) {
+		/*if (userID != ownerID) {
 			if (StringUtils.isEmpty(mailboxName)) {
 				String sql = 
 					  "SELECT * "
@@ -103,7 +103,7 @@ public class OracleMailboxDao extends AnsiMailboxDao {
 										.append('%').toString(), userID },
 						mailboxRowMapper);
 			}
-		} else {
+		} else {*/
 			if (StringUtils.isEmpty(mailboxName)) {
 				String sql = "SELECT * FROM hw_mailbox WHERE ownerid = ? ORDER BY name";
 				return getJdbcTemplate().query(sql, new Object[] { ownerID },
@@ -119,7 +119,7 @@ public class OracleMailboxDao extends AnsiMailboxDao {
 										.append('%').toString() },
 						mailboxRowMapper);
 			}
-		}
+		/*}*/
 	}
 	
 	public int getChildCount(long ownerID, String mailboxName) {

@@ -76,12 +76,25 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	public List<Mailbox> getSubscriptions(long userID, long ownerID,
 			String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
-			String sql = "SELECT b.* FROM hw_mailbox b, hw_subscription s WHERE s.userid = ? AND b.ownerid = ? AND b.name = s.name ORDER BY b.name";
+			String sql = 
+					 "SELECT b.* "
+					+  "FROM hw_mailbox b, hw_subscription s "
+					+ "WHERE s.userid = ? "
+					+   "AND b.ownerid = ? "
+					+   "AND b.name = s.name "
+					+ "ORDER BY b.name";
 			return getJdbcTemplate().query(sql,
 					new Object[] { new Long(userID), new Long(ownerID) },
 					mailboxRowMapper);
 		} else {
-			String sql = "SELECT b.* FROM hw_mailbox b, hw_subscription s WHERE s.userid = ? AND b.ownerid = ? AND b.name LIKE ? AND b.name = s.name ORDER BY b.name";
+			String sql =
+					 "SELECT b.* "
+					+  "FROM hw_mailbox b, hw_subscription s "
+					+ "WHERE s.userid = ? "
+					+   "AND b.ownerid = ? "
+					+   "AND b.name LIKE ? "
+					+   "AND b.name = s.name "
+					+ "ORDER BY b.name";
 			return getJdbcTemplate().query(
 					sql,
 					new Object[] {
