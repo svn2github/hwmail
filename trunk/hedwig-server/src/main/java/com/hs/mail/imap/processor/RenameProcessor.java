@@ -17,7 +17,9 @@ package com.hs.mail.imap.processor;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.RenameRequest;
 import com.hs.mail.imap.message.responder.Responder;
@@ -39,14 +41,39 @@ public class RenameProcessor extends AbstractImapProcessor {
 		String targetName = request.getNewName();
 		MailboxManager manager = getMailboxManager();
 		Mailbox source = manager.getMailbox(session.getUserID(), sourceName);
+		MailboxPath targetPath = new MailboxPath(session, targetName);
 		// Attempt to rename from a mailbox name that does not exist
 		if (source == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			if (manager.mailboxExists(session.getUserID(), targetName)) {
+			if (manager.mailboxExists(targetPath.getUserID(), targetName)) {
 				// Attempt to rename to a mailbox name that already exists
 				responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
 			} else {
+				// RENAME - Moving a mailbox from one parent to another requires
+				// the "x" right on the mailbox itself and the "k" right for the
+				// new parent.
+				MailboxPath sourcePath = new MailboxPath(session, sourceName);
+				if (sourcePath.getNamespace() != null) {
+					if (!manager.hasRight(session.getUserID(),
+							source.getMailboxID(),
+							MailboxACL.x_DeleteMailbox_RIGHT)) {
+						responder.taggedNo(request,
+								HumanReadableText.INSUFFICIENT_RIGHTS);
+						return;
+					}
+				}
+				if (targetPath.getNamespace() != null) {
+					Mailbox target = manager.getMailbox(targetPath.getUserID(),
+							Mailbox.getParent(targetName));
+					if (target == null || !manager.hasRight(session.getUserID(),
+							target.getMailboxID(),
+							MailboxACL.k_CreateMailbox_RIGHT)) {
+						responder.taggedNo(request,
+								HumanReadableText.INSUFFICIENT_RIGHTS);
+						return;
+					}
+				}
 				if (targetName.startsWith(sourceName + Mailbox.folderSeparator)) {
 					// Check if new name invade structure as in "rename foo foo.bar"
 					// would create foo.bar but delete foo.

@@ -9,6 +9,9 @@ import com.hs.mail.imap.message.request.ext.SetACLRequest;
 import com.hs.mail.imap.message.responder.Responder;
 
 /**
+ * The SETACL command changes the access control list on the specified mailbox
+ * so that the specified identifier is granted permissions as specified in the
+ * third argument.
  * 
  * @author Wonchul Doh
  * @since December 2, 2016

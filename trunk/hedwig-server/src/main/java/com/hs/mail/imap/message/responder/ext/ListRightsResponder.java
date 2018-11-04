@@ -20,7 +20,7 @@ public class ListRightsResponder extends DefaultImapResponder {
 	}
 	
 	public void respond(ListRightsResponse response) {
-		untagged("LISTRIGHTS");
+		untagged(request.getCommand());
 		message(response.getMailbox());
 		message(response.getIdentifier());
 		message(StringUtils.isNotEmpty(response.getRights()) ? response.getRights() : "\"\"");

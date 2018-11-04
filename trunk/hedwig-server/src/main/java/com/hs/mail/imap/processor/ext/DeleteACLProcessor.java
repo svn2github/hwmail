@@ -9,6 +9,8 @@ import com.hs.mail.imap.message.request.ext.DeleteACLRequest;
 import com.hs.mail.imap.message.responder.Responder;
 
 /**
+ * The DELETEACL command removes any <identifier,rights> pair for the specified
+ * identifier from the access control list for the specified mailbox.
  * 
  * @author Wonchul Doh
  * @since December 2, 2016

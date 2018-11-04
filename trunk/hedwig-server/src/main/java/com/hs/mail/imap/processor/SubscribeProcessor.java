@@ -49,7 +49,7 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 				if (!manager.hasRight(session.getUserID(),
 						mailbox.getMailboxID(), MailboxACL.l_Lookup_RIGHT)) {
 					responder.taggedNo(request,
-							HumanReadableText.INSUFFICIENT_RIGHTS);
+							HumanReadableText.MAILBOX_NOT_FOUND);
 					return;
 				}
 			}

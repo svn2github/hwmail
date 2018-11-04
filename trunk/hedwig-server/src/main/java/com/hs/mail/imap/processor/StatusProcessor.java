@@ -19,7 +19,10 @@ import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
+import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.Status;
 import com.hs.mail.imap.message.request.StatusRequest;
@@ -47,13 +50,26 @@ public class StatusProcessor extends AbstractImapProcessor {
 
 	private void doProcess(ImapSession session, StatusRequest request,
 			StatusResponder responder) {
-		String mailboxName = request.getMailbox();
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
 		Status attr = request.getStatusAtts();
 		MailboxManager manager = getMailboxManager();
-		Mailbox mailbox = manager.getMailbox(session.getUserID(), mailboxName);
+		Mailbox mailbox = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
+			if (path.getNamespace() != null) {
+				SelectedMailbox selected = session.getSelectedMailbox();
+				if ((selected != null	// SELECTED STATE
+						&& selected.getMailboxID() == mailbox.getMailboxID()
+						&& !selected.hasRights(MailboxACL.r_Read_RIGHT))
+						|| (!manager.hasRight(session.getUserID(),	// AUTHENTICATED STATE
+								mailbox.getMailboxID(),
+								MailboxACL.r_Read_RIGHT))) {
+					responder.taggedNo(request,
+							HumanReadableText.INSUFFICIENT_RIGHTS);
+					return;
+				}
+			}
 			StatusResponse response = builder.build(attr, mailbox);
 			responder.respond(response);
 			responder.okCompleted(request);

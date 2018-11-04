@@ -15,10 +15,12 @@
  */
 package com.hs.mail.imap.processor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
@@ -60,12 +62,25 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			responder.taggedNo(request,
 					HumanReadableText.MAILBOX_NOT_SELECTABLE);
 		} else {
+			String rights = null;
+			if (path.getNamespace() != null) {
+				rights = manager.getRights(session.getUserID(),
+						mailbox.getMailboxID());
+				if (!StringUtils.contains(rights, MailboxACL.r_Read_RIGHT)) {
+					responder.taggedNo(request,
+							HumanReadableText.INSUFFICIENT_RIGHTS);
+					return;
+				}
+			}
 			SelectedMailbox selected = session.getSelectedMailbox();
 			if (selected != null && !selected.isReadOnly()
 					&& selected.isRecent()) {
-				// If the session is read-write, subsequent sessions will not see
-				// \Recent set for the messages in this mailbox.
-				manager.resetRecent(selected.getMailboxID());
+				// If not personal namespace, preserve the \Recent flag.
+				if (path.getNamespace() == null) {
+					// If the session is read-write, subsequent sessions will
+					// not see \Recent set for the messages in this mailbox.
+					manager.resetRecent(selected.getMailboxID());
+				}
 			}
 
 			if (selected == null
@@ -73,6 +88,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 				manager.removeEventListener(selected);
 				selected = new SelectedMailbox(session.getSessionID(),
 						mailbox.getMailboxID(), isReadOnly());
+				selected.setRights(rights);
 				session.selected(selected);
 				manager.addEventListener(selected);
 			} else {

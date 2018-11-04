@@ -19,8 +19,8 @@ public class MyRightsResponder extends DefaultImapResponder {
 		super(channel, request);
 	}
 	
-	public void repond(MyRightsResponse response) {
-		untagged("MYRIGHTS");
+	public void respond(MyRightsResponse response) {
+		untagged(request.getCommand());
 		message(response.getMailbox());
 		message(StringUtils.isNotEmpty(response.getRights()) ? response.getRights() : "\"\"");
 		end();

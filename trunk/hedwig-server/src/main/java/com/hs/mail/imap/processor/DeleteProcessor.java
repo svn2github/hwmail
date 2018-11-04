@@ -18,7 +18,9 @@ package com.hs.mail.imap.processor;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.message.request.DeleteRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
@@ -38,29 +40,39 @@ public class DeleteProcessor extends AbstractImapProcessor {
 			Responder responder) {
 		DeleteRequest request = (DeleteRequest) message;
 		String mailboxName = request.getMailbox();
+		MailboxPath path = new MailboxPath(session, mailboxName);
 		if (ImapConstants.INBOX_NAME.equalsIgnoreCase(mailboxName)) {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_DELETE_INBOX);
 		} else {
 			MailboxManager manager = getMailboxManager();
-			Mailbox mailbox = manager.getMailbox(session.getUserID(),
-					mailboxName);
+			Mailbox mailbox = manager.getMailbox(path.getUserID(),
+					path.getFullName());
 			if (mailbox == null) {
 				responder
 						.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 			} else {
+				if (path.getNamespace() != null) {
+					if (!manager.hasRight(session.getUserID(),
+							mailbox.getMailboxID(),
+							MailboxACL.x_DeleteMailbox_RIGHT)) {
+						responder.taggedNo(request,
+								HumanReadableText.INSUFFICIENT_RIGHTS);
+						return;
+					}
+				}
 				// Check for inferior hierarchical names
 				if (!mailbox.isNoInferiors() && manager.hasChildren(mailbox)) {
 					// Check for \Noselect mailbox name attribute
 					if (!mailbox.isNoSelect()) {
 						// Remove all messages and set \Noselect mailbox
 						// name attribute
-						manager.deleteMailbox(session.getUserID(), mailbox
-								.getMailboxID(), false);
+						manager.deleteMailbox(path.getUserID(),
+								mailbox.getMailboxID(), false);
 					}
 				} else {
-					manager.deleteMailbox(session.getUserID(), mailbox
-							.getMailboxID(), true);
+					manager.deleteMailbox(path.getUserID(),
+							mailbox.getMailboxID(), true);
 					fireMailboxDeleted(session, mailbox.getMailboxID());
 				}
 				SelectedMailbox selected = session.getSelectedMailbox();

@@ -16,6 +16,9 @@ import com.hs.mail.imap.message.responder.ext.ListRightsResponder;
 import com.hs.mail.imap.message.response.ext.ListRightsResponse;
 
 /**
+ * The LISTRIGHTS command takes a mailbox name and an identifier and returns
+ * information about what rights can be granted to the identifier in the ACL for
+ * the mailbox.
  * 
  * @author Wonchul Doh
  * @since December 3, 2016

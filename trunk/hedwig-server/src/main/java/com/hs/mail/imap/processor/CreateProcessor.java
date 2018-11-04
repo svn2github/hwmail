@@ -40,36 +40,35 @@ public class CreateProcessor extends AbstractImapProcessor {
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) {
 		CreateRequest request = (CreateRequest) message;
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
-		String mailboxName = StringUtils.removeEnd(path.getFullName(),
+		String mailboxName = StringUtils.removeEnd(request.getMailbox(),
 				Mailbox.folderSeparator);
 
 		if (ImapConstants.INBOX_NAME.equalsIgnoreCase(mailboxName)) {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_CREATE_INBOX);
-			return;
-		}
-		
-		MailboxManager manager = getMailboxManager();
-		if (manager.mailboxExists(path.getUserID(), mailboxName)) {
-			responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
-			return;
-		}
-
-		if (mailboxName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
-			Mailbox mailbox = manager.getMailbox(path.getUserID(),
-					Mailbox.getParent(mailboxName));
-			if (mailbox == null || !manager.hasRight(session.getUserID(),
-					mailbox.getMailboxID(), MailboxACL.k_CreateMailbox_RIGHT)) {
-				responder.taggedNo(request,
-						HumanReadableText.INSUFFICIENT_RIGHTS);
-				return;
+		} else {
+			MailboxPath path = new MailboxPath(session, mailboxName);
+			MailboxManager manager = getMailboxManager();
+			if (manager.mailboxExists(path.getUserID(), mailboxName)) {
+				responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
+			} else {
+				if (path.getNamespace() != null) {
+					Mailbox mailbox = manager.getMailbox(path.getUserID(),
+							Mailbox.getParent(mailboxName));
+					if (mailbox == null
+							|| !manager.hasRight(session.getUserID(),
+									mailbox.getMailboxID(),
+									MailboxACL.k_CreateMailbox_RIGHT)) {
+						responder.taggedNo(request,
+								HumanReadableText.INSUFFICIENT_RIGHTS);
+						return;
+					}
+				}
+				// TODO Check for \Noinferiors flag
+				manager.createMailbox(path.getUserID(), mailboxName);
+				responder.okCompleted(request);
 			}
 		}
-		
-		// TODO Check for \NoInferiors flag
-		manager.createMailbox(path.getUserID(), mailboxName);
-		responder.okCompleted(request);
 	}
 
 }

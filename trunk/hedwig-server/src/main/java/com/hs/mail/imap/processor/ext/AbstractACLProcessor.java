@@ -8,6 +8,7 @@ import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.AbstractMailboxRequest;
 import com.hs.mail.imap.message.response.HumanReadableText;
 import com.hs.mail.imap.processor.AbstractImapProcessor;
@@ -43,15 +44,16 @@ public abstract class AbstractACLProcessor extends AbstractImapProcessor {
 	
 	protected Mailbox getAuthorizedMailbox(ImapSession session,
 			AbstractMailboxRequest request) throws MailboxException {
-		MailboxManager mailboxManager = getMailboxManager();
-		Mailbox mailbox = mailboxManager.getMailbox(session.getUserID(),
-				request.getMailbox());
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxManager manager = getMailboxManager();
+		Mailbox mailbox = manager.getMailbox(path.getUserID(),
+				path.getFullName());
 		if (mailbox == null) {
 			throw new MailboxNotFoundException(
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
 
-		String rights = mailboxManager.getRights(session.getUserID(),
+		String rights = manager.getRights(session.getUserID(),
 				mailbox.getMailboxID());
 		/*
 		 * RFC 4314 section 6.
