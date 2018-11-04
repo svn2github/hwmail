@@ -39,6 +39,8 @@ import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.response.HumanReadableText;
 
 /**
+ * The APPEND command appends the literal argument as a new message to the end
+ * of the specified destination mailbox.
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
@@ -66,12 +68,19 @@ public class AppendProcessor extends AbstractImapProcessor {
 			if (path.getNamespace() != null) {
 				// Before performing a COPY/APPEND command, the server MUST
 				// check if the user has "i" right for the target mailbox.
-				String rights = necessaryRights(request.getFlags());
-				if (!manager.hasRights(session.getUserID(),
-						mailbox.getMailboxID(), rights)) {
+				String rights = manager.getRights(session.getUserID(),
+						mailbox.getMailboxID());
+				if (rights.indexOf('i') == -1) {
 					responder.taggedNo(request,
 							HumanReadableText.INSUFFICIENT_RIGHTS);
 					return;
+				}
+				Flags flags = request.getFlags();
+				if (flags != null) {
+					// The server MUST NOT fail a COPY/APPEND if the user has no
+					// rights to set a particular flag.
+					flags = removeUnauthorizedFlags(flags, rights);
+					request.setFlags(flags);
 				}
 			}
 			File temp = File.createTempFile("mail", null, Config.getTempDirectory());
@@ -88,17 +97,18 @@ public class AppendProcessor extends AbstractImapProcessor {
 		}
 	}
 	
-	private String necessaryRights(Flags flags) {
-		StringBuilder rights = new StringBuilder("i"); // i_Insert_RIGHT
-		if (flags != null) {
-			if (flags.contains(Flag.DELETED))
-				rights.append("t"); // t_DeleteMessages_RIGHT
-			if (flags.contains(Flag.SEEN))
-				rights.append("s"); // s_WriteSeenFlag_RIGHT
-			if (rights.length() == 1)
-				rights.append("w"); // w_Write_RIGHT
+	private Flags removeUnauthorizedFlags(Flags flags, String rights) {
+		if (!flags.contains(Flag.DELETED) && !flags.contains(Flag.SEEN)) {
+			if (rights.indexOf('w') == -1)
+				return null;
 		}
-		return rights.toString();
+		if (flags.contains(Flag.DELETED) && rights.indexOf('t') == -1) {
+			flags.remove(Flag.DELETED);
+		}
+		if (flags.contains(Flag.SEEN) && rights.indexOf('s') == -1) {
+			flags.remove(Flag.SEEN);
+		}
+		return flags;
 	}
 
 	private void writeMessage(ChannelBuffer buffer, File dst)

@@ -18,6 +18,7 @@ package com.hs.mail.imap.processor;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
 import com.hs.mail.imap.message.SequenceRange;
@@ -38,14 +39,26 @@ public class CopyProcessor extends AbstractImapProcessor {
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) {
 		CopyRequest request = (CopyRequest) message;
-		String mailboxName = request.getMailbox();
 		SelectedMailbox selected = session.getSelectedMailbox();
 		MailboxManager manager = getMailboxManager();
-		Mailbox mailbox = manager.getMailbox(session.getUserID(), mailboxName);
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		Mailbox mailbox = manager.getMailbox(path.getUserID(),
+				path.getFullName());
 		if (mailbox == null) {
 			// SHOULD NOT automatically create the mailbox.
-			responder.taggedNo(request, "[TRYCREATE]", HumanReadableText.MAILBOX_NOT_FOUND);
+			responder.taggedNo(request, "[TRYCREATE]",
+					HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
+			if (path.getNamespace() != null) {
+				// Before performing a COPY/APPEND command, the server MUST
+				// check if the user has "i" right for the target mailbox.
+				if (!manager.hasRights(session.getUserID(),
+						mailbox.getMailboxID(), "i")) {
+					responder.taggedNo(request,
+							HumanReadableText.INSUFFICIENT_RIGHTS);
+					return;
+				}
+			}
 			UidToMsnMapper map = new  UidToMsnMapper(selected, request.isUseUID());
 			SequenceRange[] sequenceSet = request.getSequenceSet();
 			for (int i = 0; i < sequenceSet.length; i++) {

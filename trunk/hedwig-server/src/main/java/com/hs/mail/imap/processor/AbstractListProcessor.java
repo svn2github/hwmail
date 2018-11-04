@@ -24,7 +24,6 @@ import org.jboss.netty.channel.Channel;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.MailboxQuery;
