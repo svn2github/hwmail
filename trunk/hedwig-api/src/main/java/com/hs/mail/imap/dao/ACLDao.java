@@ -20,8 +20,8 @@ public interface ACLDao extends DaoSupport {
 
 	public MailboxACL getACL(long mailboxID);
 
-	public boolean hasRight(long userID, long mailboxID, char right);
+	public boolean hasRights(long userID, long mailboxID, String rights);
 
-	public List<Long> getGrantedMailboxes(long userID, char right);
+	public List<Long> getAuthorizedMailboxes(long userID, String rights);
 
 }

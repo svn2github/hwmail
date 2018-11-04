@@ -125,8 +125,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		}
 		
 		// LIST - "l" right is required.
-		List<Long> granted = manager.getGrantedMailboxes(userID,
-				MailboxACL.l_Lookup_RIGHT);
+		List<Long> granted = manager.getAuthorizedMailboxes(userID, "l"); // l_Lookup_RIGHT
 		List<Mailbox> results = new ArrayList<Mailbox>();
 		for (Mailbox child : children) {
 			if (granted.contains(child.getMailboxID())) {
@@ -145,8 +144,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 			if ((path.getNamespace() != null)
 					&& (path.getNamespace() != path.getFullName())) {	// Top level public mailbox
 				// LIST - "l" right is required.
-				if (!manager.hasRight(userID, result.getMailboxID(),
-						MailboxACL.l_Lookup_RIGHT)) {
+				if (!manager.hasRights(userID, result.getMailboxID(), "l")) { // l_Lookup_RIGHT
 					return null;
 				}
 			}

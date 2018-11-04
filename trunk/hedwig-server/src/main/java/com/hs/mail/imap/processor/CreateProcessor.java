@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.CreateRequest;
@@ -56,9 +55,8 @@ public class CreateProcessor extends AbstractImapProcessor {
 					Mailbox mailbox = manager.getMailbox(path.getUserID(),
 							Mailbox.getParent(mailboxName));
 					if (mailbox == null
-							|| !manager.hasRight(session.getUserID(),
-									mailbox.getMailboxID(),
-									MailboxACL.k_CreateMailbox_RIGHT)) {
+							|| !manager.hasRights(session.getUserID(),
+									mailbox.getMailboxID(), "k")) {	// k_CreateMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;

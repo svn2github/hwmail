@@ -645,14 +645,14 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return acl;
 	}
 
-	public boolean hasRight(long userID, long mailboxID, char right) {
+	public boolean hasRights(long userID, long mailboxID, String rights) {
 		ACLDao dao = DaoFactory.getACLDao();
-		return dao.hasRight(userID, mailboxID, right);
+		return dao.hasRights(userID, mailboxID, rights);
 	}
 
-	public List<Long> getGrantedMailboxes(long userID, char right) {
+	public List<Long> getAuthorizedMailboxes(long userID, String rights) {
 		ACLDao dao = DaoFactory.getACLDao();
-		return dao.getGrantedMailboxes(userID, right);
+		return dao.getAuthorizedMailboxes(userID, rights);
 	}
 	
 	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,

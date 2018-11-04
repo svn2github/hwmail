@@ -18,7 +18,6 @@ package com.hs.mail.imap.processor;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
@@ -53,9 +52,8 @@ public class DeleteProcessor extends AbstractImapProcessor {
 						.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 			} else {
 				if (path.getNamespace() != null) {
-					if (!manager.hasRight(session.getUserID(),
-							mailbox.getMailboxID(),
-							MailboxACL.x_DeleteMailbox_RIGHT)) {
+					if (!manager.hasRights(session.getUserID(),
+							mailbox.getMailboxID(), "x")) { // x_DeleteMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;

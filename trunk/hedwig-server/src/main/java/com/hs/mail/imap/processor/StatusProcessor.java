@@ -59,12 +59,11 @@ public class StatusProcessor extends AbstractImapProcessor {
 		} else {
 			if (path.getNamespace() != null) {
 				SelectedMailbox selected = session.getSelectedMailbox();
-				if ((selected != null	// SELECTED STATE
+				if ((selected != null // SELECTED STATE
 						&& selected.getMailboxID() == mailbox.getMailboxID()
 						&& !selected.hasRights(MailboxACL.r_Read_RIGHT))
-						|| (!manager.hasRight(session.getUserID(),	// AUTHENTICATED STATE
-								mailbox.getMailboxID(),
-								MailboxACL.r_Read_RIGHT))) {
+						|| (!manager.hasRights(session.getUserID(), // AUTHENTICATED STATE
+								mailbox.getMailboxID(), "r"))) {	// r_Read_RIGHT
 					responder.taggedNo(request,
 							HumanReadableText.INSUFFICIENT_RIGHTS);
 					return;

@@ -20,6 +20,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.mail.Flags;
+import javax.mail.Flags.Flag;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -29,6 +32,7 @@ import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.AppendRequest;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.Responder;
@@ -42,25 +46,34 @@ import com.hs.mail.imap.message.response.HumanReadableText;
  */
 public class AppendProcessor extends AbstractImapProcessor {
 
-	// private BodyStructureBuilder builder = null;
-	
 	public AppendProcessor() {
 		super();
-		// this.builder = new BodyStructureBuilder(new EnvelopeBuilder());
 	}
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
 			Responder responder) throws Exception {
 		AppendRequest request = (AppendRequest) message;
-		String mailboxName = request.getMailbox();
 		MailboxManager manager = getMailboxManager();
-		Mailbox mailbox = manager.getMailbox(session.getUserID(), mailboxName);
+		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		Mailbox mailbox = manager.getMailbox(path.getUserID(),
+				path.getFullName());
 		if (mailbox == null) {
 			// SHOULD NOT automatically create the mailbox.
 			responder.taggedNo(request, "[TRYCREATE]",
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
+			if (path.getNamespace() != null) {
+				// Before performing a COPY/APPEND command, the server MUST
+				// check if the user has "i" right for the target mailbox.
+				String rights = necessaryRights(request.getFlags());
+				if (!manager.hasRights(session.getUserID(),
+						mailbox.getMailboxID(), rights)) {
+					responder.taggedNo(request,
+							HumanReadableText.INSUFFICIENT_RIGHTS);
+					return;
+				}
+			}
 			File temp = File.createTempFile("mail", null, Config.getTempDirectory());
 			ChannelBuffer buffer = request.getMessage();
 			try {
@@ -75,6 +88,19 @@ public class AppendProcessor extends AbstractImapProcessor {
 		}
 	}
 	
+	private String necessaryRights(Flags flags) {
+		StringBuilder rights = new StringBuilder("i"); // i_Insert_RIGHT
+		if (flags != null) {
+			if (flags.contains(Flag.DELETED))
+				rights.append("t"); // t_DeleteMessages_RIGHT
+			if (flags.contains(Flag.SEEN))
+				rights.append("s"); // s_WriteSeenFlag_RIGHT
+			if (rights.length() == 1)
+				rights.append("w"); // w_Write_RIGHT
+		}
+		return rights.toString();
+	}
+
 	private void writeMessage(ChannelBuffer buffer, File dst)
 			throws IOException {
 		ChannelBufferInputStream is = new ChannelBufferInputStream(buffer);

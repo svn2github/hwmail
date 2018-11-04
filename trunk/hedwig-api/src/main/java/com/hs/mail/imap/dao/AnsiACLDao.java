@@ -81,9 +81,8 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 	
 	public void setRights(long userID, long mailboxID, String rights,
 			boolean set) {
-		final String sql = "UPDATE hw_acl SET "
-				+ StringUtils.join(buildFlags(rights), "=?,")
-				+ "=? WHERE WHERE userid = ? AND mailboxid = ?";
+		final String sql = "UPDATE hw_acl SET " + joinFlags(rights, "=?,", "=?")
+				+ " WHERE WHERE userid = ? AND mailboxid = ?";
 		Object[] args = new Object[rights.length()];
 		Arrays.fill(args, set ? 'Y' : 'N');
 		getJdbcTemplate().update(sql,
@@ -101,27 +100,30 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return acl;
 	}
 	
-	public boolean hasRight(long userID, long mailboxID, char right) {
-		int i = indexOfRight(right);
-		final String sql = "SELECT userid FROM hw_acl WHERE mailboxid = ? AND "
-				+ flagArray[i] + " = 'Y'";
-		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class, mailboxID);
+	public boolean hasRights(long userID, long mailboxID, String rights) {
+		final String sql = 
+				"SELECT userid "
+				+ "FROM hw_acl "
+				+ "WHERE mailboxid = ? "
+				+   "AND " + joinFlags(rights, " = 'Y' AND ", " = 'Y'");
+		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class,
+				mailboxID);
 		if (CollectionUtils.isNotEmpty(list)) {
 			// TODO - Resolve group membership
-			if (list.contains(userID) || list.contains(ImapConstants.ANYONE_ID)) {
+			if (list.contains(userID)
+					|| list.contains(ImapConstants.ANYONE_ID)) {
 				return true;
 			}
 		}
 		return false;
 	}
-
-	public List<Long> getGrantedMailboxes(long userID, char right) {
-		int i = indexOfRight(right);
+	
+	public List<Long> getAuthorizedMailboxes(long userID, String rights) {
 		final String sql = 
 				"SELECT mailboxid "
 				+ "FROM hw_acl "
 				+ "WHERE (userid = ? OR userid = 0) "
-				+   "AND " + flagArray[i] + " = 'Y'";
+				+   "AND " + joinFlags(rights, " = 'Y' AND ", " = 'Y'");
 		return getJdbcTemplate().queryForList(sql, Long.class, userID);
 	}
 
@@ -135,13 +137,15 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return params;
 	}
 	
-	private static String[] buildFlags(String rights) {
-		String[] array = new String[rights.length()];
+	private static String joinFlags(String rights, String mid, String tail) {
+		StringBuilder buffer = new StringBuilder();
 		for (int i = 0; i < rights.length(); i++) {
 			int j = indexOfRight(rights.charAt(i));
-			array[i] = flagArray[j];
+			if (i > 0)
+				buffer.append(mid);
+			buffer.append(flagArray[j]);
 		}
-		return array;
+		return buffer.append(tail).toString();
 	}
 
 	private static int indexOfRight(char flag) {

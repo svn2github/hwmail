@@ -17,7 +17,6 @@ package com.hs.mail.imap.processor;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.ImapRequest;
@@ -55,9 +54,8 @@ public class RenameProcessor extends AbstractImapProcessor {
 				// new parent.
 				MailboxPath sourcePath = new MailboxPath(session, sourceName);
 				if (sourcePath.getNamespace() != null) {
-					if (!manager.hasRight(session.getUserID(),
-							source.getMailboxID(),
-							MailboxACL.x_DeleteMailbox_RIGHT)) {
+					if (!manager.hasRights(session.getUserID(),
+							source.getMailboxID(), "x")) {	// x_DeleteMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;
@@ -66,9 +64,9 @@ public class RenameProcessor extends AbstractImapProcessor {
 				if (targetPath.getNamespace() != null) {
 					Mailbox target = manager.getMailbox(targetPath.getUserID(),
 							Mailbox.getParent(targetName));
-					if (target == null || !manager.hasRight(session.getUserID(),
-							target.getMailboxID(),
-							MailboxACL.k_CreateMailbox_RIGHT)) {
+					if (target == null
+							|| !manager.hasRights(session.getUserID(),
+									target.getMailboxID(), "k")) {	// k_CreateMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;

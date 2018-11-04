@@ -47,6 +47,10 @@ public class SelectedMailbox implements EventListener {
 	 */
 	private boolean recent = false;
 	/**
+	 * Current user's rights on this selected mailbox
+	 */
+	private String rights = null;
+	/**
 	 * Mapping table for UID to MSN and vice versa
 	 */
 	private DualHashBidiMap converter;
@@ -99,6 +103,14 @@ public class SelectedMailbox implements EventListener {
 	 */
 	public boolean isRecent() {
 		return recent;
+	}
+	
+	public void setRights(String rights) {
+		this.rights = rights;
+	}
+
+	public boolean hasRights(char right) {
+		return (rights == null || rights.indexOf(right) != -1);
 	}
 	
 	/**

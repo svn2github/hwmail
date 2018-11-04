@@ -17,7 +17,6 @@ package com.hs.mail.imap.processor;
 
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.message.request.ImapRequest;
@@ -46,8 +45,8 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 			if (path.getNamespace() != null) {
 				// RFC 4314 - "l" right is required only if the server checks
 				// for mailbox existence when performing SUBSCRIBE.
-				if (!manager.hasRight(session.getUserID(),
-						mailbox.getMailboxID(), MailboxACL.l_Lookup_RIGHT)) {
+				if (!manager.hasRights(session.getUserID(),
+						mailbox.getMailboxID(), "l")) {	// l_Lookup_RIGHT
 					responder.taggedNo(request,
 							HumanReadableText.MAILBOX_NOT_FOUND);
 					return;

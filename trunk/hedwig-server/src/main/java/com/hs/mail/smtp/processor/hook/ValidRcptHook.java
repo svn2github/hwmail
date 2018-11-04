@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.hs.mail.container.config.ComponentManager;
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.Mailbox;
-import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
@@ -50,10 +49,9 @@ public class ValidRcptHook implements RcptHook {
 						if (mailbox == null) {
 							return HookResult.reject(SmtpException.NO_SUCH_USER);
 						} else if (session.getAuthID() < 0	// anonymous
-								|| !getMailboxManager().hasRight(
+								|| !getMailboxManager().hasRights(
 										session.getAuthID(),
-										mailbox.getMailboxID(),
-										MailboxACL.p_Post_RIGHT)) {
+										mailbox.getMailboxID(), "p")) {	// p_Post_RIGHT
 							// User does not have right to post to the folder.
 							return HookResult.reject(SmtpException.RECIPIENT_REJECTED);
 						}

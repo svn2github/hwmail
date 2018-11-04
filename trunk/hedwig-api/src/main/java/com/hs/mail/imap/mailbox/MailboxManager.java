@@ -368,19 +368,19 @@ public interface MailboxManager {
 	public MailboxACL getACL(long mailboxID);
 
 	/**
-	 * Check if given user has right on the mailbox
+	 * Check if given user has rights on the mailbox
 	 * 
 	 * @param userID
 	 *            the ID of user to check right
 	 * @param mailboxName
 	 *            the ID of mailbox to check right
-	 * @param right
-	 *            the right to check
+	 * @param rights
+	 *            the rights to check
 	 * @return true if the user has right on the mailbox, otherwise false
 	 */
-	public boolean hasRight(long userID, long mailboxID, char right);
+	public boolean hasRights(long userID, long mailboxID, String rights);
 
-	public List<Long> getGrantedMailboxes(long userID, char right);
+	public List<Long> getAuthorizedMailboxes(long userID, String rights);
 
 	/**
 	 * Searches for the messages matching the given query.
