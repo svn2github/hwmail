@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
@@ -29,6 +30,7 @@ import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.response.HumanReadableText;
 
 /**
+ * RFC 3501 - 6.4.3 EXPUNGE command implementation
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
@@ -46,6 +48,11 @@ public class ExpungeProcessor extends AbstractExpungeProcessor {
 					HumanReadableText.MAILBOX_IS_READ_ONLY);
 			return;
 		}
+		if (!selected.hasRights(MailboxACL.e_PerformExpunge_RIGHT)) {
+			responder.taggedNo(request, HumanReadableText.INSUFFICIENT_RIGHTS);
+			return;
+		}
+		
 		MailboxManager manager = getMailboxManager();
 		// Permanently removes all messages that have the \Deleted flag set.
 		List<Long> expungedUids = manager.expunge(selected.getMailboxID());

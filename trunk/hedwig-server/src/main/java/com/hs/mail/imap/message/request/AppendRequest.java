@@ -33,7 +33,7 @@ import com.hs.mail.imap.ImapSession.State;
 public class AppendRequest extends ImapRequest {
 
 	private final String mailbox;
-	private final Flags flags;
+	private Flags flags;
 	private final Date datetime;
 	private final ChannelBuffer message;
 
@@ -54,6 +54,10 @@ public class AppendRequest extends ImapRequest {
 		return flags;
 	}
 
+	public void setFlags(Flags flags) {
+		this.flags = flags;
+	}
+	
 	public Date getDatetime() {
 		return datetime;
 	}

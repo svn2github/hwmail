@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.message.request.CloseRequest;
@@ -27,6 +28,7 @@ import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.Responder;
 
 /**
+ * RFC 3501 - 6.4.2 CLOSE command implementation
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
@@ -40,7 +42,8 @@ public class CloseProcessor extends AbstractExpungeProcessor {
 		CloseRequest request = (CloseRequest) message;
 		SelectedMailbox selected = session.getSelectedMailbox();
 		MailboxManager manager = getMailboxManager();
-		if (!selected.isReadOnly()) {
+		if (!selected.isReadOnly()
+				&& selected.hasRights(MailboxACL.e_PerformExpunge_RIGHT)) {
 			// Permanently removes all messages that have the \Deleted flag set
 			// if the mailbox is selected read-write.
 			List<Long> expungedUids = manager.expunge(selected.getMailboxID());

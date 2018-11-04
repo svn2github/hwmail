@@ -39,8 +39,8 @@ import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.response.HumanReadableText;
 
 /**
- * The APPEND command appends the literal argument as a new message to the end
- * of the specified destination mailbox.
+ * 
+ * RFC 3501 - 6.3.11 APPEND command implementation
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
