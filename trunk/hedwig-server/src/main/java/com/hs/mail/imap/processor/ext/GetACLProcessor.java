@@ -42,6 +42,9 @@ public class GetACLProcessor extends AbstractACLProcessor {
 			String rights = manager.getRights(session.getUserID(),
 					mailbox.getMailboxID());
 			if (rights.indexOf('l') == -1) {
+				// RFC 4314 section 6
+				// If not have permission to LIST, respond with the same error
+				// that would be used if the mailbox did not exist.
 				responder.taggedNo(request, 
 						HumanReadableText.MAILBOX_NOT_FOUND);
 			} else if (rights.indexOf('a') == -1) {
