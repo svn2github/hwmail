@@ -109,6 +109,10 @@ public class SelectedMailbox implements EventListener {
 		this.rights = rights;
 	}
 
+	public String getRights() {
+		return rights;
+	}
+	
 	public boolean hasRights(char right) {
 		return (rights == null || rights.indexOf(right) != -1);
 	}

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.mail.Flags;
-import javax.mail.Flags.Flag;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -30,6 +29,7 @@ import org.jboss.netty.buffer.ChannelBufferInputStream;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.dao.FlagUtils;
 import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.MailboxPath;
@@ -76,10 +76,10 @@ public class AppendProcessor extends AbstractImapProcessor {
 					return;
 				}
 				Flags flags = request.getFlags();
-				if (flags != null) {
+				if (!FlagUtils.isEmpty(flags)) {
 					// The server MUST NOT fail a COPY/APPEND if the user has no
 					// rights to set a particular flag.
-					flags = removeUnauthorizedFlags(flags, rights);
+					flags = FlagUtils.removeUnauthorizedFlags(flags, rights);
 					request.setFlags(flags);
 				}
 			}
@@ -97,20 +97,6 @@ public class AppendProcessor extends AbstractImapProcessor {
 		}
 	}
 	
-	private Flags removeUnauthorizedFlags(Flags flags, String rights) {
-		if (!flags.contains(Flag.DELETED) && !flags.contains(Flag.SEEN)) {
-			if (rights.indexOf('w') == -1)
-				return null;
-		}
-		if (flags.contains(Flag.DELETED) && rights.indexOf('t') == -1) {
-			flags.remove(Flag.DELETED);
-		}
-		if (flags.contains(Flag.SEEN) && rights.indexOf('s') == -1) {
-			flags.remove(Flag.SEEN);
-		}
-		return flags;
-	}
-
 	private void writeMessage(ChannelBuffer buffer, File dst)
 			throws IOException {
 		ChannelBufferInputStream is = new ChannelBufferInputStream(buffer);

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.mail.Flags;
+import javax.mail.Flags.Flag;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,8 @@ import org.apache.commons.lang3.StringUtils;
  * 
  */
 public class FlagUtils {
+	
+	private static final Flags EMPTY_FLAGS = new Flags();
 
 	private static Flags.Flag[] flagArray = { Flags.Flag.SEEN,
 			Flags.Flag.ANSWERED, Flags.Flag.DELETED, Flags.Flag.FLAGGED,
@@ -40,8 +43,26 @@ public class FlagUtils {
 	private static String[] attrArray = { "seen_flag", "answered_flag", 
 			"deleted_flag", "flagged_flag", "recent_flag", "draft_flag" };
 
+	public static boolean isEmpty(Flags flags) {
+		return (flags == null || EMPTY_FLAGS.equals(flags));
+	}
+	
+	public static Flags removeUnauthorizedFlags(Flags flags, String rights) {
+		boolean d = flags.contains(Flag.DELETED);
+		boolean s = flags.contains(Flag.SEEN);
+		
+		if (d && rights.indexOf('t') == -1)
+			flags.remove(Flag.DELETED);
+		if (s && rights.indexOf('s') == -1)
+			flags.remove(Flag.SEEN);
+		if (d || s || rights.indexOf('w') != -1)
+			return flags;
+		else
+			return null;
+	}
+
 	static String getParam(Flags flags, Flags.Flag flag) {
-		return flags.contains(flag) ? "Y" : "N";
+		return (flags != null && flags.contains(flag)) ? "Y" : "N";
 	}
 
 	static String getFlagColumnName(Flags.Flag flag) {

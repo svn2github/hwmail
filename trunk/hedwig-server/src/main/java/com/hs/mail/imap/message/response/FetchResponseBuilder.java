@@ -67,7 +67,8 @@ public class FetchResponseBuilder {
 		this.bodyStructureBuilder = new BodyStructureBuilder(this.envelopeBuilder);
 	}
 	
-	public FetchResponse build(long msgnum, FetchProfile fp, FetchData fd) {
+	public FetchResponse build(long msgnum, FetchProfile fp, FetchData fd,
+			boolean sr) {
 		FetchResponse response = new FetchResponse(msgnum);
 		if (fp.contains(FetchProfile.Item.FLAGS)) {
 			response.setFlags(fd.getFlags());
@@ -102,8 +103,8 @@ public class FetchResponseBuilder {
 				Content content = buildBodyContent(contents, item);
 				response.setContent(content);
 				// Check if this fetch will cause the "SEEN" flag to be set
-				// on this message.
-				if (!item.isPeek()) {
+				// on this message and current user have "s" right.
+				if (!item.isPeek() && sr) {
 					if (fd.getFlags() == null
 							|| !fd.getFlags().contains(Flags.Flag.SEEN)) {
 						manager.setFlags(fd.getMessageID(), new Flags(

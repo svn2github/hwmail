@@ -18,9 +18,12 @@ package com.hs.mail.imap.processor;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.mail.Flags;
+
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.dao.FlagUtils;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
@@ -29,6 +32,7 @@ import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.request.StoreRequest;
 import com.hs.mail.imap.message.responder.Responder;
 import com.hs.mail.imap.message.responder.StoreResponder;
+import com.hs.mail.imap.message.response.HumanReadableText;
 import com.hs.mail.imap.message.response.StoreResponse;
 
 /**
@@ -49,6 +53,16 @@ public class StoreProcessor extends AbstractImapProcessor {
 			StoreResponder responder) {
 		MailboxManager manager = getMailboxManager();
 		SelectedMailbox selected = session.getSelectedMailbox();
+		String rights = selected.getRights();
+		Flags flags = request.getFlags();
+		if (rights != null) {
+			flags = FlagUtils.removeUnauthorizedFlags(flags, rights);
+			if (FlagUtils.isEmpty(flags)) {
+				responder.taggedNo(request,
+						HumanReadableText.INSUFFICIENT_RIGHTS);
+				return;
+			}
+		}
 		UidToMsnMapper map = new UidToMsnMapper(selected, request.isUseUID());
 		SequenceRange[] sequenceSet = request.getSequenceSet();
 		List<Long> flagUpdatedUids = new ArrayList<Long>();
@@ -58,8 +72,8 @@ public class StoreProcessor extends AbstractImapProcessor {
 			for (long j = min; j <= max && j >= 0; j++) {
 				long uid = map.getUID((int) j);
 				if (uid != -1) {
-					manager.setFlags(uid, request.getFlags(), request
-							.isReplace(), request.isPlus());
+					manager.setFlags(uid, flags, request.isReplace(),
+							request.isPlus());
 					flagUpdatedUids.add(new Long(uid));
 					if (!request.isSilent()) {
 						responder.respond(new StoreResponse(j, manager
@@ -73,7 +87,7 @@ public class StoreProcessor extends AbstractImapProcessor {
 		flagsUpdated(session, flagUpdatedUids);
 		responder.okCompleted(request);
 	}
-	
+
 	private void flagsUpdated(ImapSession session, List<Long> flagUpdatedUids) {
 		getMailboxManager().getEventDispatcher().flagsUpdated(
 				session.getSessionID(),

@@ -20,6 +20,7 @@ import javax.mail.FetchProfile;
 import org.jboss.netty.channel.Channel;
 
 import com.hs.mail.imap.ImapSession;
+import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
@@ -34,7 +35,7 @@ import com.hs.mail.imap.message.response.FetchResponseBuilder;
 import com.hs.mail.imap.processor.AbstractImapProcessor;
 
 /**
- * Handler for FETCH command.
+ * RFC 3501 - 6.4.5 FETCH command implementation
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
@@ -56,6 +57,7 @@ public class FetchProcessor extends AbstractImapProcessor {
 		FetchResponseBuilder builder = new FetchResponseBuilder(manager);
 		SequenceRange[] sequenceSet = request.getSequenceSet();
 		FetchProfile fp = request.getFetchProfile();
+		boolean sr = selected.hasRights(MailboxACL.s_WriteSeenFlag_RIGHT);
 		for (int i = 0; i < sequenceSet.length; i++) {
 			long min = map.getMinMessageNumber(sequenceSet[i].getMin());
 			long max = map.getMaxMessageNumber(sequenceSet[i].getMax());
@@ -64,7 +66,7 @@ public class FetchProcessor extends AbstractImapProcessor {
 				if (uid != -1) {
 					FetchData fd = manager.getMessageFetchData(uid);
 					if (fd != null) {
-						FetchResponse response = builder.build(j, fp, fd);
+						FetchResponse response = builder.build(j, fp, fd, sr);
 						if (response != null) {
 							responder.respond(response);
 						}

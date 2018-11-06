@@ -33,7 +33,7 @@ public class StoreRequest extends ImapRequest {
     private final boolean minus;
     private final boolean plus;
     private final boolean silent;
-    private final Flags flags;
+    private Flags flags;
 	private final boolean useUID;
 
 	public StoreRequest(String tag, String command,
@@ -72,6 +72,10 @@ public class StoreRequest extends ImapRequest {
 		return flags;
 	}
 
+	public void setFlags(Flags flags) {
+		this.flags = flags;
+	}
+	
 	public boolean isUseUID() {
 		return useUID;
 	}
