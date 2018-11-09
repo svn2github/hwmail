@@ -81,7 +81,7 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 					+  "FROM hw_mailbox b, hw_subscription s "
 					+ "WHERE s.userid = ? "
 					+   "AND b.ownerid = ? "
-					+   "AND b.name = s.name "
+					+   "AND b.mailboxid = s.mailboxid "
 					+ "ORDER BY b.name";
 			return getJdbcTemplate().query(sql,
 					new Object[] { new Long(userID), new Long(ownerID) },
@@ -93,7 +93,7 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 					+ "WHERE s.userid = ? "
 					+   "AND b.ownerid = ? "
 					+   "AND b.name LIKE ? "
-					+   "AND b.name = s.name "
+					+   "AND b.mailboxid = s.mailboxid "
 					+ "ORDER BY b.name";
 			return getJdbcTemplate().query(
 					sql,
@@ -106,15 +106,15 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 		}
 	}
 
-	public boolean isSubscribed(long userID, String mailboxName) {
-		String sql = "SELECT COUNT(1) FROM hw_subscription WHERE userid = ? AND name = ?";
+	public boolean isSubscribed(long userID, long mailboxID) {
+		String sql = "SELECT COUNT(1) FROM hw_subscription WHERE userid = ? AND mailboxid = ?";
 		int count = queryForInt(sql, new Object[] { new Long(userID),
-				mailboxName });
+				new Long(mailboxID) });
 		return (count > 0);
 	}
 
 	public void addSubscription(long userID, long mailboxID, String mailboxName) {
-		if (!isSubscribed(userID, mailboxName)) {
+		if (!isSubscribed(userID, mailboxID)) {
 			String sql = "INSERT INTO hw_subscription (userid, mailboxid, name) VALUES(?, ?, ?)";
 			getJdbcTemplate().update(sql, userID, mailboxID, mailboxName);
 		} else {

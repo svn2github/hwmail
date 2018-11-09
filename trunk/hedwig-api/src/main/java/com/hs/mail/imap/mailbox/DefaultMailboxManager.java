@@ -245,9 +245,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.getSubscriptions(userID, ownerID, mailboxName);
 	}
 
-	public boolean isSubscribed(long userID, String mailboxName) {
+	public boolean isSubscribed(long userID, long mailboxID) {
 		MailboxDao dao = DaoFactory.getMailboxDao();
-		return dao.isSubscribed(userID, mailboxName);
+		return dao.isSubscribed(userID, mailboxID);
 	}
 
 	public void addSubscription(final long userID, final long mailboxID,

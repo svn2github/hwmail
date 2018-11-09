@@ -47,7 +47,8 @@ public class LsubProcessor extends AbstractListProcessor {
 	protected Mailbox getMailbox(long userID, MailboxPath path) {
 		Mailbox result = super.getMailbox(userID, path);
 		if (result != null
-				&& getMailboxManager().isSubscribed(userID, result.getName())) {
+				&& getMailboxManager().isSubscribed(userID,
+						result.getMailboxID())) {
 			return result;
 		} else {
 			return null;

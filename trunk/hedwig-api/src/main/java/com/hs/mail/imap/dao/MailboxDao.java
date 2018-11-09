@@ -178,10 +178,10 @@ public interface MailboxDao extends DaoSupport {
 	 * @param userID
 	 *            ID of the user
 	 * @param mailboxName
-	 *            fully qualified name of the mailbox
+	 *            ID of the mailbox
 	 * @return true if the mailbox is subscribed, otherwise false
 	 */
-	public boolean isSubscribed(long userID, String mailboxName);
+	public boolean isSubscribed(long userID, long mailboxID);
 	
 	/**
 	 * Subscribe the mailbox.

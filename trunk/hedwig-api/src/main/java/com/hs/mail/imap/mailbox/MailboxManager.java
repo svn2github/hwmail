@@ -160,10 +160,10 @@ public interface MailboxManager {
 	 * @param userID
 	 *            ID of user
 	 * @param mailboxName
-	 *            fully qualified name of the mailbox
+	 *            ID of the mailbox
 	 * @return true if mailbox is subscribed, otherwise false
 	 */
-	public boolean isSubscribed(long userID, String mailboxName);
+	public boolean isSubscribed(long userID, long mailboxID);
 
 	/**
 	 * Subscribe the user to the given mailbox.
