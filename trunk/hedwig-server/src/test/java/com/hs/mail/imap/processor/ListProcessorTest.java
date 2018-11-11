@@ -19,7 +19,7 @@ public class ListProcessorTest extends AbstractImapProcessorTest {
 	
 	Mailbox result;
 	ListResponder responder;
-	ListProcessor processor = new MockLostProcessor();
+	ListProcessor processor = new MockListProcessor();
 	
 	@Before
 	public void setUp() throws Exception {
@@ -50,7 +50,7 @@ public class ListProcessorTest extends AbstractImapProcessorTest {
     	when(session.getUserID()).thenReturn(1L);
     }
     
-    static class MockLostProcessor extends ListProcessor {
+    static class MockListProcessor extends ListProcessor {
     	protected MailboxManager getMailboxManager() {
     		return mailboxManager;
     	}
