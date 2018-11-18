@@ -25,7 +25,9 @@ public interface ImapConstants {
 
 	public static final String INBOX_NAME = "INBOX";
 	
-	public static final String NAMESPACE_PREFIX = "#";
+	public static final String USER_PREFIX = "~";
+	
+	public static final String SHARED_PREFIX = "#";
 
 	/**
 	 * Common header field names

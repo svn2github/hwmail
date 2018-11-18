@@ -15,6 +15,7 @@
  */
 package com.hs.mail.imap.processor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -22,9 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hs.mail.container.config.ComponentManager;
+import com.hs.mail.exception.MailboxNotFoundException;
+import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.ImapSession;
 import com.hs.mail.imap.event.EventTracker;
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
+import com.hs.mail.imap.mailbox.MailboxPath;
 import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.DefaultImapResponder;
@@ -33,6 +38,7 @@ import com.hs.mail.imap.message.responder.UnsolicitedResponder;
 import com.hs.mail.imap.message.response.HumanReadableText;
 import com.hs.mail.imap.message.response.UnsolicitedResponse;
 import com.hs.mail.imap.message.response.UnsolicitedResponseBuilder;
+import com.hs.mail.imap.user.User;
 import com.hs.mail.imap.user.UserManager;
 
 /**
@@ -115,6 +121,47 @@ public abstract class AbstractImapProcessor implements ImapProcessor {
 		ChannelFuture future = responder
 				.bye(HumanReadableText.MAILBOX_DELETED_SIGN_OFF);
 		future.addListener(ChannelFutureListener.CLOSE);
+	}
+
+	protected MailboxPath buildMailboxPath(ImapSession session,
+			String mailboxName) throws MailboxNotFoundException {
+		// Personal namespace
+		if (mailboxName == null
+				|| !(mailboxName.startsWith(ImapConstants.SHARED_PREFIX)
+						|| mailboxName.startsWith(ImapConstants.USER_PREFIX))) {
+			return new MailboxPath(null, mailboxName, session.getUserID());
+		}
+
+		String namespace = null;
+		int namespaceLength = mailboxName.indexOf(Mailbox.folderSeparator);
+		if (namespaceLength > -1) {
+			namespace = mailboxName.substring(0, namespaceLength);
+		} else {
+			namespace = mailboxName;
+		}
+
+		// Shared namespace 
+		if (mailboxName.startsWith(ImapConstants.SHARED_PREFIX)) {
+			return new MailboxPath(namespace, mailboxName,
+					ImapConstants.ANYONE_ID);
+		}
+
+		// Other user's namespace
+		if (StringUtils.containsAny(namespace, "*%")) {
+			return new MailboxPath(namespace, namespace.substring(1),
+					ImapConstants.ANYONE_ID);
+		}
+		User user = getUserManager().getUserByAddress(namespace.substring(1));
+		if (user == null) {
+			throw new MailboxNotFoundException(
+					HumanReadableText.MAILBOX_NOT_FOUND);
+		}
+
+		return new MailboxPath(namespace,
+				(namespaceLength > -1)
+						? mailboxName.substring(namespaceLength + 1)
+						: StringUtils.EMPTY,
+				user.getID());
 	}
 	
 }

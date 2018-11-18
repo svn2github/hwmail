@@ -45,14 +45,14 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		doProcess(session, (AbstractMailboxRequest) message,
 				(SelectResponder) responder);
 	}
 
 	private void doProcess(ImapSession session, AbstractMailboxRequest request,
-			SelectResponder responder) {
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+			SelectResponder responder) throws Exception {
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
@@ -65,7 +65,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			String rights = null;
 			if (path.getNamespace() != null) {
 				rights = manager.getRights(session.getUserID(),
-						mailbox.getMailboxID());
+						mailbox.getMailboxID(), true);
 				if (!StringUtils.contains(rights, MailboxACL.r_Read_RIGHT)) {
 					responder.taggedNo(request,
 							HumanReadableText.INSUFFICIENT_RIGHTS);

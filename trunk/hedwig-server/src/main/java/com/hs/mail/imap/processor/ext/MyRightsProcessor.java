@@ -34,7 +34,7 @@ public class MyRightsProcessor extends AbstractACLProcessor {
 
 	protected void doProcess(ImapSession session, MyRightsRequest request,
 			MyRightsResponder responder) throws Exception {
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
@@ -46,7 +46,7 @@ public class MyRightsProcessor extends AbstractACLProcessor {
 		String rights = (session.getUserID() == mailbox.getOwnerID()) 
 				? Config.getProperty(ACL_OWNER_RIGHTS, MailboxACL.STD_RIGHTS)
 				: manager.getRights(session.getUserID(),
-						mailbox.getMailboxID());
+						mailbox.getMailboxID(), false);
 		/*
 		 * RFC 4314 section 4.
 		 * MYRIGHTS - any of the following rights is required to perform the

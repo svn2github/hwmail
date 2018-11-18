@@ -19,8 +19,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -52,11 +54,27 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		"admin_flag" 
 	};
 	
-	public String getRights(long userID, long mailboxID) {
-		final String sql = "SELECT * FROM hw_acl WHERE mailboxid = ? AND userid = ?";
-		MailboxACLEntry entry = queryForObject(sql, new Object[] { mailboxID,
-				userID }, aclMapper);
-		return (entry != null) ? entry.getRights() : "";
+	public String getRights(long userID, long mailboxID,
+			boolean includeAnyone) {
+		String sql = "SELECT * FROM hw_acl WHERE mailboxid = ?";
+		sql += includeAnyone
+				? " AND (userid = ? OR userid = 0)"
+				: " AND userid = ?";
+		List<Map<String, Object>> result = getJdbcTemplate().queryForList(sql,
+				new Object[]{mailboxID, userID});
+		if (CollectionUtils.isEmpty(result)) {
+			return null; 
+		}
+		String rights = "";
+		for (int i = 0; i < flagArray.length; i++) {
+			for (Map<String, Object> rs: result) {
+				if ("Y".equals(MapUtils.getString(rs, flagArray[i]))) {
+					rights += MailboxACL.STD_RIGHTS.charAt(i);
+					break;
+				}
+			}
+		}
+		return rights;
 	}
 
 	public void setRights(long userID, long mailboxID, String rights) {

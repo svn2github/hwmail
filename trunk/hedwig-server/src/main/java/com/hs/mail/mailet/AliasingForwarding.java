@@ -102,7 +102,7 @@ public class AliasingForwarding extends AbstractMailet {
 				it.remove();
 				if (CollectionUtils.isNotEmpty(expanded)) {
 					for (Alias alias : expanded) {
-						if (alias.getDeliverTo().startsWith(ImapConstants.NAMESPACE_PREFIX)) {
+						if (alias.getDeliverTo().startsWith(ImapConstants.SHARED_PREFIX)) {
 							// Aliased mailbox is a public folder.
 							Recipient pf = new Recipient(rcpt.getMailbox(), false);
 							pf.setID(ImapConstants.ANYONE_ID);

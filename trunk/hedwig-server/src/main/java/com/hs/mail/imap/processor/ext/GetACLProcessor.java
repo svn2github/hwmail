@@ -33,14 +33,14 @@ public class GetACLProcessor extends AbstractACLProcessor {
 	protected void doProcess(ImapSession session, GetACLRequest request,
 			ACLResponder responder) throws Exception {
 		MailboxManager manager = getMailboxManager();
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
 			String rights = manager.getRights(session.getUserID(),
-					mailbox.getMailboxID());
+					mailbox.getMailboxID(), true);
 			if (rights.indexOf('l') == -1) {
 				// RFC 4314 section 6
 				// If not have permission to LIST, respond with the same error

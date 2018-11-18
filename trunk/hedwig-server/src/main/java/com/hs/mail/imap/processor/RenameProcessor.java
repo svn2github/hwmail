@@ -34,13 +34,13 @@ public class RenameProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		RenameRequest request = (RenameRequest) message;
 		String sourceName = request.getOldName();
 		String targetName = request.getNewName();
 		MailboxManager manager = getMailboxManager();
 		Mailbox source = manager.getMailbox(session.getUserID(), sourceName);
-		MailboxPath targetPath = new MailboxPath(session, targetName);
+		MailboxPath targetPath = buildMailboxPath(session, targetName);
 		// Attempt to rename from a mailbox name that does not exist
 		if (source == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
@@ -52,7 +52,7 @@ public class RenameProcessor extends AbstractImapProcessor {
 				// RENAME - Moving a mailbox from one parent to another requires
 				// the "x" right on the mailbox itself and the "k" right for the
 				// new parent.
-				MailboxPath sourcePath = new MailboxPath(session, sourceName);
+				MailboxPath sourcePath = buildMailboxPath(session, sourceName);
 				if (sourcePath.getNamespace() != null) {
 					if (!manager.hasRights(session.getUserID(),
 							source.getMailboxID(), "x")) {	// x_DeleteMailbox_RIGHT

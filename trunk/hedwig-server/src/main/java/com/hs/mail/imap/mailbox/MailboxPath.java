@@ -1,9 +1,8 @@
 package com.hs.mail.imap.mailbox;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.hs.mail.imap.ImapConstants;
-import com.hs.mail.imap.ImapSession;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * The path to a mailbox
@@ -18,28 +17,12 @@ public class MailboxPath {
 	private String fullname;
 	private long userID;
 	
-	public MailboxPath(ImapSession session, String mailboxName) {
-		fullname = mailboxName;
-		if (fullname.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
-			int namespaceLength = this.fullname.indexOf(Mailbox.folderSeparator);
-			if (namespaceLength > -1) {
-				namespace = fullname.substring(0, namespaceLength);
-			} else {
-				namespace = fullname;
-			}
-			userID = ImapConstants.ANYONE_ID;
-		} else {
-			namespace = null;	// Personal namespace
-			userID = session.getUserID();
-		}
+	public MailboxPath(String namespace, String fullname, long userID) {
+		this.namespace = namespace;
+		this.fullname = fullname;
+		this.userID = userID;
 	}
-	
-	public MailboxPath(ImapSession session, String referenceName,
-			String mailboxName) {
-		this(session, interpret(referenceName, mailboxName,
-				Mailbox.folderSeparator));
-	}
-	
+
 	public String getNamespace() {
 		return namespace;
 	}
@@ -55,8 +38,16 @@ public class MailboxPath {
 	public String getBaseName() {
 		return getBaseName(fullname, Mailbox.folderSeparator);
 	}
+
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+	}
 	
-	public static String interpret(String referenceName, String mailboxName,
+	public static String interpret(String referenceName, String mailboxName) {
+		return interpret(referenceName, mailboxName, Mailbox.folderSeparator);
+	}
+	
+	private static String interpret(String referenceName, String mailboxName,
 			String sep) {
 		StringBuilder sb = new StringBuilder(referenceName);
 		if (StringUtils.isNotEmpty(referenceName)) {
@@ -64,7 +55,6 @@ public class MailboxPath {
 				sb.append(sep);
 			}
 		}
-
 		return sb.append(StringUtils.removeEnd(mailboxName, sep)).toString();
 	}
 

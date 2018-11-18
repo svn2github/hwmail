@@ -53,7 +53,7 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 		final String sql = "INSERT INTO hw_mailbox (name, ownerid, noselect_flag, nextuid, uidvalidity) VALUES(?, ?, ?, ?, ?)";
 		final long uidValidity = System.currentTimeMillis();
 		final boolean noSelect = mailboxName
-				.startsWith(ImapConstants.NAMESPACE_PREFIX)
+				.startsWith(ImapConstants.SHARED_PREFIX)
 				&& (mailboxName.indexOf(Mailbox.folderSeparator) == -1);
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {

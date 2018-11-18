@@ -57,7 +57,7 @@ public class AppendProcessor extends AbstractImapProcessor {
 			Responder responder) throws Exception {
 		AppendRequest request = (AppendRequest) message;
 		MailboxManager manager = getMailboxManager();
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
 		if (mailbox == null) {
@@ -69,7 +69,7 @@ public class AppendProcessor extends AbstractImapProcessor {
 				// Before performing a COPY/APPEND command, the server MUST
 				// check if the user has "i" right for the target mailbox.
 				String rights = manager.getRights(session.getUserID(),
-						mailbox.getMailboxID());
+						mailbox.getMailboxID(), true);
 				if (rights.indexOf('i') == -1) {
 					responder.taggedNo(request,
 							HumanReadableText.INSUFFICIENT_RIGHTS);

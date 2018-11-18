@@ -71,7 +71,6 @@ public class Config implements InitializingBean {
 	private static String[] mydestinations;
 	private static String hostName;
 	private static String helloName;
-	private static String[] namespaces;
 	private static InetAddressMatcher authorizedNetworks;
 	private static String postmaster; 
 	private static long maxMessageSize;
@@ -188,7 +187,7 @@ public class Config implements InitializingBean {
 	}
 	
 	public static String[] getNamespaces() {
-		return namespaces;
+		return StringUtils.split(getProperty("namespaces", null), ",");
 	}
 	
 	public static InetAddressMatcher getAuthorizedNetworks() {
@@ -303,8 +302,6 @@ public class Config implements InitializingBean {
 		} else {
 			mydestinations = StringUtils.stripAll(StringUtils.split(destination, ","));
 		}
-		
-		namespaces = StringUtils.split(getProperty("namespaces", null), ",");
 		
 		/*
 		 * SMTP related parameters

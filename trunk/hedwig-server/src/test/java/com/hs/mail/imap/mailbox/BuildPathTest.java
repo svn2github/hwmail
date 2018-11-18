@@ -18,6 +18,7 @@ public class BuildPathTest {
 
 	private static UserManager userManager = mock(UserManager.class);
 	private static User someone = mock(User.class); 
+	private static User mark = mock(User.class); 
 	private static ImapSession session = new ImapSession();
 	
 	@Before
@@ -31,16 +32,18 @@ public class BuildPathTest {
 	public void test() throws MailboxNotFoundException {
 		when(userManager.getUserByAddress(eq("someone"))).thenReturn(someone);
 		when(someone.getID()).thenReturn(2L);
+		when(userManager.getUserByAddress(eq("mark"))).thenReturn(mark);
+		when(mark.getID()).thenReturn(3L);
 		
 		//MailboxPath path = buildMailboxPath(session, "~.%");
-		String[] mailboxNames = { "~someone", "~someone.INBOX", "#public.%" };
+		String[] mailboxNames = { "Private.HERA", "~someone", "~someone.INBOX", "#public.%", "~mark.%", "~m%" };
 		for (String mailboxName : mailboxNames) {
 			MailboxPath path = buildMailboxPath(session, mailboxName);
 			System.out.println(path);
 		}
 		
 		System.out.println();
-		MailboxPath path = new MailboxPath(session, "", "˜mark.%");
+		MailboxPath path = buildMailboxPath(session, MailboxPath.interpret("", "~mark.%"));
 		System.out.println(path);
 	}
 
@@ -69,7 +72,8 @@ public class BuildPathTest {
 
 		// Other user's namespace
 		if (StringUtils.containsAny(namespace, "*%")) {
-			// TODO
+			return new MailboxPath(namespace, namespace.substring(1),
+					ImapConstants.ANYONE_ID);
 		}
 		User user = userManager.getUserByAddress(namespace.substring(1));
 		if (user == null) {
@@ -77,12 +81,11 @@ public class BuildPathTest {
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		}
 
-		if (namespaceLength > -1) 
-			mailboxName = mailboxName.substring(namespaceLength + 1);
-		else
-			mailboxName = StringUtils.EMPTY;
-		
-		return new MailboxPath(namespace, mailboxName, user.getID());
+		return new MailboxPath(namespace,
+				(namespaceLength > -1)
+						? mailboxName.substring(namespaceLength + 1)
+						: StringUtils.EMPTY,
+				user.getID());
 	}
 	
 }

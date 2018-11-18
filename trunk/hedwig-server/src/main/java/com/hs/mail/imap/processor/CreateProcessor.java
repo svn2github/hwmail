@@ -37,7 +37,7 @@ public class CreateProcessor extends AbstractImapProcessor {
 	
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		CreateRequest request = (CreateRequest) message;
 		String mailboxName = StringUtils.removeEnd(request.getMailbox(),
 				Mailbox.folderSeparator);
@@ -46,7 +46,7 @@ public class CreateProcessor extends AbstractImapProcessor {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_CREATE_INBOX);
 		} else {
-			MailboxPath path = new MailboxPath(session, mailboxName);
+			MailboxPath path = buildMailboxPath(session, mailboxName);
 			MailboxManager manager = getMailboxManager();
 			if (manager.mailboxExists(path.getUserID(), mailboxName)) {
 				responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);

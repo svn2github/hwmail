@@ -34,9 +34,9 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		SubscribeRequest request = (SubscribeRequest) message;
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
 		Mailbox mailbox = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (mailbox == null) {

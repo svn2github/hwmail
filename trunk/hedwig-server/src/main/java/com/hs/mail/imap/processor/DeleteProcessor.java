@@ -36,10 +36,10 @@ public class DeleteProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		DeleteRequest request = (DeleteRequest) message;
 		String mailboxName = request.getMailbox();
-		MailboxPath path = new MailboxPath(session, mailboxName);
+		MailboxPath path = buildMailboxPath(session, mailboxName);
 		if (ImapConstants.INBOX_NAME.equalsIgnoreCase(mailboxName)) {
 			responder.taggedNo(request,
 					HumanReadableText.FAILED_TO_DELETE_INBOX);

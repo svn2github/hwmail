@@ -37,11 +37,11 @@ public class CopyProcessor extends AbstractImapProcessor {
 
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		CopyRequest request = (CopyRequest) message;
 		SelectedMailbox selected = session.getSelectedMailbox();
 		MailboxManager manager = getMailboxManager();
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
 		if (mailbox == null) {

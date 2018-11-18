@@ -49,7 +49,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 	}
 
 	private void doProcess(ImapSession session, AbstractListRequest request,
-			ListResponder responder) {
+			ListResponder responder) throws Exception {
 		String referenceName = request.getMailbox();
 		String mailboxName = request.getPattern();
 		if (StringUtils.isEmpty(mailboxName)) {
@@ -57,7 +57,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 			// to return the hierarchy delimiter and the root name of the name
 			// given in the reference.
 			String referenceRoot;
-			if (referenceName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
+			if (referenceName.startsWith(ImapConstants.SHARED_PREFIX)) {
 				// A qualified reference name - get the first element.
 				int i = referenceName.indexOf(Mailbox.folderSeparator);
 				if (i != -1) {
@@ -72,7 +72,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 					+ Mailbox.folderSeparator + "\" \"" + referenceRoot
 					+ "\"\r\n");
 		} else {
-			if (mailboxName.startsWith(ImapConstants.NAMESPACE_PREFIX)) {
+			if (mailboxName.startsWith(ImapConstants.SHARED_PREFIX)) {
 				// If the mailboxName if fully qualified, ignore the reference
 				// name.
 				referenceName = "";
@@ -81,8 +81,8 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 				referenceName = StringUtils.removeEnd(referenceName,
 						Mailbox.folderSeparator);
 			}
-			MailboxPath path = new MailboxPath(session, referenceName,
-					mailboxName);
+			MailboxPath path = buildMailboxPath(session,
+					MailboxPath.interpret(referenceName, mailboxName));
 			doList(session, responder, path);
 		}
 		responder.okCompleted(request);
@@ -140,8 +140,8 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		MailboxManager manager = getMailboxManager();
 		Mailbox result = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (result != null) {
-			if ((path.getNamespace() != null)
-					&& (path.getNamespace() != path.getFullName())) {	// Top level public mailbox
+			if ((path.getNamespace() != null) && (path.getFullName()
+					.indexOf(Mailbox.folderSeparator) != -1)) { // Not namespace itself
 				// LIST - "l" right is required.
 				if (!manager.hasRights(userID, result.getMailboxID(), "l")) { // l_Lookup_RIGHT
 					return null;

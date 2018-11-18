@@ -31,8 +31,7 @@ public class MailboxQuery {
 	private Matcher matcher;
 
 	public MailboxQuery(String referenceName, String mailboxName) {
-		this.expression = MailboxPath.interpret(referenceName, mailboxName,
-				Mailbox.folderSeparator);
+		this.expression = MailboxPath.interpret(referenceName, mailboxName);
 		if (expression.indexOf('*') >= 0 || expression.indexOf('%') >= 0) {
 			this.matcher = createMatcher(expression);
 		}

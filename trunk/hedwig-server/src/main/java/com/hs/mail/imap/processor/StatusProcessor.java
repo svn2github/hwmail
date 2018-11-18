@@ -44,13 +44,13 @@ public class StatusProcessor extends AbstractImapProcessor {
 	
 	@Override
 	protected void doProcess(ImapSession session, ImapRequest message,
-			Responder responder) {
+			Responder responder) throws Exception {
 		doProcess(session, (StatusRequest) message, (StatusResponder) responder);
 	}
 
 	private void doProcess(ImapSession session, StatusRequest request,
-			StatusResponder responder) {
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+			StatusResponder responder) throws Exception {
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		Status attr = request.getStatusAtts();
 		MailboxManager manager = getMailboxManager();
 		Mailbox mailbox = manager.getMailbox(path.getUserID(), path.getFullName());

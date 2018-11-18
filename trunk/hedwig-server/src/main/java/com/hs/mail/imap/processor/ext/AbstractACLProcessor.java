@@ -44,7 +44,7 @@ public abstract class AbstractACLProcessor extends AbstractImapProcessor {
 	
 	protected Mailbox getAuthorizedMailbox(ImapSession session,
 			AbstractMailboxRequest request) throws MailboxException {
-		MailboxPath path = new MailboxPath(session, request.getMailbox());
+		MailboxPath path = buildMailboxPath(session, request.getMailbox());
 		MailboxManager manager = getMailboxManager();
 		Mailbox mailbox = manager.getMailbox(path.getUserID(),
 				path.getFullName());
@@ -54,7 +54,7 @@ public abstract class AbstractACLProcessor extends AbstractImapProcessor {
 		}
 
 		String rights = manager.getRights(session.getUserID(),
-				mailbox.getMailboxID());
+				mailbox.getMailboxID(), true);
 		/*
 		 * RFC 4314 section 6.
 		 * An implementation MUST make sure the ACL commands themselves do
