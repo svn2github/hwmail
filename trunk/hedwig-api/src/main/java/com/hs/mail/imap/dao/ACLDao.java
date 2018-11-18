@@ -12,7 +12,7 @@ import com.hs.mail.imap.mailbox.MailboxACL;
  */
 public interface ACLDao extends DaoSupport {
 	
-	public String getRights(long userID, long mailboxID, boolean includeAnyone);
+	public String getRights(long userID, long mailboxID, boolean anyone);
 
 	public void setRights(long userID, long mailboxID, String rights);
 

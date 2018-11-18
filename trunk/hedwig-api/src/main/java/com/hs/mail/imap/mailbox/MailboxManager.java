@@ -339,9 +339,11 @@ public interface MailboxManager {
 	 *            ID of the user to retrieve the rights
 	 * @param mailboxID
 	 *            ID of the mailbox controlled by the access control list
+	 * @param anyone
+	 *            true if want to include anyone's rights as well
 	 * @return all the rights allowed to the user
 	 */
-	public String getRights(long userID, long mailboxID, boolean includeAnyone);
+	public String getRights(long userID, long mailboxID, boolean anyone);
 
 	/**
 	 * Set the rights to the access control entry of the user for the given

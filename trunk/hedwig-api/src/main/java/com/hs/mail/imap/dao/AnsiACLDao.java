@@ -54,10 +54,9 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		"admin_flag" 
 	};
 	
-	public String getRights(long userID, long mailboxID,
-			boolean includeAnyone) {
+	public String getRights(long userID, long mailboxID, boolean anyone) {
 		String sql = "SELECT * FROM hw_acl WHERE mailboxid = ?";
-		sql += includeAnyone
+		sql += anyone
 				? " AND (userid = ? OR userid = 0)"
 				: " AND userid = ?";
 		List<Map<String, Object>> result = getJdbcTemplate().queryForList(sql,

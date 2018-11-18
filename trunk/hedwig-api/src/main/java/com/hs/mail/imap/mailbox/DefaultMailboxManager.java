@@ -605,9 +605,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 	
 	public String getRights(long userID, long mailboxID,
-			boolean includeAnyone) {
+			boolean anyone) {
 		ACLDao dao = DaoFactory.getACLDao();
-		return dao.getRights(userID, mailboxID, includeAnyone);
+		return dao.getRights(userID, mailboxID, anyone);
 	}
 	
 	public void setACL(final long userID, final long mailboxID,
