@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.hs.mail.imap.ImapConstants;
+
 /**
  * The path to a mailbox
  * 
@@ -39,6 +41,20 @@ public class MailboxPath {
 		return getBaseName(fullname, Mailbox.folderSeparator);
 	}
 
+	public boolean isPersonalNamespace() {
+		return (namespace == null);
+	}
+	
+	public boolean isOthersNamespace() {
+		return (namespace != null && namespace
+				.startsWith(ImapConstants.USER_PREFIX));
+	}
+
+	public boolean isSharedNamespace() {
+		return (namespace != null && namespace
+				.startsWith(ImapConstants.SHARED_PREFIX));
+	}
+	
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 	}

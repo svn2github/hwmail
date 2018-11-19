@@ -51,7 +51,7 @@ public class CreateProcessor extends AbstractImapProcessor {
 			if (manager.mailboxExists(path.getUserID(), mailboxName)) {
 				responder.taggedNo(request, HumanReadableText.MAILBOX_EXISTS);
 			} else {
-				if (path.getNamespace() != null) {
+				if (!path.isPersonalNamespace()) {
 					Mailbox mailbox = manager.getMailbox(path.getUserID(),
 							Mailbox.getParent(mailboxName));
 					if (mailbox == null

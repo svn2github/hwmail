@@ -51,7 +51,7 @@ public class DeleteProcessor extends AbstractImapProcessor {
 				responder
 						.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 			} else {
-				if (path.getNamespace() != null) {
+				if (!path.isPersonalNamespace()) {
 					if (!manager.hasRights(session.getUserID(),
 							mailbox.getMailboxID(), "x")) { // x_DeleteMailbox_RIGHT
 						responder.taggedNo(request,

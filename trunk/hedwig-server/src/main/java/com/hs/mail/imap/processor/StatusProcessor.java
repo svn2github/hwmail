@@ -57,7 +57,7 @@ public class StatusProcessor extends AbstractImapProcessor {
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			if (path.getNamespace() != null) {
+			if (!path.isPersonalNamespace()) {
 				SelectedMailbox selected = session.getSelectedMailbox();
 				if ((selected != null // SELECTED STATE
 						&& selected.getMailboxID() == mailbox.getMailboxID()

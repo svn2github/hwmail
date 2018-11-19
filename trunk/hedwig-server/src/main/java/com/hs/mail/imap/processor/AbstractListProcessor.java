@@ -119,7 +119,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		MailboxManager manager = getMailboxManager();
 		List<Mailbox> children = manager.getChildren(userID, path.getUserID(),
 				path.getBaseName(), subscribed);
-		if (path.getNamespace() == null) {
+		if (path.isPersonalNamespace()) {
 			return children;
 		}
 		
@@ -129,7 +129,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		for (Mailbox child : children) {
 			if (granted.contains(child.getMailboxID())) {
 				// Unlike other commands (e.g., SELECT) the server MUST NOT
-				// return a NO response if it can’t list a mailbox.
+				// return a NO response if it can't list a mailbox.
 				results.add(child);
 			}
 		}
@@ -140,8 +140,8 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		MailboxManager manager = getMailboxManager();
 		Mailbox result = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (result != null) {
-			if ((path.getNamespace() != null) && (path.getFullName()
-					.indexOf(Mailbox.folderSeparator) != -1)) { // Not namespace itself
+			if (!path.isPersonalNamespace()
+					&& (path.getFullName().indexOf(Mailbox.folderSeparator) != -1)) {
 				// LIST - "l" right is required.
 				if (!manager.hasRights(userID, result.getMailboxID(), "l")) { // l_Lookup_RIGHT
 					return null;

@@ -65,7 +65,7 @@ public class AppendProcessor extends AbstractImapProcessor {
 			responder.taggedNo(request, "[TRYCREATE]",
 					HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			if (path.getNamespace() != null) {
+			if (!path.isPersonalNamespace()) {
 				// Before performing a COPY/APPEND command, the server MUST
 				// check if the user has "i" right for the target mailbox.
 				String rights = manager.getRights(session.getUserID(),

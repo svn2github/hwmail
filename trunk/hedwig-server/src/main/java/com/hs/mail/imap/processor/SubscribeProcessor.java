@@ -42,7 +42,7 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 		if (mailbox == null) {
 			responder.taggedNo(request, HumanReadableText.MAILBOX_NOT_FOUND);
 		} else {
-			if (path.getNamespace() != null) {
+			if (!path.isPersonalNamespace()) {
 				// RFC 4314 - "l" right is required only if the server checks
 				// for mailbox existence when performing SUBSCRIBE.
 				if (!manager.hasRights(session.getUserID(),

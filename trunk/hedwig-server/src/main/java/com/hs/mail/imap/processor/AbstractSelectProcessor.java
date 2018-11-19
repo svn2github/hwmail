@@ -63,7 +63,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 					HumanReadableText.MAILBOX_NOT_SELECTABLE);
 		} else {
 			String rights = null;
-			if (path.getNamespace() != null) {
+			if (!path.isPersonalNamespace()) {
 				rights = manager.getRights(session.getUserID(),
 						mailbox.getMailboxID(), true);
 				if (!StringUtils.contains(rights, MailboxACL.r_Read_RIGHT)) {
@@ -76,7 +76,7 @@ public abstract class AbstractSelectProcessor extends AbstractImapProcessor {
 			if (selected != null && !selected.isReadOnly()
 					&& selected.isRecent()) {
 				// If not personal namespace, preserve the \Recent flag.
-				if (path.getNamespace() == null) {
+				if (path.isPersonalNamespace()) {
 					// If the session is read-write, subsequent sessions will
 					// not see \Recent set for the messages in this mailbox.
 					manager.resetRecent(selected.getMailboxID());
