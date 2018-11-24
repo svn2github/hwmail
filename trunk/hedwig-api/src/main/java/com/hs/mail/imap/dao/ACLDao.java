@@ -22,6 +22,6 @@ public interface ACLDao extends DaoSupport {
 
 	public boolean hasRights(long userID, long mailboxID, String rights);
 
-	public List<Long> getAuthorizedMailboxes(long userID, String rights);
+	public List<Long> getAuthorizedMailboxIDList(long userID, String rights);
 
 }

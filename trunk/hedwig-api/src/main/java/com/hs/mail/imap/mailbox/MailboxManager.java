@@ -382,7 +382,17 @@ public interface MailboxManager {
 	 */
 	public boolean hasRights(long userID, long mailboxID, String rights);
 
-	public List<Long> getAuthorizedMailboxes(long userID, String rights);
+	/**
+	 * Returns all the ID of the mailboxes that the user has specific rights on
+	 * it.
+	 * 
+	 * @param userID
+	 *            the ID of user to check right
+	 * @param rights
+	 *            the rights to check
+	 * @return all the ID of mailboxes the user has rights on.
+	 */
+	public List<Long> getAuthorizedMailboxIDList(long userID, String rights);
 
 	/**
 	 * Searches for the messages matching the given query.
@@ -396,7 +406,7 @@ public interface MailboxManager {
 	 *            ID of mailbox to search
 	 * @param key
 	 *            the search query
-	 * @return list of <code>Threadables</code> of messages searched
+	 * @return list of <code>Threadable</code>s of messages searched
 	 */
 	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,
 			long mailboxID, SearchKey key);

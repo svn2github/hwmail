@@ -148,7 +148,7 @@ public abstract class AbstractImapProcessor implements ImapProcessor {
 
 		// Other user's namespace
 		if (StringUtils.containsAny(namespace, "*%")) {
-			return new MailboxPath(namespace, namespace.substring(1),
+			return new MailboxPath(namespace, StringUtils.EMPTY,
 					ImapConstants.ANYONE_ID);
 		}
 		User user = getUserManager().getUserByAddress(namespace.substring(1));

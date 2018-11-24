@@ -39,34 +39,40 @@ public class MailboxPathTest extends AbstractImapProcessorTest {
 		assertEquals(path.getNamespace(), null);
 		assertEquals(path.getUserID(), session.getUserID());
 		assertEquals(path.getFullName(), "Private.HERA");
+		assertFalse(path.isNamespace());
 		
 		path = processor.buildMailboxPath(session, "~someone");
 		assertEquals(path.getNamespace(), "~someone");
 		assertEquals(path.getUserID(), 2L);
 		assertEquals(path.getFullName(), "");
+		assertTrue(path.isNamespace());
 		
 		path = processor.buildMailboxPath(session, "~someone.INBOX");
 		assertEquals(path.getNamespace(), "~someone");
 		assertEquals(path.getUserID(), 2L);
 		assertEquals(path.getFullName(), "INBOX");
+		assertFalse(path.isNamespace());
 		
 		path = processor.buildMailboxPath(session, "#public.%");
 		assertEquals(path.getNamespace(), "#public");
 		assertEquals(path.getUserID(), 0L);
 		assertEquals(path.getFullName(), "#public.%");
 		assertEquals(path.getBaseName(), "#public");
+		assertFalse(path.isNamespace());
 		
 		path = processor.buildMailboxPath(session, "~mark.%");
 		assertEquals(path.getNamespace(), "~mark");
 		assertEquals(path.getUserID(), 3L);
 		assertEquals(path.getFullName(), "%");
 		assertEquals(path.getBaseName(), "");
+		assertFalse(path.isNamespace());
 		
 		path = processor.buildMailboxPath(session, "~m%");
 		assertEquals(path.getNamespace(), "~m%");
 		assertEquals(path.getUserID(), 0L);
-		assertEquals(path.getFullName(), "m%");
+		assertEquals(path.getFullName(), "");
 		assertEquals(path.getBaseName(), "");
+		assertTrue(path.isNamespace());
 	}
 
     static class MockListProcessor extends ListProcessor {

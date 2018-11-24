@@ -57,7 +57,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 			// to return the hierarchy delimiter and the root name of the name
 			// given in the reference.
 			String referenceRoot;
-			if (referenceName.startsWith(ImapConstants.SHARED_PREFIX)) {
+			if (isFullyQualifiedName(referenceName)) {
 				// A qualified reference name - get the first element.
 				int i = referenceName.indexOf(Mailbox.folderSeparator);
 				if (i != -1) {
@@ -72,7 +72,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 					+ Mailbox.folderSeparator + "\" \"" + referenceRoot
 					+ "\"\r\n");
 		} else {
-			if (mailboxName.startsWith(ImapConstants.SHARED_PREFIX)) {
+			if (isFullyQualifiedName(mailboxName)) {
 				// If the mailboxName if fully qualified, ignore the reference
 				// name.
 				referenceName = "";
@@ -124,7 +124,7 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 		}
 		
 		// LIST - "l" right is required.
-		List<Long> granted = manager.getAuthorizedMailboxes(userID, "l"); // l_Lookup_RIGHT
+		List<Long> granted = manager.getAuthorizedMailboxIDList(userID, "l"); // l_Lookup_RIGHT
 		List<Mailbox> results = new ArrayList<Mailbox>();
 		for (Mailbox child : children) {
 			if (granted.contains(child.getMailboxID())) {
@@ -138,6 +138,9 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 
 	protected Mailbox getMailbox(long userID, MailboxPath path) {
 		MailboxManager manager = getMailboxManager();
+		if (path.isNamespace()) {
+			
+		}
 		Mailbox result = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (result != null) {
 			if (!path.isPersonalNamespace()
@@ -150,6 +153,12 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 			result.setHasChildren(manager.hasChildren(result));
 		}
 		return result;
+	}
+
+	private static boolean isFullyQualifiedName(String name) {
+		return ((name != null) 
+				&& (name.startsWith(ImapConstants.SHARED_PREFIX) 
+						|| name.startsWith(ImapConstants.USER_PREFIX)));
 	}
 
 }

@@ -651,9 +651,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return dao.hasRights(userID, mailboxID, rights);
 	}
 
-	public List<Long> getAuthorizedMailboxes(long userID, String rights) {
+	public List<Long> getAuthorizedMailboxIDList(long userID, String rights) {
 		ACLDao dao = DaoFactory.getACLDao();
-		return dao.getAuthorizedMailboxes(userID, rights);
+		return dao.getAuthorizedMailboxIDList(userID, rights);
 	}
 	
 	public List<Threadable> searchThread(boolean refs, UidToMsnMapper map,

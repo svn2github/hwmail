@@ -41,6 +41,10 @@ public class MailboxPath {
 		return getBaseName(fullname, Mailbox.folderSeparator);
 	}
 
+	public boolean isNamespace() {
+		return (namespace != null && fullname.isEmpty());
+	}
+	
 	public boolean isPersonalNamespace() {
 		return (namespace == null);
 	}
