@@ -50,8 +50,7 @@ public class ValidRcptHook implements RcptHook {
 							return HookResult.reject(SmtpException.NO_SUCH_USER);
 						} else if (session.getAuthID() < 0	// anonymous
 								|| !getMailboxManager().hasRights(
-										session.getAuthID(),
-										mailbox.getMailboxID(), "p")) {	// p_Post_RIGHT
+										session.getAuthID(), mailbox, "p")) {	// p_Post_RIGHT
 							// User does not have right to post to the folder.
 							return HookResult.reject(SmtpException.RECIPIENT_REJECTED);
 						}

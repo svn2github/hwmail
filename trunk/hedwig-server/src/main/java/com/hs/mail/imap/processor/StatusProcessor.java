@@ -63,7 +63,7 @@ public class StatusProcessor extends AbstractImapProcessor {
 						&& selected.getMailboxID() == mailbox.getMailboxID()
 						&& !selected.hasRights(MailboxACL.r_Read_RIGHT))
 						|| (!manager.hasRights(session.getUserID(), // AUTHENTICATED STATE
-								mailbox.getMailboxID(), "r"))) {	// r_Read_RIGHT
+								mailbox, "r"))) {	// r_Read_RIGHT
 					responder.taggedNo(request,
 							HumanReadableText.INSUFFICIENT_RIGHTS);
 					return;

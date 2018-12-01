@@ -55,8 +55,8 @@ public class CreateProcessor extends AbstractImapProcessor {
 					Mailbox mailbox = manager.getMailbox(path.getUserID(),
 							Mailbox.getParent(mailboxName));
 					if (mailbox == null
-							|| !manager.hasRights(session.getUserID(),
-									mailbox.getMailboxID(), "k")) {	// k_CreateMailbox_RIGHT
+							|| !manager.hasRights(session.getUserID(), mailbox,
+									"k")) { // k_CreateMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;

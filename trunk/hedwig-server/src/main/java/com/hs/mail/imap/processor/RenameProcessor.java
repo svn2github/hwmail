@@ -54,8 +54,7 @@ public class RenameProcessor extends AbstractImapProcessor {
 				// new parent.
 				MailboxPath sourcePath = buildMailboxPath(session, sourceName);
 				if (!sourcePath.isPersonalNamespace()) {
-					if (!manager.hasRights(session.getUserID(),
-							source.getMailboxID(), "x")) {	// x_DeleteMailbox_RIGHT
+					if (!manager.hasRights(session.getUserID(), source, "x")) { // x_DeleteMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;
@@ -65,8 +64,8 @@ public class RenameProcessor extends AbstractImapProcessor {
 					Mailbox target = manager.getMailbox(targetPath.getUserID(),
 							Mailbox.getParent(targetName));
 					if (target == null
-							|| !manager.hasRights(session.getUserID(),
-									target.getMailboxID(), "k")) {	// k_CreateMailbox_RIGHT
+							|| !manager.hasRights(session.getUserID(), target,
+									"k")) { // k_CreateMailbox_RIGHT
 						responder.taggedNo(request,
 								HumanReadableText.INSUFFICIENT_RIGHTS);
 						return;

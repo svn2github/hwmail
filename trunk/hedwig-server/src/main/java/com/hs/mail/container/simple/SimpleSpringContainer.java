@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+@SuppressWarnings("static-access")
 public class SimpleSpringContainer {
 	
 	static Logger console = LoggerFactory.getLogger("console");

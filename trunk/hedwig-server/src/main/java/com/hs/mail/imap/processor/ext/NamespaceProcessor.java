@@ -42,7 +42,7 @@ public class NamespaceProcessor extends AbstractImapProcessor {
 	
 	protected void doProcess(ImapSession session, NamespaceRequest request, NamespaceResponder responder)
 			throws Exception {
-		responder.respond(PERSONAL_NAMESPACES, null, Config.getNamespaces());
+		responder.respond(PERSONAL_NAMESPACES, null, Config.getSharedNamespaces());
 		responder.okCompleted(request);
 	}
 	

@@ -138,19 +138,21 @@ public abstract class AbstractListProcessor extends AbstractImapProcessor {
 
 	protected Mailbox getMailbox(long userID, MailboxPath path) {
 		MailboxManager manager = getMailboxManager();
-		if (path.isNamespace()) {
-			
-		}
 		Mailbox result = manager.getMailbox(path.getUserID(), path.getFullName());
 		if (result != null) {
-			if (!path.isPersonalNamespace()
-					&& (path.getFullName().indexOf(Mailbox.folderSeparator) != -1)) {
+			if (path.isPersonalNamespace()) {
+				result.setHasChildren(manager.hasChildren(result));
+			} else {
 				// LIST - "l" right is required.
-				if (!manager.hasRights(userID, result.getMailboxID(), "l")) { // l_Lookup_RIGHT
+				if (manager.hasRights(userID, result, "l")) {
+					result.setHasChildren(true);
+				} else {
+					// Unlike other commands (e.g., SELECT) the server MUST
+					// NOT return a NO response if it can’t list a mailbox.
+					// So DO NOT raise MailboxNotFoundException.
 					return null;
 				}
 			}
-			result.setHasChildren(manager.hasChildren(result));
 		}
 		return result;
 	}

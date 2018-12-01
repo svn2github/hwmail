@@ -45,8 +45,7 @@ public class SubscribeProcessor extends AbstractImapProcessor {
 			if (!path.isPersonalNamespace()) {
 				// RFC 4314 - "l" right is required only if the server checks
 				// for mailbox existence when performing SUBSCRIBE.
-				if (!manager.hasRights(session.getUserID(),
-						mailbox.getMailboxID(), "l")) {	// l_Lookup_RIGHT
+				if (!manager.hasRights(session.getUserID(), mailbox, "l")) {	// l_Lookup_RIGHT
 					responder.taggedNo(request,
 							HumanReadableText.MAILBOX_NOT_FOUND);
 					return;
