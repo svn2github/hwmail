@@ -1,7 +1,10 @@
 package com.hs.mail.imap.dao;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +16,8 @@ import com.hs.mail.imap.mailbox.SelectedMailbox;
 import com.hs.mail.imap.mailbox.UidToMsnMapper;
 import com.hs.mail.imap.message.search.AllKey;
 import com.hs.mail.imap.message.thread.Threadable;
-import com.hs.mail.imap.processor.ext.thread.Threader;
+import com.hs.mail.imap.processor.ext.thread.OrderedSubjectThreader;
+import com.hs.mail.imap.processor.ext.thread.ReferencesThreader;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/test-context.xml")
@@ -23,9 +27,21 @@ public class ThreaderTest {
 	private MailboxManager mailboxManager;
 
 	@Test
-	public void test() {
+	public void test() throws Exception {
+	}
+	
+	@Ignore
+	public void testOrderedSubjectThreader() throws Exception {
+		List<Threadable> threadables = searchThread(false, 3);
+		OrderedSubjectThreader t = new OrderedSubjectThreader();
+		Threadable first = t.thread(threadables);
+		printThread(first, 0);
+	}
+	
+	@Ignore
+	public void testReferencesThreader() {
 		Threadable first = null, last = null;
-		List<Threadable> threadables = searchThread(3);
+		List<Threadable> threadables = searchThread(true, 3);
 		for (Threadable threadable : threadables) {
 			if (first == null)
 				first = threadable;
@@ -34,16 +50,16 @@ public class ThreaderTest {
 			last = threadable;
 		}
 		
-		Threader t = new Threader();
+		ReferencesThreader t = new ReferencesThreader();
 		last = null;
 		first = t.thread(first);
 		printThread(first, 0);
 	}
 
-	private List<Threadable> searchThread(long mailboxID) {
+	private List<Threadable> searchThread(boolean refs, long mailboxID) {
 		SelectedMailbox selected = new SelectedMailbox(-1L, mailboxID, true);
 		UidToMsnMapper map = new UidToMsnMapper(selected, false);
-		return mailboxManager.searchThread(map, mailboxID, new AllKey());
+		return mailboxManager.searchThread(refs, map, mailboxID, new AllKey());
 	}
 
 	private static void printThread(Threadable thread, int depth) {
