@@ -22,8 +22,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.hs.mail.container.config.Config;
 import com.hs.mail.dns.DnsServer;
-import com.hs.mail.imap.ImapConstants;
-import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxManager;
 import com.hs.mail.imap.user.Alias;
 import com.hs.mail.imap.user.User;
@@ -61,8 +59,7 @@ public class WebConsole {
 			List<String> domains = Arrays.asList(Config.getDomains());
 			ModelAndView mav = new ModelAndView("console");
 			mav.addObject("domains", domains);
-			mav.addObject("namespaces",
-					MailUtils.remove(Config.getNamespaces(), ImapConstants.NAMESPACE_PREFIX, Mailbox.folderSeparator));
+			mav.addObject("namespaces", MailUtils.getNamespaces());
 			return mav;
 		} catch (LoginException ex) {
 			return new ModelAndView("login", "error", ex);

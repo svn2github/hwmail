@@ -96,7 +96,7 @@ public class OracleHwUserDao extends AnsiHwUserDao {
 				"SELECT mailboxid,name,nvl(aliasid,0) aliasid,alias "
 				+ "FROM hw_mailbox m LEFT OUTER JOIN hw_alias a ON m.name=a.deliver_to "
 				+ "WHERE m.mailboxid = ?";
-		final String prefix = new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+		final String prefix = new StringBuilder(ImapConstants.SHARED_PREFIX)
 				.append(escape(namespace)).append(Mailbox.folderSeparator)
 				.toString();
 		return getJdbcTemplate().queryForObject(sql,
@@ -109,7 +109,7 @@ public class OracleHwUserDao extends AnsiHwUserDao {
 				"SELECT mailboxid,name,nvl(aliasid,0) aliasid,alias "
 				+ "FROM hw_mailbox m LEFT OUTER JOIN hw_alias a ON m.name=a.deliver_to "
 				+ "WHERE m.ownerid = ? AND m.name LIKE ?";
-		final String prefix = new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+		final String prefix = new StringBuilder(ImapConstants.SHARED_PREFIX)
 				.append(escape(namespace)).append(Mailbox.folderSeparator)
 				.toString();
 		return getJdbcTemplate().query(sql,

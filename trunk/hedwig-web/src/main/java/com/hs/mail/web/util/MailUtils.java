@@ -28,6 +28,9 @@ import javax.mail.internet.ParseException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.hs.mail.container.config.Config;
+import com.hs.mail.imap.mailbox.Mailbox;
+
 /**
  * 
  * @author Won Chul Doh
@@ -84,16 +87,16 @@ public class MailUtils {
 		return null;
 	}
 	
-	public static String[] remove(String[] array, String start, String end) {
-		if (ArrayUtils.isEmpty(array)) {
-			return array;
+	public static String[] getNamespaces() {
+		String[] namespaces = Config.getSharedNamespaces();
+		if (ArrayUtils.isEmpty(namespaces)) {
+			return namespaces;
 		}
-		String[] result = new String[array.length];
-		for (int i = 0; i < array.length; i++) {
-			result[i] = StringUtils.removeStart(array[i], start);
-			result[i] = StringUtils.removeEnd(result[i], end);
+		for (int i = 0; i < namespaces.length; i++) {
+			namespaces[i] = StringUtils.removeEnd(namespaces[i],
+					Mailbox.folderSeparator);
 		}
-		return result;
+		return namespaces;
 	}
-
+	
 }

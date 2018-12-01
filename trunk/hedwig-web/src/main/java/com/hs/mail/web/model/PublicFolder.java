@@ -65,7 +65,7 @@ public class PublicFolder {
 	}
 
 	public String getFullName() {
-		return new StringBuilder(ImapConstants.NAMESPACE_PREFIX)
+		return new StringBuilder(ImapConstants.SHARED_PREFIX)
 				.append(namespace).append(Mailbox.folderSeparator).append(name)
 				.toString();
 	}
