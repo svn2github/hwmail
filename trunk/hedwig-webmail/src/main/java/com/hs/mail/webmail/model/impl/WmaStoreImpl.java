@@ -455,19 +455,4 @@ public class WmaStoreImpl implements WmaStore {
 		}
 	}
 
-	public Folder getSharedNamespace(String name) throws WmaException {
-		try {
-			Folder[] ns = store.getSharedNamespaces();
-			for (Folder folder : ns) {
-				if (folder.getName().equals(name)) {
-					return folder;
-				}
-			}
-			// Namespace not found
-			throw new WmaException("wma.store.getfolder");
-		} catch (MessagingException ex) {
-			throw new WmaException("wma.store.getfolder").setException(ex);
-		}
-	}
-
 }

@@ -181,7 +181,5 @@ public interface WmaStore {
 	public WmaQuota[] getQuota(String root);
 	
 	public WmaFolder[] getSharedNamespaces();
-	
-	public Folder getSharedNamespace(String name) throws WmaException;
 
 }
