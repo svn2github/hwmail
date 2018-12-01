@@ -27,7 +27,7 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	public void renameMailbox(Mailbox source, String dest) {
 		long ownerid = source.getOwnerID();
 
-		// If the server¡¯s hierarchy separator character appears in the
+		// If the server's hierarchy separator character appears in the
 		// name, the server SHOULD create any superior hierarchical names
 		// that are needed.
 		forceCreate(ownerid, Mailbox.getParent(dest));
@@ -49,7 +49,8 @@ abstract class AnsiMailboxDao extends AbstractDao implements MailboxDao {
 	}
 
 	private void forceCreate(long ownerID, String mailboxName) {
-		while (!"".equals(mailboxName) && !mailboxExists(ownerID, mailboxName)) {
+		while (!"".equals(mailboxName) && !Mailbox.isNamespace(mailboxName)
+				&& !mailboxExists(ownerID, mailboxName)) {
 			doCreateMailbox(ownerID, mailboxName);
 			mailboxName = Mailbox.getParent(mailboxName);
 		}

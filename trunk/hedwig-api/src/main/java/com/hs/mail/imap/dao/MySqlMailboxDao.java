@@ -26,7 +26,6 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.mailbox.Mailbox;
 
 /**
@@ -52,9 +51,6 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 	protected Mailbox doCreateMailbox(final long ownerID, final String mailboxName) {
 		final String sql = "INSERT INTO hw_mailbox (name, ownerid, noselect_flag, nextuid, uidvalidity) VALUES(?, ?, ?, ?, ?)";
 		final long uidValidity = System.currentTimeMillis();
-		final boolean noSelect = mailboxName
-				.startsWith(ImapConstants.SHARED_PREFIX)
-				&& (mailboxName.indexOf(Mailbox.folderSeparator) == -1);
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con)
@@ -63,7 +59,7 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 						Statement.RETURN_GENERATED_KEYS);
 				pstmt.setString(1, mailboxName);
 				pstmt.setLong(2, ownerID);
-				pstmt.setString(3, noSelect ? "Y" : "N");
+				pstmt.setString(3, "N");
 				pstmt.setLong(4, 1);
 				pstmt.setLong(5, uidValidity);
 				return pstmt;
@@ -74,7 +70,7 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 		mailbox.setMailboxID(keyHolder.getKey().longValue());
 		mailbox.setOwnerID(ownerID);
 		mailbox.setName(mailboxName);
-		mailbox.setNoSelect(noSelect);
+		mailbox.setNoSelect(false);
 		mailbox.setNextUID(1);
 		mailbox.setUidValidity(uidValidity);
 		
@@ -86,17 +82,13 @@ public class MySqlMailboxDao extends AnsiMailboxDao {
 			String mailboxName) {
 		if (StringUtils.isEmpty(mailboxName)) {
 			String sql = "SELECT * FROM hw_mailbox USE INDEX (ix_hw_mailbox_1) WHERE ownerid = ? ORDER BY name";
-			return getJdbcTemplate().query(sql,
-					new Object[] { new Long(ownerID) }, mailboxRowMapper);
+			return getJdbcTemplate().query(sql, mailboxRowMapper, ownerID);
 		} else {
 			String sql = "SELECT * FROM hw_mailbox USE INDEX (ix_hw_mailbox_1) WHERE ownerid = ? AND name LIKE ? ORDER BY name";
-			return getJdbcTemplate().query(
-					sql,
-					new Object[] {
-							new Long(ownerID),
-							new StringBuilder(escape(mailboxName))
-									.append(Mailbox.folderSeparator).append('%')
-									.toString() }, mailboxRowMapper);
+			return getJdbcTemplate().query(sql, mailboxRowMapper, ownerID,
+					new StringBuilder(escape(mailboxName))
+							.append(Mailbox.folderSeparator).append('%')
+							.toString());
 		}
 	}
 	

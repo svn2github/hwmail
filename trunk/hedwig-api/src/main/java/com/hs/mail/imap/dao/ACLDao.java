@@ -2,6 +2,7 @@ package com.hs.mail.imap.dao;
 
 import java.util.List;
 
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL;
 
 /**
@@ -20,7 +21,7 @@ public interface ACLDao extends DaoSupport {
 
 	public MailboxACL getACL(long mailboxID);
 
-	public boolean hasRights(long userID, long mailboxID, String rights);
+	public boolean hasRights(long userID, Mailbox mailbox, String rights);
 
 	public List<Long> getAuthorizedMailboxIDList(long userID, String rights);
 

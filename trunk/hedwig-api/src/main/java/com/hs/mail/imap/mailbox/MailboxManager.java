@@ -374,13 +374,13 @@ public interface MailboxManager {
 	 * 
 	 * @param userID
 	 *            the ID of user to check right
-	 * @param mailboxName
-	 *            the ID of mailbox to check right
+	 * @param mailbox
+	 *            the mailbox to check right
 	 * @param rights
 	 *            the rights to check
 	 * @return true if the user has right on the mailbox, otherwise false
 	 */
-	public boolean hasRights(long userID, long mailboxID, String rights);
+	public boolean hasRights(long userID, Mailbox mailbox, String rights);
 
 	/**
 	 * Returns all the ID of the mailboxes that the user has specific rights on

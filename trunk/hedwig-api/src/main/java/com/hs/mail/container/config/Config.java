@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.hs.mail.container.server.SSLContextFactory;
+import com.hs.mail.imap.ImapConstants;
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.util.InetAddressMatcher;
 
 /**
@@ -71,6 +73,7 @@ public class Config implements InitializingBean {
 	private static String[] mydestinations;
 	private static String hostName;
 	private static String helloName;
+	private static String[] namespaces;
 	private static InetAddressMatcher authorizedNetworks;
 	private static String postmaster; 
 	private static long maxMessageSize;
@@ -186,8 +189,8 @@ public class Config implements InitializingBean {
 		return helloName;
 	}
 	
-	public static String[] getNamespaces() {
-		return StringUtils.split(getProperty("namespaces", null), ",");
+	public static String[] getSharedNamespaces() {
+		return namespaces;
 	}
 	
 	public static InetAddressMatcher getAuthorizedNetworks() {
@@ -302,7 +305,17 @@ public class Config implements InitializingBean {
 		} else {
 			mydestinations = StringUtils.stripAll(StringUtils.split(destination, ","));
 		}
-		
+
+		namespaces = StringUtils.split(getProperty("namespaces", null), ",");
+		if (namespaces != null) {
+			for (int i = 0; i < namespaces.length; i++) {
+				namespaces[i] = StringUtils.prependIfMissing(namespaces[i],
+						ImapConstants.SHARED_PREFIX);
+				namespaces[i] = StringUtils.appendIfMissing(namespaces[i],
+						Mailbox.folderSeparator);
+			}
+		}
+
 		/*
 		 * SMTP related parameters
 		 */

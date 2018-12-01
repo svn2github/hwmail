@@ -112,6 +112,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 	}
 
 	public Mailbox getMailbox(long ownerID, String mailboxName) {
+		if (Mailbox.isNamespace(mailboxName)) {
+			return Mailbox.namespaceToMailbox(mailboxName, ownerID);
+		}
 		MailboxDao dao = DaoFactory.getMailboxDao();
 		return dao.getMailbox(ownerID, mailboxName);
 	}
@@ -646,9 +649,9 @@ public class DefaultMailboxManager implements MailboxManager, DisposableBean {
 		return acl;
 	}
 
-	public boolean hasRights(long userID, long mailboxID, String rights) {
+	public boolean hasRights(long userID, Mailbox mailbox, String rights) {
 		ACLDao dao = DaoFactory.getACLDao();
-		return dao.hasRights(userID, mailboxID, rights);
+		return dao.hasRights(userID, mailbox, rights);
 	}
 
 	public List<Long> getAuthorizedMailboxIDList(long userID, String rights) {

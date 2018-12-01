@@ -17,6 +17,7 @@ package com.hs.mail.imap.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.hs.mail.imap.ImapConstants;
 import com.hs.mail.imap.UnsupportedRightException;
+import com.hs.mail.imap.mailbox.Mailbox;
 import com.hs.mail.imap.mailbox.MailboxACL;
 import com.hs.mail.imap.mailbox.MailboxACL.MailboxACLEntry;
 
@@ -98,7 +100,8 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 	
 	public void setRights(long userID, long mailboxID, String rights,
 			boolean set) {
-		final String sql = "UPDATE hw_acl SET " + joinFlags(rights, "=?,", "=?")
+		final String sql = "UPDATE hw_acl SET "
+				+ joinFlags(null, rights, "=?,", "=?")
 				+ " WHERE WHERE userid = ? AND mailboxid = ?";
 		Object[] args = new Object[rights.length()];
 		Arrays.fill(args, set ? 'Y' : 'N');
@@ -117,22 +120,33 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return acl;
 	}
 	
-	public boolean hasRights(long userID, long mailboxID, String rights) {
-		final String sql = 
-				"SELECT userid "
-				+ "FROM hw_acl "
-				+ "WHERE mailboxid = ? "
-				+   "AND " + joinFlags(rights, " = 'Y' AND ", " = 'Y'");
-		List<Long> list = getJdbcTemplate().queryForList(sql, Long.class,
-				mailboxID);
-		if (CollectionUtils.isNotEmpty(list)) {
-			// TODO - Resolve group membership
-			if (list.contains(userID)
-					|| list.contains(ImapConstants.ANYONE_ID)) {
-				return true;
-			}
+	public boolean hasRights(long userID, Mailbox mailbox, String rights) {
+		String sql = 
+			 "SELECT COUNT(*) FROM hw_acl a, hw_mailbox m "
+			+ "WHERE a.mailboxid = m.mailboxid "
+			+   "AND (a.userid = ? OR a.userid = 0) "
+			+   "AND " + joinFlags("a", rights, " = 'Y' AND ", " = 'Y'"); 
+
+		List<Object> params = new ArrayList<Object>();
+		params.add(userID);
+		
+		if (!mailbox.isNamespace()) {
+			sql += " AND m.mailboxid = ?";
+			params.add(mailbox.getMailboxID());
+		} else if (mailbox.getOwnerID() != ImapConstants.ANYONE_ID) {
+			// Other user's namespace
+			sql += " AND m.ownerid = ? ";
+			params.add(mailbox.getOwnerID());
+		} else {
+			// Shared namespace
+			sql += " AND m.ownerid = ? AND m.name LIKE ?";
+			params.add(mailbox.getOwnerID());
+			params.add(new StringBuilder(escape(mailbox.getName()))
+					.append(Mailbox.folderSeparator).append('%').toString());
 		}
-		return false;
+
+		return getJdbcTemplate().queryForObject(sql, Integer.class,
+				params.toArray()) > 0;
 	}
 	
 	public List<Long> getAuthorizedMailboxIDList(long userID, String rights) {
@@ -140,7 +154,7 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 				"SELECT mailboxid "
 				+ "FROM hw_acl "
 				+ "WHERE (userid = ? OR userid = 0) "
-				+   "AND " + joinFlags(rights, " = 'Y' AND ", " = 'Y'");
+				+   "AND " + joinFlags(null, rights, " = 'Y' AND ", " = 'Y'");
 		return getJdbcTemplate().queryForList(sql, Long.class, userID);
 	}
 
@@ -154,12 +168,16 @@ abstract class AnsiACLDao extends AbstractDao implements ACLDao {
 		return params;
 	}
 	
-	private static String joinFlags(String rights, String mid, String tail) {
+	private static String joinFlags(String alias, String rights, String mid,
+			String tail) {
 		StringBuilder buffer = new StringBuilder();
 		for (int i = 0; i < rights.length(); i++) {
 			int j = indexOfRight(rights.charAt(i));
 			if (i > 0)
 				buffer.append(mid);
+			if (alias != null) {
+				buffer.append(alias).append(".");
+			}
 			buffer.append(flagArray[j]);
 		}
 		return buffer.append(tail).toString();

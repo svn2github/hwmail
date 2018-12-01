@@ -15,6 +15,8 @@
  */
 package com.hs.mail.imap.mailbox;
 
+import com.hs.mail.imap.ImapConstants;
+
 /**
  * Mailbox is a class that represents a mailbox for mail messages.
  * 
@@ -113,6 +115,10 @@ public class Mailbox {
 
 	public void setUidValidity(long uidValidity) {
 		this.uidValidity = uidValidity;
+	}
+
+	public boolean isNamespace() {
+		return isNamespace(name);
 	}
 
 	/**
@@ -221,4 +227,15 @@ public class Mailbox {
 		return new Mailbox("", ownerID);
 	}
 
+	public static Mailbox namespaceToMailbox(String name, long ownerID) {
+		Mailbox mailbox = new Mailbox(name, ownerID);
+		mailbox.noSelect = true;
+		return mailbox;
+	}
+
+	public static boolean isNamespace(String name) {
+		return name.startsWith(ImapConstants.SHARED_PREFIX)
+				&& (name.indexOf(folderSeparator) == -1);
+	}
+	
 }
