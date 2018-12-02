@@ -23,6 +23,7 @@ import com.hs.mail.imap.message.request.ImapRequest;
 import com.hs.mail.imap.message.responder.Responder;
 
 /**
+ * RFC 3501 - 6.1.1 CAPABILITY command implementation
  * 
  * @author Won Chul Doh
  * @since Feb 1, 2010
@@ -41,6 +42,8 @@ public class CapabilityProcessor extends AbstractImapProcessor {
 			"SORT",			// RFC5256
 			"THREAD=ORDEREDSUBJECT",// RFC5256
 			"THREAD=REFERENCES", 	// RFC5256
+			"ACL",			// RFC4314
+			"RIGHTS=texk",	// RFC4314
 			"XREVOKE"		// CUSTOM 
 	};
 	
