@@ -1,5 +1,7 @@
 package com.hs.mail.webmail.model.impl;
 
+import java.util.Locale;
+
 import com.hs.mail.webmail.config.Configuration;
 import com.hs.mail.webmail.model.WmaPreferences;
 
@@ -103,23 +105,23 @@ public class WmaPreferencesImpl implements WmaPreferences {
 	}
 
 	public String getDraftFolder() {
-		return Configuration.getMessage("prefs.draftfolder");
+		return Configuration.getMessage("prefs.draftfolder", Locale.ENGLISH);
 	}
 
 	public String getPersonalFolder() {
-		return Configuration.getMessage("prefs.personalfolder");
+		return Configuration.getMessage("prefs.personalfolder", Locale.ENGLISH);
 	}
 
 	public String getSentMailArchive() {
-		return Configuration.getMessage("prefs.sentmailarchive");
+		return Configuration.getMessage("prefs.sentmailarchive", Locale.ENGLISH);
 	}
 
 	public String getToSendFolder() {
-		return Configuration.getMessage("prefs.tosendfolder");
+		return Configuration.getMessage("prefs.tosendfolder", Locale.ENGLISH);
 	}
 
 	public String getTrashFolder() {
-		return Configuration.getMessage("prefs.trashfolder");
+		return Configuration.getMessage("prefs.trashfolder", Locale.ENGLISH);
 	}
 	
 }

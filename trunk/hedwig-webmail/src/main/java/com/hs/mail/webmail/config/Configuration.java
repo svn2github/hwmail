@@ -2,6 +2,7 @@ package com.hs.mail.webmail.config;
 
 import java.io.File;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -67,10 +68,10 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 		messageSourceAccessor = accessor;
 	}
 	
-	public static String getMessage(String code) {
-		return messageSourceAccessor.getMessage(code);
+	public static String getMessage(String code, Locale locale) {
+		return messageSourceAccessor.getMessage(code, locale);
 	}
-	
+
 	public static String getMessage(String code, Object[] args) {
 		return messageSourceAccessor.getMessage(code, args);
 	}

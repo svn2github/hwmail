@@ -26,7 +26,7 @@
         <tr>
         	<td class="text-left">
           		<input type="hidden" name="path" value="${store.sentMailArchive.path}"/>
-            	<i class="fa fa-paper-plane-o"></i> ${store.sentMailArchive.name}
+            	<i class="fa fa-paper-plane-o"></i> <fmt:message key="prefs.sentmailarchive"/>
         	</td>
         	<td><fmt:formatNumber value="${store.sentMailArchive.messageCount}"/></td>
         	<td><i class="fa fa-spinner fa-spin"></i></td>
@@ -35,7 +35,7 @@
         <tr>
         	<td class="text-left">
           		<input type="hidden" name="path" value="${store.toSendArchive.path}"/>
-            	<i class="fa fa-clock-o"></i> ${store.toSendArchive.name}
+            	<i class="fa fa-clock-o"></i> <fmt:message key="prefs.tosendfolder"/>
         	</td>
         	<td><fmt:formatNumber value="${store.toSendArchive.messageCount}"/></td>
         	<td><i class="fa fa-spinner fa-spin"></i></td>
@@ -44,7 +44,7 @@
         <tr>
         	<td class="text-left">
           		<input type="hidden" name="path" value="${store.trashInfo.path}"/>
-            	<i class="fa fa-trash-o"></i> ${store.trashInfo.name}
+            	<i class="fa fa-trash-o"></i> <fmt:message key="prefs.trashfolder"/>
 	        </td>
         	<td><fmt:formatNumber value="${store.trashInfo.messageCount}"/></td>
         	<td><i class="fa fa-spinner fa-spin"></i></td>
@@ -53,7 +53,7 @@
         <tr>
         	<td class="text-left">
           		<input type="hidden" name="path" value="${store.draftInfo.path}"/>
-            	<i class="fa fa-pencil-square-o"></i> ${store.draftInfo.name}
+            	<i class="fa fa-pencil-square-o"></i> <fmt:message key="prefs.draftfolder"/>
         	</td>
         	<td><fmt:formatNumber value="${store.draftInfo.messageCount}"/></td>
         	<td><i class="fa fa-spinner fa-spin"></i></td>
@@ -62,7 +62,7 @@
         <tr>
         	<td class="text-left">
           		<input type="hidden" name="path" value="${store.personalArchive.path}"/>
-            	<i class="fa fa-archive"></i> ${store.personalArchive.name}
+            	<i class="fa fa-archive"></i> <fmt:message key="prefs.personalfolder"/>
         	</td>
         	<td><fmt:formatNumber value="${store.personalArchive.messageCount}"/></td>
         	<td><i class="fa fa-spinner fa-spin"></i></td>

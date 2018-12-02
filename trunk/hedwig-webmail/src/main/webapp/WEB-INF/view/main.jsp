@@ -278,33 +278,33 @@ $(function() {
       <ul class="nav nav-stacked" id="side-menu">
         <li role="presentation">
           <a data-target="INBOX">
-            <i class="fa fa-inbox"></i> <fmt:message key="prefs.inbox" />
+            <i class="fa fa-inbox"></i> <fmt:message key="prefs.inbox"/>
             <span id="inbox-unread" class="label label-warning pull-right"></span>
           </a>
         </li>
         <li role="presentation">
           <a data-target="${prefs.sentMailArchive}">
-            <i class="fa fa-paper-plane-o"></i> ${prefs.sentMailArchive}
+            <i class="fa fa-paper-plane-o"></i> <fmt:message key="prefs.sentmailarchive"/>
           </a>
         </li>
         <li role="presentation">
           <a data-target="${prefs.toSendFolder}">
-            <i class="fa fa-clock-o"></i> ${prefs.toSendFolder}
+            <i class="fa fa-clock-o"></i> <fmt:message key="prefs.tosendfolder"/>
           </a>
         </li>
         <li id="trashInfo" role="presentation">
           <a data-target="${prefs.trashFolder}">
-            <i class="fa fa-trash-o"></i> ${prefs.trashFolder}
+            <i class="fa fa-trash-o"></i> <fmt:message key="prefs.trashfolder"/>
           </a>
         </li>
         <li role="presentation">
           <a data-target="${prefs.draftFolder}">
-            <i class="fa fa-pencil-square-o"></i> ${prefs.draftFolder}
+            <i class="fa fa-pencil-square-o"></i> <fmt:message key="prefs.draftfolder"/>
           </a>
         </li>
         <li id="personalArchive" role="presentation">
           <a data-target="${prefs.personalFolder}">
-            <i class="fa fa-archive"></i> ${prefs.personalFolder}
+            <i class="fa fa-archive"></i> <fmt:message key="prefs.personalfolder"/>
             <span class="fa arrow collapsed" data-toggle="collapse" data-target="#tree-container"></span>
           </a>
           <div class="sub-nav collapse" id="tree-container">
