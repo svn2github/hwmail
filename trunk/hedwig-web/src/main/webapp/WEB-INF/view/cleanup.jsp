@@ -35,6 +35,7 @@
 
 <script>
 $(function() {
+	console.log('cleanup.jsp');
 	$('#delete-orphans').on('click', function() {
 		var that = $(this);
 		that.prop('disabled', true);
@@ -45,7 +46,7 @@ $(function() {
 	});
 	$('#headernames-table').on('click', 'button', function(e) {
 		var that = $(this);
-    	$.post('utils/cleanup/header/', + that.val(), 
+    	$.post('utils/cleanup/header/' + that.val(), 
 	    	function() {
 				that.closest('tr').remove();
 	    	});
