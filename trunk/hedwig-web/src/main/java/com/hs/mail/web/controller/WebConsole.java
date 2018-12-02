@@ -166,7 +166,7 @@ public class WebConsole {
 	@RequestMapping(value = "/utils/cleanup/header/{headerNameID}")
 	@ResponseBody
 	public ResponseEntity<String> deleteHeader(
-			@PathVariable("headernameID") String headerNameID) {
+			@PathVariable("headerNameID") String headerNameID) {
 		userManager.deleteHeaderValues(headerNameID);
 		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}

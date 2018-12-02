@@ -93,6 +93,7 @@ public class MailUtils {
 			return namespaces;
 		}
 		for (int i = 0; i < namespaces.length; i++) {
+			namespaces[i] = StringUtils.removeStart(namespaces[i], "#");
 			namespaces[i] = StringUtils.removeEnd(namespaces[i],
 					Mailbox.folderSeparator);
 		}

@@ -79,7 +79,7 @@ $(function() {
 								<li id="namespaces" class="expanded unselectable folder">Namespaces
 									<ul>
 							  		  <c:forEach var="namespace" items="${namespaces}">
-										<li id="<c:out value="${namespace}"/>"><c:out value="${namespace}"/></li>
+										<li id="<c:out value="${namespace}"/>">#<c:out value="${namespace}"/></li>
 									  </c:forEach>
 									</ul>
 								</li>
