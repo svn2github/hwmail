@@ -374,10 +374,10 @@ $(function() {
 	$('#move').parent().on('show.bs.dropdown', function(event) {
 		var menu = $(this).find('.dropdown-menu');
 		if (menu.children('li').length == 0) {
-			var	psna = $('#personalArchive > a'),
-				tree = $('#tree').fancytree('getTree');
-			menu.append('<li><a href="#' + psna.data('target') + '">' + psna.text() + '</a></li>');
-			$.each(tree.getRootNode().getChildren(), function(index, node) {
+			var	tree = $('#tree').fancytree('getTree'),
+				node = tree.getFirstChild();
+			menu.append('<li><a href="#' + node.key + '">' + node.title + '</a></li>');
+			node.visit(function(node) {
 				menu.append($('<li><a href="#' + node.key + '">' + node.title + '</a></li>'));
 			});
 		}

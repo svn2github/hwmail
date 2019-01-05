@@ -82,32 +82,22 @@ function showQuota() {
 }
 $(function() {
 	$('#tree').fancytree({
-		source: {
-			url: 'folder/tree?' + $.param({path:$('#personalArchive > a').data('target')})
+		init: function(event, data) {
+			data.tree.visit(function(node) {
+				if (node.isLazy()) node.load();
+			});
 		},
-		activate: function(event, data) {
-			var node = data.node;
-			loadtab('main-tab', node.title, 'folder/messages', $.param({path:node.key}));
-		}
-	});
-	$('#namespaces').fancytree({
 		activate: function(event, data) {
 			var node = data.node;
 			loadtab('main-tab', node.title, 'folder/messages', $.param({path:node.key}));
 		},
 		lazyLoad: function(event, data) {
 			var node = data.node;
-			data.result = $.getJSON('folder/tree?' + $.param({path:node.key,recursive:false}));
+			data.result = $.getJSON('folder/tree?' + $.param({path:node.key}));
 		}
 	});
-	$('#tree,#namespaces').bind('fancytreeblurtree', function(event, data) {
-		var tree = $(event.delegateTarget).fancytree('getTree'),
-		    node = tree.getActiveNode();
-		if (node) {
-			node.setActive(false), node.setFocus(false);
-		}
-	}).bind('fancytreefocustree', function(event, data) {
-		if (!data.node.unselectable) {
+	$('#tree').bind('fancytreefocustree', function(event, data) {
+		if (data.node && !data.node.unselectable) {
 			$('#side-menu').find('.active').removeClass('active');
 			$(event.delegateTarget).addClass('active');
 		}
@@ -124,79 +114,20 @@ $(function() {
 		removetab($(this).closest('a').attr('href').substring(1));
 	});
 	$('#side-menu').on('click', 'a[data-target]', function(event) {
-		var path = $(this).data('target'),
-		name = $(this).html().replace(/<.*[^\/]\/.*>/g, ''); // remove tags
+		var tree = $('#tree').fancytree('getTree'),
+		    node = tree.getActiveNode(),
+		    path = $(this).data('target'),
+		    name = $(this).html().replace(/<.*[^\/]\/.*>/g, ''); // remove tags
+		if (node) {
+			node.setActive(false), node.setFocus(false);
+		}
 		loadtab('main-tab', name, 'folder/messages', $.param({path:path}));
 	});
 	$('#compose').click(function() {
 		loadtab('sub-tab', $(this).text(), 'message/compose');
 	});
-	$('#create-folder').click(function() {
-		eModal.prompt({title:'<fmt:message key="main.folder.promptname"/>'})
-			.then(function(name) {
-				if (!isValidMboxName(name)) {
-					alert('<fmt:message key="main.folder.invalidname"/>\n' + invalid_chars);	
-					return;
-				}
-				var tree = $('#tree').fancytree('getTree'),
-					node = tree.getActiveNode();
-				if (!node) {
-					path = $('#personalArchive > a').data('target');
-					node = tree.getRootNode();
-				} else {
-					path = node.key;
-				}
-				if (tree.getNodeByKey(path + wma_separator + name)) {
-					alert('<fmt:message key="main.folder.alreadyexist"/>');
-					return;
-				}
-				$.post('folder/create', {name:name,path:path}, function(data) {
-					node.addNode(data);
-				});
-			});
-	});
-	$('#delete-folder').click(function() {
-		var tree = $('#tree').fancytree('getTree'),
-			node = tree.getActiveNode();
-		if (node) {
-			if (!node.hasChildren()) {
-				eModal.confirm({
-					message: '<fmt:message key="main.folder.confirm.delete"/>',
-					label: 'Yes'
-				}).then(function() {
-					$.post('folder/delete', {path:node.key}, function() {
-						var parent = node.getParent();
-						node.remove();
-						if (!parent.isRootNode()) parent.setActive();
-						else $('#personalArchive > a').trigger('click');
-					});
-				});
-			} else eModal.alert('<fmt:message key="main.folder.haschildren"/>');
-		} else eModal.alert('<fmt:message key="main.folder.select"/>');
-	});
-	$('#rename-folder').click(function() {
-		var tree = $('#tree').fancytree('getTree'),
-			node = tree.getActiveNode();
-		if (node) {
-			eModal.prompt({title:'<fmt:message key="main.folder.promptname"/>'})
-				.then(function(name) {
-					if (!isValidMboxName(name)) {
-						alert('<fmt:message key="main.folder.invalidname"/>\n' + invalid_chars);
-						return;
-					}
-					var destfolder = node.key.substring(0, node.key.lastIndexOf(wma_separator) + 1) + name;
-					if (tree.getNodeByKey(destfolder)) {
-						alert('<fmt:message key="main.folder.alreadyexist"/>');
-						return;
-					}
-					$.post('folder/rename', {path:node.key,destfolder:destfolder}, function(data) {
-						node.key = data.key, node.setTitle(data.title);
-					});
-				});
-		} else eModal.alert('<fmt:message key="main.folder.select"/>');
-	});
 	$('#manage-folder').click(function() {
-		loadtab('sub-tab', $(this).attr('title'), 'folder/manage');
+		loadtab('sub-tab', $(this).text(), 'folder/manage');
 	});
 	$('#settings').on('click', function() {
 		loadtab('sub-tab', $(this).text(), 'prefs');
@@ -302,37 +233,27 @@ $(function() {
             <i class="fa fa-pencil-square-o"></i> <fmt:message key="prefs.draftfolder"/>
           </a>
         </li>
-        <li id="personalArchive" role="presentation">
-          <a data-target="${prefs.personalFolder}">
-            <i class="fa fa-archive"></i> <fmt:message key="prefs.personalfolder"/>
-            <span class="fa arrow collapsed" data-toggle="collapse" data-target="#tree-container"></span>
-          </a>
-          <div class="sub-nav collapse" id="tree-container">
-            <div id="tree"></div>
-            <div class="folder-menu clearfix"><span class="pull-right">
-              <a id="create-folder" class="btn btn-default btn-xs" title="<fmt:message key='menu.folder.create'/>"><i class="fa fa-plus"></i></a>
-              <a id="delete-folder" class="btn btn-default btn-xs" title="<fmt:message key='menu.folder.delete'/>"><i class="fa fa-remove"></i></a>
-              <a id="rename-folder" class="btn btn-default btn-xs" title="<fmt:message key='menu.folder.rename'/>"><i class="fa fa-edit"></i></a>
-              <a id="manage-folder" class="btn btn-default btn-xs" title="<fmt:message key='menu.folder.manage'/>"><i class="fa fa-wrench"></i></a>
-            </span></div>
-          </div>
-        </li>
         <li role="presentation">
-          <a>
-          	<i class="fa fa-share-alt-square"></i> <fmt:message key='prefs.publicfolder'/>
-            <span class="fa arrow" data-toggle="collapse" data-target="#namespace-container"></span>
-          </a>
-          <div class="sub-nav" id="namespace-container">
-            <div id="namespaces">
-              <ul id="namespaces-data">
-<c:forEach var="ns" items="${namespaces}">
-                <li id="${ns.path}" class="folder lazy unselectable">${ns.name}</li>
-</c:forEach>
+            <div id="tree">
+              <ul>
+	              <li id="${prefs.personalFolder}" class="folder lazy">
+	              	<fmt:message key="prefs.personalfolder"/>
+	              </li>
+<c:if test="${not empty namespaces}">
+	<c:forEach var="ns" items="${namespaces}">
+                  <li id="${ns.path}" class="folder lazy unselectable">${ns.name}</li>
+	</c:forEach>
+</c:if>
               </ul>
             </div>
-          </div>
         </li>
-      </ul><!-- /#side-menu.nav -->
+        <li>
+        	<a id="manage-folder"><i class="fa fa-wrench"></i> <fmt:message key="menu.folder.manage"/></a>
+        </li>
+      	<li>
+      	  <a id="settings"><i class="fa fa-cogs"></i> <fmt:message key="menu.settings"/></a>
+      	</li>
+      </ul>
       <div class="sidebar-quota">
         <div id="quota" class="text-right text-muted">{0} of {1} used</div>
         <div class="progress progress-bar-xs">
@@ -341,11 +262,6 @@ $(function() {
           </div>
         </div>
       </div><!-- /.sidebar-quota -->
-      <ul class="nav nav-stacked">
-      	<li>
-      	  <a id="settings"><i class="fa fa-cogs"></i> <fmt:message key="menu.settings"/></a>
-      	</li>
-      </ul>
     </div><!-- /#navigation -->
   </aside><!-- /#menu -->
   <div id="wrapper">

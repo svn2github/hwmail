@@ -52,9 +52,10 @@ $(function() {
 	console.log('filter');
 
 	var tree = $('#tree').fancytree('getTree'),
-		fileinto = $('#fileinto');
-	fileinto.append($('<option>', { value: $('#personalArchive > a').data('target'), text: $('#personalArchive > a').text() }));
-	$.each(tree.getRootNode().getChildren(), function(index, node) {
+		fileinto = $('#fileinto'),
+		node = tree.getFirstChild();
+	fileinto.append($('<option>', { value: node.key, text: node.title }));
+	node.visit(function(node) {
 		fileinto.append($('<option>', { value: node.key, text: node.title }));
 	});
 	fileinto.append($('<option>', { value: $('#trashInfo > a').data('target'), text: $('#trashInfo > a').text() }));

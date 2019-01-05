@@ -20,9 +20,9 @@ public class WmaFolderList {
 	 * folder tree.
 	 * @throws MessagingException 
 	 */
-	private static FancytreeNode[] buildFolderList(Folder folder,
-			boolean recursive) throws MessagingException {
-		Folder[] folders = folder.list(recursive ? "*" : "%");
+	private static FancytreeNode[] buildFolderList(Folder folder)
+			throws MessagingException {
+		Folder[] folders = folder.list("*");
 		FancytreeNode[] nodes = new FancytreeNode[folders.length];
 		for (int i = 0; i < folders.length; i++) {
 			nodes[i] = new FancytreeNode(folders[i]);
@@ -67,10 +67,10 @@ public class WmaFolderList {
 	 * @throws WmaException if it fails to build the folder list.
 	 */
 	public static FancytreeNode[] createSubfolderList(Folder folder,
-			boolean recursive, char separator) throws WmaException {
+			char separator) throws WmaException {
 		try {
-			FancytreeNode[] subfolders = buildFolderList(folder, recursive);
-			if (recursive && subfolders.length > 0) {
+			FancytreeNode[] subfolders = buildFolderList(folder);
+			if (subfolders.length > 0) {
 				return rebuild(new FancytreeNode(folder), subfolders, separator);
 			} else {
 				return subfolders;

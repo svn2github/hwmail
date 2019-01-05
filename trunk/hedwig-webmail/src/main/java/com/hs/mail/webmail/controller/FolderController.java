@@ -70,10 +70,9 @@ public class FolderController {
 			HttpServletRequest request) throws Exception {
 		WmaSession session = new WmaSession(httpsession);
 		String path = RequestUtils.getRequiredParameter(request, "path");
-		boolean recursive = RequestUtils.getParameterBool(request, "recursive", true);
 		WmaStore store = session.getWmaStore();
 		return WmaFolderList.createSubfolderList(store.getFolder(path),
-				recursive, store.getFolderSeparator());
+				store.getFolderSeparator());
 	}
 	
 	@RequestMapping(value = "/folder/create")
