@@ -119,7 +119,7 @@ $(function() {
 
 	$('#fldr-table').find('input[name=path]').each(function() {
 		var tr = $(this).closest('tr');
-		if (tr.is(':visible')) {
+		if (tr.css('display') != 'none') {
 			$.getJSON('quota', {path:$(this).val()}, function(quotas) {
 				if (quotas && quotas.length > 0) {
 					if (quotas[0].resources && quotas[0].resources.length > 0) {
